@@ -163,14 +163,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .bgen:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .ghint{font-size:11px;color:var(--muted);margin-top:9px}
 
-/* DEMO BANNER */
-.demo-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:var(--r-lg);padding:16px 22px;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.demo-banner p{font-size:13px;color:#166534;flex:1;min-width:200px;line-height:1.55}
-.demo-banner p strong{color:#14532d}
-.bdemo{padding:10px 22px;border-radius:var(--r);background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:inherit;font-size:13px;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(34,197,94,.35);transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0}
-.bdemo:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(34,197,94,.45)}
-.bdemo-clear{padding:9px 16px;border-radius:var(--r);background:transparent;color:#6b7280;font-family:inherit;font-size:12px;font-weight:600;border:1.5px solid #d1d5db;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
-.bdemo-clear:hover{border-color:#ef4444;color:#ef4444}
 /* AUTOSAVE */
 .asbar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;display:flex;align-items:center;gap:7px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:var(--sh-lg)}
 .asbar.vis{opacity:1;pointer-events:auto}
@@ -233,14 +225,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </nav>
 
 <main class="main">
-
-<!-- ── DEMO BANNER ── -->
-<div class="demo-banner" id="demoBanner">
-  <span style="font-size:26px">🎓</span>
-  <p><strong>جرّب قبل أن تبدأ!</strong> انقر على زر التعبئة التجريبية لرؤية مثال كامل عن مذكرة في الاقتصاد النقدي — يمكنك تعديل أي بيانات بعدها بسهولة.</p>
-  <button class="bdemo" onclick="fillDemo()">✨ تعبئة تجريبية</button>
-  <button class="bdemo-clear" onclick="clearAll()" id="btnClear" style="display:none">🗑️ مسح الكل</button>
-</div>
 
 <!-- ── STEP 0 ── -->
 <section class="section active" id="s0">
@@ -462,7 +446,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </main>
 
 <!-- AUTOSAVE -->
-<div class="asbar" id="asbar"><div class="asdot"></div><span id="asbarMsg">تم حفظ بياناتك تلقائياً</span><button onclick="document.getElementById('asbar').classList.remove('vis')" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;margin-right:4px">×</button></div>
+<div class="asbar" id="asbar"><div class="asdot"></div>تم حفظ بياناتك تلقائياً<button onclick="document.getElementById('asbar').classList.remove('vis')" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;margin-right:4px">×</button></div>
 
 <!-- MODAL -->
 <div class="ov" id="ov">
@@ -771,206 +755,6 @@ function showOk(url,name){
 }
 
 function sl(ms){return new Promise(r=>setTimeout(r,ms));}
-
-// ── DEMO DATA ────────────────────────────────────────────
-const DEMO = {
-  studentName:'بن علي محمد الأمين',
-  studentId:'20212345',
-  major:'اقتصاد نقدي وبنكي',
-  level:'ماستر ٢',
-  year:'2024 - 2025',
-  university:'جامعة يحيى فارس بالمدية',
-  faculty:'كلية العلوم الاقتصادية والتجارية وعلوم التسيير',
-  supervisor:'أ.د. بوعزة محمد',
-  department:'قسم العلوم الاقتصادية',
-  titleAr:'أثر السياسة النقدية على التحكم في معدلات التضخم في الجزائر خلال الفترة 2000-2023',
-  titleFr:'Impact de la politique monétaire sur le contrôle des taux d\'inflation en Algérie',
-  keywords:'سياسة نقدية، تضخم، بنك الجزائر، أسعار الفائدة، استقرار الأسعار',
-  defenseDate:'2025-06-15',
-  theme:'navy_gold',
-  mainProblem:'ما مدى فعالية السياسة النقدية التي ينتهجها بنك الجزائر في التحكم في معدلات التضخم خلال الفترة الممتدة من 2000 إلى 2023؟',
-  subQuestions:[
-    'ما هي الأدوات النقدية التي يستخدمها بنك الجزائر للتحكم في التضخم؟',
-    'هل توجد علاقة سببية بين عرض النقود ومعدل التضخم في الجزائر؟',
-    'ما مدى كفاءة أسعار الفائدة كأداة لاستهداف التضخم في السياق الجزائري؟',
-  ],
-  objectives:[
-    'دراسة أثر السياسة النقدية على معدلات التضخم في الجزائر',
-    'تحليل العلاقة بين الكتلة النقدية ومؤشر أسعار الاستهلاك',
-    'تقييم فعالية أدوات بنك الجزائر في استهداف التضخم',
-    'تقديم توصيات لتحسين الأداء النقدي وضبط الأسعار',
-  ],
-  hypotheses:[
-    'تؤثر السياسة النقدية تأثيراً معنوياً على معدل التضخم في الجزائر',
-    'توجد علاقة طردية بين معدل نمو الكتلة النقدية ومعدل التضخم',
-    'أسعار الفائدة ليست الأداة الأكثر فعالية في السياق الاقتصادي الجزائري',
-  ],
-  importance:'تكتسب هذه الدراسة أهمية علمية بالغة كونها تسلط الضوء على واقع السياسة النقدية في الجزائر وتقيّم فاعليتها. أما على الصعيد التطبيقي، فتُقدّم توصيات ذات قيمة لصانعي السياسات النقدية وبنك الجزائر لتحسين آليات التحكم في التضخم.',
-  reasons:'اخترنا هذا الموضوع نظراً لاستمرار إشكالية التضخم في الاقتصاد الجزائري وتأثيرها على القدرة الشرائية للمواطنين، إضافة إلى الاهتمام الأكاديمي المتزايد بموضوع استهداف التضخم كاستراتيجية للسياسة النقدية في الاقتصاديات النامية.',
-  concepts:[
-    {name:'السياسة النقدية', def:'مجموعة الإجراءات التي يتخذها البنك المركزي للتأثير على عرض النقود وأسعار الفائدة بهدف تحقيق أهداف اقتصادية كلية كضبط التضخم وتحفيز النمو.'},
-    {name:'التضخم', def:'الارتفاع المستمر والعام في مستوى الأسعار مما يؤدي إلى تراجع القدرة الشرائية للنقود، ويُقاس عادةً بمؤشر أسعار المستهلك (CPI).'},
-    {name:'الكتلة النقدية (M2)', def:'مجموع وسائل الدفع المتداولة في الاقتصاد تشمل النقود المعدنية والورقية والودائع تحت الطلب والودائع لأجل.'},
-    {name:'سعر الفائدة الرسمي', def:'المعدل الذي يحدده بنك الجزائر للتأثير على تكلفة الاقتراض ومن ثم التحكم في السيولة والطلب الكلي.'},
-  ],
-  theories:[
-    'نظرية الكمية في النقود - Fisher (MV=PT)',
-    'مدرسة النقديون - Milton Friedman',
-    'نظرية استهداف التضخم - Inflation Targeting',
-    'نموذج IS-LM وتأثيرات السياسة النقدية',
-  ],
-  literatures:[
-    {author:'بن موسى كمال', year:'2019', title:'فعالية السياسة النقدية في الجزائر: دراسة قياسية', findings:'وجود علاقة طردية معنوية بين الكتلة النقدية والتضخم في المدى القصير'},
-    {author:'Hamdi & Hakimi', year:'2021', title:'Monetary Policy and Inflation in Algeria', findings:'أسعار الفائدة لها أثر محدود على التضخم مقارنة بالعوامل الهيكلية'},
-    {author:'زغدود رضا', year:'2020', title:'استهداف التضخم كمدخل لتطوير السياسة النقدية الجزائرية', findings:'الجزائر غير مؤهلة بعد لاعتماد إطار استهداف التضخم الصريح'},
-  ],
-  methodology:'المنهج الاستنباطي الإحصائي القياسي',
-  dataSource:'بنك الجزائر، الديوان الوطني للإحصائيات، البنك الدولي',
-  timePeriod:'2000 — 2023 (سنوي)',
-  software:'EViews 12, R 4.3.2',
-  statisticalTests:[
-    'اختبار جذر الوحدة ADF و PP',
-    'اختبار التكامل المشترك Johansen',
-    'نموذج تصحيح الخطأ VECM',
-    'اختبار السببية Granger',
-    'اختبار التغايرية الشرطية ARCH/GARCH',
-  ],
-  stats:[
-    {label:'R² النموذج',value:'0.87'},
-    {label:'D-W Stat',value:'1.94'},
-    {label:'F-Stat',value:'42.7'},
-    {label:'AIC Criterion',value:'-3.21'},
-    {label:'مشاهدات N',value:'24'},
-  ],
-  mainResults:[
-    'وجود علاقة تكامل مشترك طويلة الأجل بين السياسة النقدية والتضخم عند مستوى 5%',
-    'الكتلة النقدية M2 تؤثر إيجابياً على التضخم بمعامل 0.63 في المدى البعيد',
-    'أسعار الفائدة تُخفّض التضخم بنسبة 0.28% عند ارتفاعها بنقطة مئوية واحدة',
-    'التضخم المستورد يُفسّر 34% من تقلبات الأسعار في الجزائر',
-    'مدة تأثير السياسة النقدية على التضخم تتراوح بين 6 و18 شهراً',
-  ],
-  generalConclusion:'تُثبت الدراسة أن السياسة النقدية لبنك الجزائر ذات فاعلية إحصائية معتدلة في التحكم في التضخم، إلا أن هذه الفاعلية تبقى محدودة بسبب الطابع الهيكلي للاقتصاد الجزائري واعتماده على الريع النفطي. وتُشكّل الفجوة بين الاقتصاد الحقيقي والقطاع النقدي التحدي الجوهري أمام السياسة النقدية.',
-  recommendations:[
-    'اعتماد إطار استهداف التضخم تدريجياً مع تطوير استقلالية بنك الجزائر',
-    'تنويع أدوات السياسة النقدية وتفعيل عمليات السوق المفتوحة',
-    'تنسيق السياسة النقدية مع السياسة المالية لتعزيز الاستقرار السعري',
-    'تطوير السوق المالية الجزائرية لتحسين قناة انتقال السياسة النقدية',
-  ],
-  futureWork:[
-    'دراسة مقارنة بين فعالية السياسة النقدية في دول المغرب العربي',
-    'تحليل أثر الرقمنة المالية على فاعلية السياسة النقدية في الجزائر',
-    'نمذجة العلاقة بين سعر صرف الدينار والتضخم باستخدام نماذج DSGE',
-  ],
-  references:[
-    'بن موسى، ك. (2019). فعالية السياسة النقدية في الجزائر. مجلة الاقتصاد والمالية، 7(2)، 45-72.',
-    'Mishkin, F. (2019). The Economics of Money, Banking and Financial Markets. 12th Ed. Pearson.',
-    'بنك الجزائر (2023). التقرير السنوي. الجزائر: بنك الجزائر.',
-    'Hamdi, H., & Hakimi, A. (2021). Monetary Policy in Algeria. Journal of African Economies, 30(1).',
-    'Friedman, M. (1968). The Role of Monetary Policy. American Economic Review, 58(1), 1-17.',
-  ],
-};
-
-function fillDemo(){
-  // Set simple text fields
-  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
-  sv('studentName',DEMO.studentName);sv('studentId',DEMO.studentId);
-  sv('major',DEMO.major);sv('year',DEMO.year);
-  sv('university',DEMO.university);sv('faculty',DEMO.faculty);
-  sv('supervisor',DEMO.supervisor);sv('department',DEMO.department);
-  sv('titleAr',DEMO.titleAr);sv('titleFr',DEMO.titleFr);
-  sv('keywords',DEMO.keywords);sv('defenseDate',DEMO.defenseDate);
-  sv('mainProblem',DEMO.mainProblem);
-  sv('importance',DEMO.importance);sv('reasons',DEMO.reasons);
-  sv('methodology',DEMO.methodology);sv('dataSource',DEMO.dataSource);
-  sv('timePeriod',DEMO.timePeriod);sv('software',DEMO.software);
-  sv('conclusion',DEMO.generalConclusion);
-  document.getElementById('level').value=DEMO.level;
-  // Theme
-  const tr=document.querySelector(`input[name="theme"][value="${DEMO.theme}"]`);
-  if(tr){tr.checked=true;const t=THEMES.find(t=>t.id===DEMO.theme);if(t)onTC(t.id,t.layout,t.name);}
-  // Helper: fill dynamic list
-  function fillList(lid,items,adderFn,fillFn){
-    const list=document.getElementById(lid);
-    list.querySelectorAll('.ditem').forEach(el=>el.remove());
-    items.forEach((item,i)=>{adderFn();fillFn(list.querySelectorAll('.ditem')[i],item);});
-  }
-  // Sub questions
-  fillList('dl-subQ',DEMO.subQuestions,()=>addS('dl-subQ','')  ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Objectives
-  fillList('dl-obj',DEMO.objectives,()=>addS('dl-obj','')     ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Hypotheses
-  fillList('dl-hyp',DEMO.hypotheses,()=>addS('dl-hyp','')     ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Theories
-  fillList('dl-theories',DEMO.theories,()=>addS('dl-theories','') ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Tests
-  fillList('dl-tests',DEMO.statisticalTests,()=>addS('dl-tests','') ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Results
-  fillList('dl-results',DEMO.mainResults,()=>addS('dl-results','') ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Recommendations
-  fillList('dl-recs',DEMO.recommendations,()=>addS('dl-recs','')   ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Future work
-  fillList('dl-future',DEMO.futureWork,()=>addS('dl-future','')    ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // References
-  fillList('dl-refs',DEMO.references,()=>addS('dl-refs','')        ,(el,v)=>{const inp=el.querySelector('input');if(inp)inp.value=v;});
-  // Concepts
-  const cl=document.getElementById('dl-concepts');
-  cl.querySelectorAll('.ditem').forEach(el=>el.remove());
-  DEMO.concepts.forEach(c=>{
-    addConcept();
-    const items=cl.querySelectorAll('.ditem');
-    const last=items[items.length-1];
-    if(!last)return;
-    const inp=last.querySelector('input');const ta=last.querySelector('textarea');
-    if(inp)inp.value=c.name;if(ta)ta.value=c.def;
-  });
-  // Literatures
-  const ll=document.getElementById('dl-lits');
-  ll.querySelectorAll('.ditem').forEach(el=>el.remove());
-  DEMO.literatures.forEach(lit=>{
-    addLit();
-    const items=ll.querySelectorAll('.ditem');
-    const last=items[items.length-1];
-    if(!last)return;
-    const ins=last.querySelectorAll('input');const ta=last.querySelector('textarea');
-    if(ins[0])ins[0].value=lit.author;if(ins[1])ins[1].value=lit.year;
-    if(ins[2])ins[2].value=lit.title;if(ta)ta.value=lit.findings;
-  });
-  // KPIs
-  const kg=document.getElementById('kgrid');
-  kg.querySelectorAll('.kcard').forEach(el=>el.remove());
-  DEMO.stats.forEach(s=>{
-    addKPI();
-    const cards=kg.querySelectorAll('.kcard');
-    const last=cards[cards.length-1];
-    if(!last)return;
-    const[l,v]=last.querySelectorAll('input');
-    if(l)l.value=s.label;if(v)v.value=s.value;
-  });
-  // Update UI
-  document.getElementById('btnClear').style.display='';
-  document.getElementById('demoBanner').style.background='linear-gradient(135deg,#fffbeb,#fef3c7)';
-  document.getElementById('demoBanner').style.borderColor='#fbbf24';
-  document.getElementById('demoBanner').querySelector('p').innerHTML='<strong>🎯 وضع التجربة:</strong> تم ملء البيانات بمثال تجريبي. يمكنك تعديل أي حقل أو مسح الكل والبدء من جديد.';
-  autoSave();
-  // Show toast
-  const b=document.getElementById('asbar');
-  document.getElementById('asbarMsg').textContent='✨ تم ملء البيانات التجريبية بنجاح!';
-  b.style.background='linear-gradient(135deg,#d97706,#f59e0b)';
-  b.classList.add('vis');
-  setTimeout(()=>{
-    b.classList.remove('vis');
-    setTimeout(()=>{
-      b.style.background='';
-      document.getElementById('asbarMsg').textContent='تم حفظ بياناتك تلقائياً';
-    },400);
-  },3000);
-}
-
-function clearAll(){
-  if(!confirm('هل تريد مسح جميع البيانات المدخلة؟'))return;
-  localStorage.removeItem('mp_draft');
-  location.reload();
-}
 
 // ── INIT ────────────────────────────────────────────────
 (function init(){
