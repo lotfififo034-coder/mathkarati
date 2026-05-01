@@ -650,8 +650,9 @@ function loadDraft(){
     const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined&&v!=='')el.value=v;};
     ['studentName','studentId','major','year','university','faculty','supervisor',
      'department','titleAr','titleFr','keywords','defenseDate','mainProblem',
-     'importance','reasons','methodology','dataSource','timePeriod','software',
-     'conclusion'].forEach(id=>sv(id,d[id]));
+     'importance','reasons','methodology','dataSource','timePeriod','software']
+     .forEach(id=>sv(id,d[id]));
+    sv('conclusion', d['generalConclusion']||d['conclusion']||'');
     if(d.level)document.getElementById('level').value=d.level;
     if(d.theme){
       const r=document.querySelector(`input[name="theme"][value="${d.theme}"]`);

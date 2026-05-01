@@ -792,17 +792,17 @@ def make_methodology(prs, data, T):
         txt(slide, "الاختبارات الإحصائية المستخدمة", x0, ty, W-x0-0.6, 0.66,
             font=T["BF"], size=14, bold=True, color=T["TD"], align=PP_ALIGN.RIGHT)
         n  = min(len(tests), 5)
-        tw = (W-x0-0.6-0.14*(n-1))/n
-        th = avail - 0.74
+        tw = max(1.0, (W-x0-0.6-0.14*(n-1))/n)
+        th = max(1.0, avail - 0.74)
         for i,t in enumerate(tests[:5]):
             tx = x0 + i*(tw+0.14)
             sc = T["SC"][i%len(T["SC"])]
             rect(slide, tx, ty+0.72, tw, th, T["D"])
             rect(slide, tx, ty+0.72, tw, 0.32, sc)
             lines  = max(1, len(t)//15+1)
-            text_h = lines*0.56
+            text_h = max(0.3, lines*0.56)
             text_y = ty+0.72+0.38+max(0,(th-0.38-text_h)/2)
-            txt(slide, t, tx+0.08, text_y, tw-0.16, text_h+0.26,
+            txt(slide, t, tx+0.08, text_y, max(0.1, tw-0.16), text_h+0.26,
                 font=T["BF"], size=11, bold=True, color=T["TL"], align=PP_ALIGN.CENTER)
     return slide
 
@@ -851,7 +851,7 @@ def make_results(prs, data, T):
     results = [r for r in data.get("mainResults",[]) if r]
     n   = min(len(results), 7)
     gap = 0.16
-    rh  = max(1.38, (H-cy0-gap*n)/max(n,1))
+    rh  = max(1.38, (H - cy0 - gap * max(n,1)) / max(n,1))
 
     for i,res in enumerate(results[:7]):
         ry = cy0 + i*(rh+gap)
@@ -874,7 +874,7 @@ def make_recommendations(prs, data, T):
     cols = 2; cw = (W-3.06)/cols
     gapx = 0.72; gapy = 0.28
     rows = math.ceil(n/cols)
-    ch   = (H-cy0-gapy*rows)/rows
+    ch   = max(1.2, (H - cy0 - gapy * max(rows,1)) / max(rows,1))
 
     for i,rec in enumerate(recs[:6]):
         col = i%cols; row = i//cols
@@ -909,9 +909,10 @@ def make_future(prs, data, T):
     if not n: return slide
 
     tlx  = W - 3.08
+    cw   = tlx - x0 - 1.68
+    gap  = 0.24
+    fh   = max(1.2, (H - cy0 - 0.36 - gap * n) / n)
     rect(slide, tlx-0.06, cy0, 0.12, H-cy0-0.36, T["A"])
-    gap = 0.24
-    fh  = (H-cy0-0.36-gap*n)/n
 
     for i,fw in enumerate(futures[:5]):
         fy  = cy0 + i*(fh+gap)
@@ -922,12 +923,11 @@ def make_future(prs, data, T):
         txt(slide, str(i+1), tlx-0.35, ncy+0.10, 0.70, 0.70,
             font="Calibri", size=12, bold=True, color=T["D"], align=PP_ALIGN.CENTER)
         rect(slide, tlx-1.68, ncy+0.37, 1.26, 0.10, T["A"])
-        cw = tlx - x0 - 1.68
         rect(slide, x0, fy+0.06, cw, fh, T["CB"], line_color=T["CE"])
         rect(slide, x0, fy+0.06, 0.19, fh, sc)
         txt(slide, f"آفق بحثي {i+1}", x0+0.28, fy+0.10, 4.4, 0.48,
             font=T["BF"], size=10, bold=True, color=sc, align=PP_ALIGN.RIGHT)
-        txt(slide, fw, x0+0.28, fy+0.60, cw-0.50, fh-0.70,
+        txt(slide, fw, x0+0.28, fy+0.60, cw-0.50, max(0.3, fh-0.70),
             font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
     return slide
 
