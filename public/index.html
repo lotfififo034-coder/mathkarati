@@ -2,1210 +2,767 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>مذكرتي Pro — منشئ العروض الأكاديمية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ─────────────────────────────────────────────
-   TOKENS
-───────────────────────────────────────────── */
-:root {
-  --navy:       #07172F;
-  --navy-mid:   #0E274D;
-  --navy-lt:    #1A3A6E;
-  --gold:       #C6A03C;
-  --gold-lt:    #E8C97B;
-  --surface:    #F4F6FB;
-  --surface2:   #FFFFFF;
-  --text:       #0E274D;
-  --muted:      #64748B;
-  --border:     #E2E8F0;
-  --success:    #10B981;
-  --danger:     #EF4444;
-  --r-sm:       8px;
-  --r-md:       14px;
-  --r-lg:       20px;
-  --shadow-sm:  0 2px 8px rgba(11,31,58,.07);
-  --shadow-md:  0 6px 24px rgba(11,31,58,.1);
-  --shadow-lg:  0 16px 48px rgba(11,31,58,.14);
-  --trans:      .2s ease;
+:root{
+  --navy:#07172F;--navy-m:#0E274D;--navy-l:#1A3A6E;
+  --gold:#C6A03C;--gold-l:#E8C97B;
+  --surface:#F4F6FB;--white:#FFF;
+  --text:#07172F;--muted:#64748B;--border:#E2E8F0;
+  --ok:#10B981;--err:#EF4444;
+  --r:12px;--r-lg:18px;--t:.2s ease;
+  --sh-sm:0 2px 8px rgba(7,23,47,.06);
+  --sh-md:0 6px 24px rgba(7,23,47,.10);
+  --sh-lg:0 16px 48px rgba(7,23,47,.14);
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo','Tajawal',system-ui,sans-serif;background:var(--surface);color:var(--text);direction:rtl;min-height:100vh;line-height:1.6}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-m) 55%,#152d58 100%);position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-80px;right:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(198,160,60,.18),transparent 70%);pointer-events:none}
+.hdr-in{max-width:1080px;margin:0 auto;padding:44px 28px 38px;display:flex;align-items:center;gap:20px;position:relative;z-index:1}
+.logo{width:62px;height:62px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 24px rgba(198,160,60,.4)}
+.hdr-txt h1{font-size:26px;font-weight:900;color:#fff}
+.hdr-txt h1 em{color:var(--gold);font-style:normal}
+.hdr-txt p{font-size:13px;color:rgba(255,255,255,.6);margin-top:3px}
+.hdr-pill{margin-top:7px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:4px 13px;font-size:11px;color:var(--gold-l)}
+.hdr-pill span{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 
-html { scroll-behavior: smooth; }
+/* STEPS */
+.steps-wrap{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--sh-sm)}
+.steps-in{max-width:1080px;margin:0 auto;padding:0 28px;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
+.steps-in::-webkit-scrollbar{display:none}
+.sbtn{display:flex;align-items:center;gap:9px;padding:0 15px;height:52px;border:none;background:transparent;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:var(--t);font-family:inherit}
+.sbtn.active{border-bottom-color:var(--gold)}
+.snum{width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--t);flex-shrink:0}
+.sbtn.done .snum{background:var(--ok);color:#fff;font-size:0}
+.sbtn.done .snum::after{content:'✓';font-size:11px}
+.sbtn.active .snum{background:var(--gold);color:var(--navy);box-shadow:0 0 0 4px rgba(198,160,60,.2)}
+.slbl{font-size:13px;font-weight:600;color:var(--muted);transition:var(--t)}
+.sbtn.active .slbl{color:var(--navy)}
+.prog-bar{height:2px;background:linear-gradient(90deg,var(--gold) var(--p,0%),transparent var(--p,0%))}
 
-body {
-  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
-  background: var(--surface);
-  color: var(--text);
-  direction: rtl;
-  min-height: 100vh;
-  line-height: 1.6;
-}
+/* MAIN */
+.main{max-width:1080px;margin:0 auto;padding:34px 28px 90px}
+.section{display:none}
+.section.active{display:block;animation:fu .28s ease}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-/* ─────────────────────────────────────────────
-   SCROLLBAR
-───────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+/* SECTION HEAD */
+.sh{margin-bottom:22px}
+.sh h2{font-size:20px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.stag{background:var(--gold);color:var(--navy);font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px;flex-shrink:0}
+.sh p{font-size:13px;color:var(--muted);margin-top:3px}
 
-/* ─────────────────────────────────────────────
-   HEADER
-───────────────────────────────────────────── */
-.header {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 55%, #152d58 100%);
-  position: relative;
-  overflow: hidden;
-}
-.header::before {
-  content: '';
-  position: absolute;
-  top: -80px; right: -80px;
-  width: 360px; height: 360px;
-  background: radial-gradient(circle, rgba(198,160,60,.18) 0%, transparent 70%);
-  pointer-events: none;
-}
-.header::after {
-  content: '';
-  position: absolute;
-  bottom: -60px; left: -40px;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-.header-inner {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 52px 32px 44px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  position: relative;
-  z-index: 1;
-}
-.header-logo {
-  width: 68px; height: 68px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--gold), var(--gold-lt));
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px;
-  box-shadow: 0 8px 24px rgba(198,160,60,.4);
-}
-.header-text h1 {
-  font-size: 30px; font-weight: 900;
-  color: #fff; letter-spacing: -.3px; line-height: 1.2;
-}
-.header-text h1 em { color: var(--gold); font-style: normal; }
-.header-text p { font-size: 14px; color: rgba(255,255,255,.6); margin-top: 5px; }
+/* CARD */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:16px;box-shadow:var(--sh-sm);transition:box-shadow var(--t)}
+.card:focus-within{box-shadow:var(--sh-md)}
+.ch{display:flex;align-items:center;gap:11px;margin-bottom:18px;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.ci{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--navy),var(--navy-m));display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
+.ch h3{font-size:14px;font-weight:700;color:var(--navy)}
+.cbadge{margin-right:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
 
-/* ─────────────────────────────────────────────
-   STEPS NAV
-───────────────────────────────────────────── */
-.steps-wrap {
-  background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 200;
-  box-shadow: var(--shadow-sm);
-}
-.steps-inner {
-  max-width: 1040px; margin: 0 auto;
-  padding: 0 32px;
-  display: flex; align-items: stretch;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.steps-inner::-webkit-scrollbar { display: none; }
+/* GRID */
+.g{display:grid;gap:13px}
+.g1{grid-template-columns:1fr}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
 
-.step-btn {
-  display: flex; align-items: center; gap: 9px;
-  padding: 0 18px;
-  height: 56px;
-  border: none; background: transparent;
-  cursor: pointer; white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  transition: var(--trans);
-  font-family: inherit;
-}
-.step-btn:hover .step-lbl { color: var(--navy); }
-.step-btn.active  { border-bottom-color: var(--gold); }
-.step-btn.done .step-num { background: var(--success); }
-.step-btn.done .step-num::after { content: '✓'; }
+/* FORM */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:700;color:var(--navy)}
+.req{color:var(--err)}
+input[type=text],input[type=date],select,textarea{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r);
+  font-family:inherit;font-size:14px;color:var(--text);background:var(--white);
+  transition:border-color var(--t),box-shadow var(--t);direction:rtl;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(198,160,60,.12)}
+input.ferr,select.ferr,textarea.ferr{border-color:var(--err)}
+textarea{resize:vertical;min-height:80px;line-height:1.65}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 11px center;padding-left:32px;cursor:pointer}
+.ferr-msg{font-size:11px;color:var(--err);display:none;margin-top:2px}
+.has-err .ferr-msg{display:block}
 
-.step-num {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--border);
-  color: var(--muted);
-  font-size: 12px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  transition: var(--trans); flex-shrink: 0;
-}
-.step-btn.done .step-num { color: #fff; font-size: 0; }
-.step-btn.active .step-num {
-  background: var(--gold); color: var(--navy);
-  box-shadow: 0 0 0 4px rgba(198,160,60,.2);
-}
-.step-lbl { font-size: 13px; font-weight: 600; color: var(--muted); transition: var(--trans); }
-.step-btn.active .step-lbl { color: var(--navy); }
+/* THEME PICKER */
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.topt input{display:none}
+.tcard{border-radius:13px;border:3px solid transparent;cursor:pointer;position:relative;overflow:hidden;transition:all var(--t);aspect-ratio:16/9}
+.topt input:checked+.tcard{border-color:var(--gold);box-shadow:0 0 0 4px rgba(198,160,60,.22)}
+.tb{position:absolute;inset:0;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between}
+.ttop{display:flex;align-items:flex-start;justify-content:space-between}
+.tname{font-size:11px;font-weight:800;line-height:1.3}
+.tlayout{font-size:9px;font-weight:600;opacity:.7;letter-spacing:.4px;text-transform:uppercase;margin-top:1px}
+.tchk{width:19px;height:19px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center}
+.topt input:checked~.tcard .tchk{display:flex}
+.tbars{display:flex;gap:3px;align-items:flex-end}
+.tbar{border-radius:2px;flex:1}
 
-/* ─────────────────────────────────────────────
-   MAIN
-───────────────────────────────────────────── */
-.main { max-width: 1040px; margin: 0 auto; padding: 40px 32px 100px; }
+/* LAYOUT INFO */
+.layout-info{background:rgba(7,23,47,.05);border:1px solid rgba(7,23,47,.1);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--navy);display:flex;align-items:flex-start;gap:8px;margin-top:12px}
 
-/* ─────────────────────────────────────────────
-   SECTIONS
-───────────────────────────────────────────── */
-.section { display: none; }
-.section.active { display: block; animation: fadeUp .32s ease; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* DYNAMIC LISTS */
+.dlist{display:flex;flex-direction:column;gap:8px;margin-bottom:9px}
+.ditem{display:flex;align-items:flex-start;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px;transition:border-color var(--t)}
+.ditem:focus-within{border-color:var(--gold)}
+.dn{width:23px;height:23px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:3px}
+.df{flex:1;display:flex;gap:7px;flex-wrap:wrap}
+.df input,.df textarea{flex:1;min-width:150px;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;direction:rtl;background:var(--white);color:var(--text);transition:border-color var(--t)}
+.df input:focus,.df textarea:focus{outline:none;border-color:var(--gold)}
+.df textarea{min-height:56px;resize:vertical}
+.brm{width:27px;height:27px;flex-shrink:0;border:none;background:#FEE2E2;color:var(--err);border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all var(--t);margin-top:2px}
+.brm:hover{background:var(--err);color:#fff}
+.badd{width:100%;padding:9px;border:2px dashed var(--border);background:transparent;border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:5px}
+.badd:hover{border-color:var(--gold);color:var(--gold);background:rgba(198,160,60,.05)}
 
-.section-head { margin-bottom: 28px; }
-.section-head h2 {
-  font-size: 22px; font-weight: 800; color: var(--navy);
-  display: flex; align-items: center; gap: 10px;
-}
-.section-tag {
-  background: var(--gold); color: var(--navy);
-  font-size: 11px; font-weight: 700;
-  padding: 3px 10px; border-radius: 6px; letter-spacing: .3px;
-}
-.section-head p { font-size: 14px; color: var(--muted); margin-top: 5px; }
+/* KPI */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.kcard{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px;display:flex;flex-direction:column;gap:6px;transition:border-color var(--t);position:relative}
+.kcard:focus-within{border-color:var(--gold)}
+.kcard input{border:none;background:transparent;font-family:inherit;direction:rtl;width:100%;padding:0}
+.kcard input:focus{outline:none}
+.klbl{font-size:11px;font-weight:700;color:var(--muted)}
+.kval{font-size:21px;font-weight:900;color:var(--navy)}
+.kdel{position:absolute;top:6px;left:6px;width:19px;height:19px;border-radius:5px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:11px;display:none;align-items:center;justify-content:center}
+.kcard:hover .kdel{display:flex}
 
-/* ─────────────────────────────────────────────
-   CARDS
-───────────────────────────────────────────── */
-.card {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 28px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--trans);
-}
-.card:focus-within { box-shadow: var(--shadow-md); }
+/* TIP */
+.tip{background:rgba(198,160,60,.07);border:1px solid rgba(198,160,60,.26);border-radius:9px;padding:11px 14px;font-size:12px;color:var(--navy);display:flex;align-items:flex-start;gap:7px;margin-bottom:14px}
 
-.card-head {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 22px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-.card-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; color: #fff; flex-shrink: 0;
-}
-.card-head h3 { font-size: 15px; font-weight: 700; color: var(--navy); }
+/* NAV BUTTONS */
+.nbar{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+.bprev{padding:11px 24px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;gap:6px}
+.bprev:hover{background:var(--border)}
+.bnext{padding:11px 26px;border-radius:var(--r);background:linear-gradient(135deg,var(--navy),var(--navy-m));color:#fff;font-family:inherit;font-size:14px;font-weight:700;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(7,23,47,.22);transition:all var(--t);display:flex;align-items:center;gap:6px}
+.bnext:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(7,23,47,.32)}
 
-/* ─────────────────────────────────────────────
-   GRID / FORM
-───────────────────────────────────────────── */
-.grid   { display: grid; gap: 16px; }
-.cols-1 { grid-template-columns: 1fr; }
-.cols-2 { grid-template-columns: 1fr 1fr; }
-.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+/* PREVIEW */
+.pbanner{border-radius:var(--r-lg);padding:24px 28px;margin-bottom:18px}
+.pbanner h3{font-size:13px;font-weight:700;margin-bottom:13px;opacity:.8;color:#fff}
+.pmeta{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pm{background:rgba(255,255,255,.1);border-radius:9px;padding:10px 13px}
+.pml{font-size:10px;opacity:.6;margin-bottom:2px;color:#fff}
+.pmv{font-size:13px;font-weight:700;color:#fff}
+.pm.full{grid-column:1/-1}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:9px;margin-bottom:20px}
+.sthumb{aspect-ratio:16/9;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px;text-align:center;border:2px solid rgba(255,255,255,.1);transition:transform .2s}
+.sthumb:hover{transform:scale(1.04)}
+.si{font-size:17px}
+.sl{font-size:9px;font-weight:700}
 
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field label { font-size: 13px; font-weight: 700; color: var(--navy); }
-.req { color: var(--danger); }
+/* GENERATE */
+.garea{text-align:center;padding:26px 0 8px}
+.bgen{padding:16px 48px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);font-family:inherit;font-size:16px;font-weight:900;border:none;cursor:pointer;box-shadow:0 8px 28px rgba(198,160,60,.38);transition:all .24s;display:inline-flex;align-items:center;gap:8px}
+.bgen:hover{transform:translateY(-3px);box-shadow:0 14px 38px rgba(198,160,60,.48)}
+.bgen:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.ghint{font-size:11px;color:var(--muted);margin-top:9px}
 
-input[type=text], input[type=date],
-select, textarea {
-  width: 100%;
-  padding: 11px 15px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-sm);
-  font-family: inherit; font-size: 14px;
-  color: var(--text); background: var(--surface2);
-  transition: border-color var(--trans), box-shadow var(--trans);
-  direction: rtl;
-  appearance: none;
-}
-input[type=text]:focus, input[type=date]:focus,
-select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(198,160,60,.12);
-}
-textarea { resize: vertical; min-height: 88px; line-height: 1.65; }
+/* AUTOSAVE */
+.asbar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;display:flex;align-items:center;gap:7px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:var(--sh-lg)}
+.asbar.vis{opacity:1;pointer-events:auto}
+.asdot{width:6px;height:6px;background:var(--ok);border-radius:50%}
 
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: left 14px center;
-  padding-left: 36px;
-  cursor: pointer;
-}
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(7,23,47,.72);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:1000}
+.ov.open{display:flex}
+.mbox{background:#fff;border-radius:22px;padding:46px 50px;text-align:center;max-width:450px;width:92%;box-shadow:0 32px 80px rgba(7,23,47,.35);animation:min .27s ease}
+@keyframes min{from{opacity:0;transform:scale(.94) translateY(13px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mic{width:78px;height:78px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:34px}
+.mspin{background:linear-gradient(135deg,var(--navy),var(--navy-m));animation:pr 1.5s ease-in-out infinite}
+.mok{background:linear-gradient(135deg,#10B981,#34D399)}
+.merr{background:linear-gradient(135deg,#EF4444,#F87171)}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(7,23,47,.38)}50%{box-shadow:0 0 0 13px rgba(7,23,47,0)}}
+.mbox h3{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.mbox p{font-size:13px;color:var(--muted);margin-bottom:24px}
+.ptrack{height:7px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:99px;transition:width .42s ease;width:0}
+.plbl{font-size:12px;color:var(--muted)}
+.bdl{display:inline-flex;align-items:center;gap:7px;padding:13px 34px;border-radius:var(--r);background:linear-gradient(135deg,#10B981,#059669);color:#fff;font-family:inherit;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-top:16px;text-decoration:none;transition:all .2s;box-shadow:0 6px 20px rgba(16,185,129,.3)}
+.bdl:hover{transform:translateY(-2px)}
+.bnew{display:block;margin:10px auto 0;padding:9px 22px;border-radius:var(--r);border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.bnew:hover{border-color:var(--gold);color:var(--gold)}
 
-/* ─────────────────────────────────────────────
-   THEME PICKER
-───────────────────────────────────────────── */
-.themes-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
-.theme-opt input { display: none; }
-.theme-card {
-  height: 86px; border-radius: 14px;
-  border: 3px solid transparent;
-  cursor: pointer; position: relative; overflow: hidden;
-  transition: all var(--trans);
-}
-.theme-opt input:checked + .theme-card {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(198,160,60,.22);
-}
-.theme-card-label {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 6px 10px; font-size: 11px; font-weight: 700;
-  text-align: center; backdrop-filter: blur(4px);
-  background: rgba(0,0,0,.38);
-}
-.theme-check {
-  position: absolute; top: 7px; right: 7px;
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--gold); color: var(--navy);
-  font-size: 12px; font-weight: 900;
-  display: none; align-items: center; justify-content: center;
-}
-.theme-opt input:checked ~ .theme-card .theme-check { display: flex; }
-
-/* ─────────────────────────────────────────────
-   DYNAMIC LISTS
-───────────────────────────────────────────── */
-.dyn-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-.dyn-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 12px;
-  transition: border-color var(--trans);
-}
-.dyn-item:focus-within { border-color: var(--gold); }
-.dyn-num {
-  width: 26px; height: 26px; border-radius: 7px;
-  background: var(--navy); color: #fff;
-  font-size: 12px; font-weight: 700; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  margin-top: 3px;
-}
-.dyn-fields { flex: 1; display: flex; gap: 9px; flex-wrap: wrap; }
-.dyn-fields input, .dyn-fields textarea {
-  flex: 1; min-width: 180px; padding: 9px 13px;
-  border: 1.5px solid var(--border); border-radius: 8px;
-  font-family: inherit; font-size: 13px; direction: rtl;
-  background: var(--surface2); color: var(--text);
-  transition: border-color var(--trans);
-}
-.dyn-fields input:focus, .dyn-fields textarea:focus {
-  outline: none; border-color: var(--gold);
-}
-.dyn-fields textarea { min-height: 64px; resize: vertical; }
-.btn-remove {
-  width: 30px; height: 30px; flex-shrink: 0;
-  border: none; background: #FEE2E2; color: var(--danger);
-  border-radius: 7px; cursor: pointer; font-size: 15px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all var(--trans); margin-top: 2px;
-}
-.btn-remove:hover { background: var(--danger); color: #fff; }
-
-.btn-add {
-  width: 100%; padding: 10px;
-  border: 2px dashed var(--border);
-  background: transparent; border-radius: 10px;
-  cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;
-  color: var(--muted); transition: all var(--trans);
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.btn-add:hover { border-color: var(--gold); color: var(--gold); background: rgba(198,160,60,.05); }
-
-/* ─────────────────────────────────────────────
-   KPI GRID
-───────────────────────────────────────────── */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: 12px; }
-.kpi-card {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 12px; padding: 14px;
-  display: flex; flex-direction: column; gap: 8px;
-  transition: border-color var(--trans); position: relative;
-}
-.kpi-card:focus-within { border-color: var(--gold); }
-.kpi-card input {
-  border: none; background: transparent;
-  font-family: inherit; direction: rtl; width: 100%; padding: 0;
-}
-.kpi-card input:focus { outline: none; }
-.kpi-lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
-.kpi-val { font-size: 24px; font-weight: 900; color: var(--navy); }
-.kpi-del {
-  position: absolute; top: 8px; left: 8px;
-  width: 22px; height: 22px; border-radius: 6px;
-  border: none; background: #FEE2E2; color: var(--danger);
-  cursor: pointer; font-size: 13px; display: none;
-  align-items: center; justify-content: center;
-}
-.kpi-card:hover .kpi-del { display: flex; }
-
-/* ─────────────────────────────────────────────
-   NAVIGATION BUTTONS
-───────────────────────────────────────────── */
-.nav-bar {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 36px; padding-top: 24px;
-  border-top: 1px solid var(--border);
-}
-.btn-prev {
-  padding: 13px 28px; border-radius: 12px;
-  border: 1.5px solid var(--border); background: var(--surface2);
-  color: var(--muted); font-family: inherit; font-size: 14px; font-weight: 700;
-  cursor: pointer; transition: all var(--trans);
-  display: flex; align-items: center; gap: 8px;
-}
-.btn-prev:hover { background: var(--border); }
-.btn-next {
-  padding: 13px 30px; border-radius: 12px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-  color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
-  border: none; cursor: pointer;
-  box-shadow: 0 6px 20px rgba(14,39,77,.28);
-  transition: all var(--trans);
-  display: flex; align-items: center; gap: 8px;
-}
-.btn-next:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(14,39,77,.38); }
-
-/* ─────────────────────────────────────────────
-   PREVIEW & GENERATE (STEP 6)
-───────────────────────────────────────────── */
-.preview-banner {
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-  border-radius: var(--r-lg); padding: 28px 32px;
-  color: #fff; margin-bottom: 22px;
-}
-.preview-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gold); }
-.preview-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.pm-item { background: rgba(255,255,255,.08); border-radius: 10px; padding: 12px 16px; }
-.pm-label { font-size: 11px; color: rgba(255,255,255,.55); margin-bottom: 4px; }
-.pm-value { font-size: 14px; font-weight: 700; }
-.pm-item.full { grid-column: 1 / -1; }
-
-.slides-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
-  gap: 12px; margin-bottom: 24px;
-}
-.slide-thumb {
-  aspect-ratio: 16/9; border-radius: 10px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 5px; padding: 8px; text-align: center;
-  transition: transform .2s;
-  border: 2px solid rgba(255,255,255,.08);
-  cursor: default;
-}
-.slide-thumb:hover { transform: scale(1.04); }
-.slide-thumb .si { font-size: 20px; }
-.slide-thumb .sl { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.75); }
-
-.generate-area { text-align: center; padding: 32px 0 12px; }
-.btn-generate {
-  padding: 18px 52px; border-radius: 16px;
-  background: linear-gradient(135deg, var(--gold), var(--gold-lt));
-  color: var(--navy); font-family: inherit; font-size: 17px; font-weight: 900;
-  border: none; cursor: pointer;
-  box-shadow: 0 8px 28px rgba(198,160,60,.38);
-  transition: all .25s; display: inline-flex; align-items: center; gap: 10px;
-}
-.btn-generate:hover { transform: translateY(-3px); box-shadow: 0 14px 38px rgba(198,160,60,.48); }
-.btn-generate:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-.generate-hint { font-size: 12px; color: var(--muted); margin-top: 12px; }
-
-/* ─────────────────────────────────────────────
-   MODAL
-───────────────────────────────────────────── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(7,23,47,.72);
-  backdrop-filter: blur(10px);
-  display: none; align-items: center; justify-content: center;
-  z-index: 1000;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: #fff; border-radius: 24px;
-  padding: 52px 56px; text-align: center;
-  max-width: 460px; width: 92%;
-  box-shadow: 0 32px 80px rgba(7,23,47,.35);
-  animation: modalIn .3s ease;
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(.94) translateY(16px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-.modal-icon-ring {
-  width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 24px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 38px;
-}
-.modal-icon-ring.spinning {
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-  animation: pulsering 1.6s ease-in-out infinite;
-}
-.modal-icon-ring.success { background: linear-gradient(135deg,#10B981,#34D399); }
-@keyframes pulsering {
-  0%,100% { box-shadow: 0 0 0 0 rgba(14,39,77,.35); }
-  50%      { box-shadow: 0 0 0 14px rgba(14,39,77,0); }
-}
-.modal h3 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
-.modal p  { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
-.progress-track {
-  height: 8px; background: var(--border);
-  border-radius: 99px; overflow: hidden; margin-bottom: 10px;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold-lt));
-  border-radius: 99px; transition: width .45s ease; width: 0;
-}
-.progress-label { font-size: 13px; color: var(--muted); }
-.btn-download {
-  display: inline-flex; align-items: center; gap: 9px;
-  padding: 15px 38px; border-radius: 12px;
-  background: linear-gradient(135deg,#10B981,#059669);
-  color: #fff; font-family: inherit; font-size: 15px; font-weight: 700;
-  border: none; cursor: pointer; text-decoration: none;
-  margin-top: 20px; transition: all .2s;
-  box-shadow: 0 8px 22px rgba(16,185,129,.3);
-}
-.btn-download:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(16,185,129,.38); }
-.btn-new {
-  display: block; margin: 12px auto 0;
-  padding: 11px 26px; border-radius: 10px;
-  border: 1.5px solid var(--border); background: transparent;
-  color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all .2s;
-}
-.btn-new:hover { border-color: var(--gold); color: var(--gold); }
-
-/* ─────────────────────────────────────────────
-   TIP BOX
-───────────────────────────────────────────── */
-.tip {
-  background: rgba(198,160,60,.08);
-  border: 1px solid rgba(198,160,60,.3);
-  border-radius: 10px; padding: 13px 16px;
-  font-size: 13px; color: var(--navy);
-  display: flex; align-items: flex-start; gap: 9px;
-  margin-bottom: 18px;
-}
-.tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-/* ─────────────────────────────────────────────
-   RESPONSIVE
-───────────────────────────────────────────── */
-@media (max-width: 680px) {
-  .header-inner { padding: 32px 16px 28px; flex-direction: column; text-align: center; }
-  .main { padding: 24px 16px 80px; }
-  .cols-2, .cols-3 { grid-template-columns: 1fr; }
-  .themes-grid { grid-template-columns: repeat(2,1fr); }
-  .preview-meta { grid-template-columns: 1fr; }
-  .pm-item.full { grid-column: auto; }
-  .modal { padding: 36px 24px; }
-  .slides-preview-grid { grid-template-columns: repeat(3,1fr); }
+@media(max-width:660px){
+  .hdr-in{padding:26px 14px 22px;flex-direction:column;text-align:center}
+  .main{padding:20px 13px 80px}
+  .g2,.g3{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:repeat(2,1fr)}
+  .pmeta{grid-template-columns:1fr}
+  .pm.full{grid-column:auto}
+  .mbox{padding:32px 20px}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════ HEADER ═══════════ -->
-<header class="header">
-  <div class="header-inner">
-    <div class="header-logo">🎓</div>
-    <div class="header-text">
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="logo">🎓</div>
+    <div class="hdr-txt">
       <h1>مذكرتي <em>Pro</em></h1>
       <p>منشئ العروض الأكاديمية الاحترافية · ماستر — دكتوراه · الجزائر</p>
+      <div class="hdr-pill"><span></span> 8 قوالب · 3 أنظمة تصميم مختلفة · حفظ تلقائي</div>
     </div>
   </div>
 </header>
 
-<!-- ═══════════ STEPS ═══════════ -->
 <nav class="steps-wrap">
-  <div class="steps-inner">
-    <button class="step-btn active" id="snav-0" onclick="goTo(0)">
-      <div class="step-num">1</div><span class="step-lbl">المعلومات الأساسية</span>
-    </button>
-    <button class="step-btn" id="snav-1" onclick="goTo(1)">
-      <div class="step-num">2</div><span class="step-lbl">الإشكالية والأهداف</span>
-    </button>
-    <button class="step-btn" id="snav-2" onclick="goTo(2)">
-      <div class="step-num">3</div><span class="step-lbl">الإطار النظري</span>
-    </button>
-    <button class="step-btn" id="snav-3" onclick="goTo(3)">
-      <div class="step-num">4</div><span class="step-lbl">المنهجية والنتائج</span>
-    </button>
-    <button class="step-btn" id="snav-4" onclick="goTo(4)">
-      <div class="step-num">5</div><span class="step-lbl">الخاتمة والتوصيات</span>
-    </button>
-    <button class="step-btn" id="snav-5" onclick="goTo(5)">
-      <div class="step-num">6</div><span class="step-lbl">إنشاء وتحميل</span>
-    </button>
+  <div class="steps-in">
+    <button class="sbtn active" id="sn0" onclick="goTo(0)"><div class="snum">1</div><span class="slbl">المعلومات الأساسية</span></button>
+    <button class="sbtn" id="sn1" onclick="goTo(1)"><div class="snum">2</div><span class="slbl">الإشكالية والأهداف</span></button>
+    <button class="sbtn" id="sn2" onclick="goTo(2)"><div class="snum">3</div><span class="slbl">الإطار النظري</span></button>
+    <button class="sbtn" id="sn3" onclick="goTo(3)"><div class="snum">4</div><span class="slbl">المنهجية والنتائج</span></button>
+    <button class="sbtn" id="sn4" onclick="goTo(4)"><div class="snum">5</div><span class="slbl">الخاتمة والتوصيات</span></button>
+    <button class="sbtn" id="sn5" onclick="goTo(5)"><div class="snum">6</div><span class="slbl">إنشاء وتحميل</span></button>
   </div>
+  <div class="prog-bar" id="pbar"></div>
 </nav>
 
-<!-- ═══════════ MAIN ═══════════ -->
 <main class="main">
 
-<!-- ══ STEP 0: BASIC INFO ══ -->
-<section class="section active" id="sec-0">
-  <div class="section-head">
-    <h2>المعلومات الأساسية <span class="section-tag">الخطوة ١ من ٦</span></h2>
-    <p>بيانات الطالب والمذكرة والمؤسسة الجامعية</p>
-  </div>
+<!-- ── STEP 0 ── -->
+<section class="section active" id="s0">
+  <div class="sh"><h2>المعلومات الأساسية <span class="stag">الخطوة ١ من ٦</span></h2><p>بيانات الطالب والمذكرة والمؤسسة الجامعية</p></div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">👨‍🎓</div><h3>بيانات الطالب</h3></div>
-    <div class="grid cols-2">
-      <div class="field"><label>الاسم الكامل <span class="req">*</span></label>
-        <input type="text" id="studentName" placeholder="مثال: بن علي محمد الأمين"></div>
-      <div class="field"><label>رقم التسجيل</label>
-        <input type="text" id="studentId" placeholder="مثال: 202112345"></div>
-    </div>
-    <div class="grid cols-3" style="margin-top:14px">
-      <div class="field"><label>التخصص <span class="req">*</span></label>
-        <input type="text" id="major" placeholder="مثال: اقتصاد نقدي وبنكي"></div>
-      <div class="field"><label>المستوى الدراسي</label>
-        <select id="level">
-          <option value="ليسانس">ليسانس</option>
-          <option value="ماستر ١">ماستر ١</option>
-          <option value="ماستر ٢" selected>ماستر ٢</option>
-          <option value="دكتوراه">دكتوراه</option>
-        </select>
+    <div class="ch"><div class="ci">👨‍🎓</div><h3>بيانات الطالب</h3></div>
+    <div class="g g2">
+      <div class="field" id="fld-studentName">
+        <label>الاسم الكامل <span class="req">*</span></label>
+        <input type="text" id="studentName" placeholder="مثال: بن علي محمد الأمين">
+        <span class="ferr-msg">هذا الحقل مطلوب</span>
       </div>
-      <div class="field"><label>السنة الجامعية</label>
-        <input type="text" id="year" placeholder="2024 - 2025"></div>
+      <div class="field"><label>رقم التسجيل</label><input type="text" id="studentId" placeholder="202112345"></div>
+    </div>
+    <div class="g g3" style="margin-top:11px">
+      <div class="field" id="fld-major">
+        <label>التخصص <span class="req">*</span></label>
+        <input type="text" id="major" placeholder="مثال: اقتصاد نقدي وبنكي">
+        <span class="ferr-msg">هذا الحقل مطلوب</span>
+      </div>
+      <div class="field"><label>المستوى الدراسي</label>
+        <select id="level"><option>ليسانس</option><option>ماستر ١</option><option selected>ماستر ٢</option><option>دكتوراه</option></select></div>
+      <div class="field"><label>السنة الجامعية</label><input type="text" id="year" placeholder="2024 - 2025"></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🏛️</div><h3>المؤسسة الجامعية</h3></div>
-    <div class="grid cols-2">
-      <div class="field"><label>اسم الجامعة <span class="req">*</span></label>
-        <input type="text" id="university" placeholder="مثال: جامعة يحيى فارس بالمدية"></div>
-      <div class="field"><label>الكلية / المعهد</label>
-        <input type="text" id="faculty" placeholder="مثال: كلية العلوم الاقتصادية"></div>
+    <div class="ch"><div class="ci">🏛️</div><h3>المؤسسة الجامعية</h3></div>
+    <div class="g g2">
+      <div class="field" id="fld-university">
+        <label>اسم الجامعة <span class="req">*</span></label>
+        <input type="text" id="university" placeholder="مثال: جامعة يحيى فارس بالمدية">
+        <span class="ferr-msg">هذا الحقل مطلوب</span>
+      </div>
+      <div class="field"><label>الكلية / المعهد</label><input type="text" id="faculty" placeholder="مثال: كلية العلوم الاقتصادية"></div>
     </div>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="field"><label>اسم المشرف <span class="req">*</span></label>
-        <input type="text" id="supervisor" placeholder="مثال: أ.د. بوعزة محمد"></div>
-      <div class="field"><label>القسم</label>
-        <input type="text" id="department" placeholder="مثال: قسم العلوم الاقتصادية"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-head"><div class="card-icon">📖</div><h3>عنوان المذكرة</h3></div>
-    <div class="grid cols-1">
-      <div class="field"><label>العنوان الكامل بالعربية <span class="req">*</span></label>
-        <input type="text" id="titleAr" placeholder="أدخل عنوان المذكرة كاملاً..."></div>
-      <div class="field"><label>العنوان بالفرنسية (اختياري)</label>
-        <input type="text" id="titleFr" placeholder="Titre en français (optionnel)"></div>
-    </div>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="field"><label>الكلمات المفتاحية (مفصولة بفواصل)</label>
-        <input type="text" id="keywords" placeholder="سياسة نقدية، تضخم، الجزائر"></div>
-      <div class="field"><label>تاريخ المناقشة</label>
-        <input type="date" id="defenseDate"></div>
+    <div class="g g2" style="margin-top:11px">
+      <div class="field" id="fld-supervisor">
+        <label>اسم المشرف <span class="req">*</span></label>
+        <input type="text" id="supervisor" placeholder="مثال: أ.د. بوعزة محمد">
+        <span class="ferr-msg">هذا الحقل مطلوب</span>
+      </div>
+      <div class="field"><label>القسم</label><input type="text" id="department" placeholder="مثال: قسم العلوم الاقتصادية"></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🎨</div><h3>اختر قالب التصميم</h3></div>
-    <div class="themes-grid">
-      <label class="theme-opt">
-        <input type="radio" name="theme" value="navy_gold" checked>
-        <div class="theme-card" style="background:linear-gradient(135deg,#07172F,#1A3A6E)">
-          <div class="theme-check">✓</div>
-          <div class="theme-card-label" style="color:#C6A03C">كلاسيك أزرق ذهبي</div>
-        </div>
-      </label>
-      <label class="theme-opt">
-        <input type="radio" name="theme" value="dark_teal">
-        <div class="theme-card" style="background:linear-gradient(135deg,#061A28,#044E6E)">
-          <div class="theme-check">✓</div>
-          <div class="theme-card-label" style="color:#00D4AA">نيل أخضر داكن</div>
-        </div>
-      </label>
-      <label class="theme-opt">
-        <input type="radio" name="theme" value="burgundy">
-        <div class="theme-card" style="background:linear-gradient(135deg,#3A0018,#6B1537)">
-          <div class="theme-check">✓</div>
-          <div class="theme-card-label" style="color:#F0B8CC">بوردو فاخر</div>
-        </div>
-      </label>
-      <label class="theme-opt">
-        <input type="radio" name="theme" value="forest">
-        <div class="theme-card" style="background:linear-gradient(135deg,#0F2D1E,#1E4D36)">
-          <div class="theme-check">✓</div>
-          <div class="theme-card-label" style="color:#86BB56">غابة ملكي</div>
-        </div>
-      </label>
+    <div class="ch"><div class="ci">📖</div><h3>عنوان المذكرة</h3></div>
+    <div class="g g1">
+      <div class="field" id="fld-titleAr">
+        <label>العنوان الكامل بالعربية <span class="req">*</span></label>
+        <input type="text" id="titleAr" placeholder="أدخل عنوان المذكرة كاملاً...">
+        <span class="ferr-msg">هذا الحقل مطلوب</span>
+      </div>
+      <div class="field"><label>العنوان بالفرنسية (اختياري)</label><input type="text" id="titleFr" placeholder="Titre en français..."></div>
+    </div>
+    <div class="g g2" style="margin-top:11px">
+      <div class="field"><label>الكلمات المفتاحية</label><input type="text" id="keywords" placeholder="سياسة نقدية، تضخم، الجزائر"></div>
+      <div class="field"><label>تاريخ المناقشة</label><input type="date" id="defenseDate"></div>
     </div>
   </div>
 
-  <div class="nav-bar">
-    <div></div>
-    <button class="btn-next" onclick="goTo(1)">التالي: الإشكالية ←</button>
+  <div class="card">
+    <div class="ch"><div class="ci">🎨</div><h3>اختر قالب التصميم</h3><span class="cbadge" id="sel-name">كلاسيك أزرق ذهبي</span></div>
+    <div class="tip"><span style="font-size:15px">💡</span> كل مجموعة ثنائية تستخدم نظام تصميم مختلف كلياً — ليس فقط ألواناً.</div>
+    <div class="tgrid" id="tgrid"></div>
+    <div class="layout-info" id="linfo"><span style="font-size:15px">ℹ️</span><div id="linfo-txt">نظام <strong>Classic</strong> — شرائح داكنة وفاتحة متناوبة، بطاقات بظل، شريط جانبي.</div></div>
   </div>
+
+  <div class="nbar"><div></div><button class="bnext" onclick="validate0()">التالي: الإشكالية ←</button></div>
 </section>
 
-<!-- ══ STEP 1: PROBLEM ══ -->
-<section class="section" id="sec-1">
-  <div class="section-head">
-    <h2>الإشكالية والأهداف <span class="section-tag">الخطوة ٢ من ٦</span></h2>
-    <p>صياغة إشكالية البحث وأهدافه وفرضياته</p>
+<!-- ── STEP 1 ── -->
+<section class="section" id="s1">
+  <div class="sh"><h2>الإشكالية والأهداف <span class="stag">الخطوة ٢ من ٦</span></h2><p>صياغة الإشكالية، الأهداف، والفرضيات</p></div>
+
+  <div class="card">
+    <div class="ch"><div class="ci">❓</div><h3>إشكالية البحث</h3></div>
+    <div class="field"><label>الإشكالية الرئيسية</label><textarea id="mainProblem" rows="3" placeholder="ما مدى فعالية السياسة النقدية في التحكم في معدلات التضخم...؟"></textarea></div>
+    <div style="margin-top:14px"><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:7px">التساؤلات الفرعية</label><div class="dlist" id="dl-subQ"></div><button class="badd" onclick="addS('dl-subQ','تساؤل فرعي')">+ إضافة تساؤل فرعي</button></div>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">❓</div><h3>إشكالية البحث الرئيسية</h3></div>
-    <div class="field">
-      <label>الإشكالية الرئيسية <span class="req">*</span></label>
-      <textarea id="mainProblem" rows="3" placeholder="ما مدى فعالية السياسة النقدية في التحكم في معدلات التضخم...؟"></textarea>
-    </div>
-    <div style="margin-top:18px">
-      <label class="field" style="margin-bottom:10px"><span style="font-size:13px;font-weight:700;color:var(--navy)">التساؤلات الفرعية</span></label>
-      <div class="dyn-list" id="dl-subQuestions"></div>
-      <button class="btn-add" onclick="addSimple('dl-subQuestions','تساؤل فرعي')">+ إضافة تساؤل فرعي</button>
-    </div>
+    <div class="ch"><div class="ci">🎯</div><h3>أهداف البحث</h3></div>
+    <div class="dlist" id="dl-obj"></div>
+    <button class="badd" onclick="addS('dl-obj','هدف')">+ إضافة هدف</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🎯</div><h3>أهداف البحث</h3></div>
-    <div class="dyn-list" id="dl-objectives"></div>
-    <button class="btn-add" onclick="addSimple('dl-objectives','هدف')">+ إضافة هدف</button>
+    <div class="ch"><div class="ci">💡</div><h3>الفرضيات</h3></div>
+    <div class="dlist" id="dl-hyp"></div>
+    <button class="badd" onclick="addS('dl-hyp','فرضية')">+ إضافة فرضية</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">💡</div><h3>فرضيات البحث</h3></div>
-    <div class="dyn-list" id="dl-hypotheses"></div>
-    <button class="btn-add" onclick="addSimple('dl-hypotheses','فرضية')">+ إضافة فرضية</button>
-  </div>
-
-  <div class="card">
-    <div class="card-head"><div class="card-icon">⭐</div><h3>الأهمية وأسباب الاختيار</h3></div>
-    <div class="grid cols-1">
-      <div class="field"><label>الأهمية العلمية والعملية للموضوع</label>
-        <textarea id="importance" rows="3" placeholder="اشرح الأهمية العلمية والتطبيقية للبحث..."></textarea></div>
-      <div class="field"><label>أسباب اختيار الموضوع</label>
-        <textarea id="reasons" rows="3" placeholder="لماذا اخترت هذا الموضوع تحديداً..."></textarea></div>
+    <div class="ch"><div class="ci">⭐</div><h3>الأهمية وأسباب الاختيار</h3></div>
+    <div class="g g1">
+      <div class="field"><label>الأهمية العلمية والعملية</label><textarea id="importance" rows="3" placeholder="اشرح أهمية البحث العلمية والتطبيقية..."></textarea></div>
+      <div class="field"><label>أسباب اختيار الموضوع</label><textarea id="reasons" rows="3" placeholder="لماذا اخترت هذا الموضوع..."></textarea></div>
     </div>
   </div>
 
-  <div class="nav-bar">
-    <button class="btn-prev" onclick="goTo(0)">→ السابق</button>
-    <button class="btn-next" onclick="goTo(2)">التالي: الإطار النظري ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(0)">→ السابق</button><button class="bnext" onclick="goTo(2)">التالي: الإطار النظري ←</button></div>
 </section>
 
-<!-- ══ STEP 2: THEORY ══ -->
-<section class="section" id="sec-2">
-  <div class="section-head">
-    <h2>الإطار النظري <span class="section-tag">الخطوة ٣ من ٦</span></h2>
-    <p>المفاهيم الأساسية، النظريات، ومراجعة الأدبيات</p>
+<!-- ── STEP 2 ── -->
+<section class="section" id="s2">
+  <div class="sh"><h2>الإطار النظري <span class="stag">الخطوة ٣ من ٦</span></h2><p>المفاهيم، النظريات، ومراجعة الأدبيات</p></div>
+
+  <div class="card">
+    <div class="ch"><div class="ci">📚</div><h3>المفاهيم الأساسية</h3></div>
+    <div class="tip"><span style="font-size:14px">💡</span> كل مفهوم يظهر في بطاقة مستقلة بلون مختلف.</div>
+    <div class="dlist" id="dl-concepts"></div>
+    <button class="badd" onclick="addConcept()">+ إضافة مفهوم</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">📚</div><h3>المفاهيم الأساسية</h3></div>
-    <div class="tip"><span class="tip-icon">💡</span> أدخل كل مفهوم مع تعريفه المختصر. سيُعرض كل مفهوم في بطاقة مستقلة ضمن شريحة الإطار النظري.</div>
-    <div class="dyn-list" id="dl-concepts"></div>
-    <button class="btn-add" onclick="addConcept()">+ إضافة مفهوم</button>
+    <div class="ch"><div class="ci">🔬</div><h3>النظريات والمداخل</h3></div>
+    <div class="dlist" id="dl-theories"></div>
+    <button class="badd" onclick="addS('dl-theories','نظرية')">+ إضافة نظرية</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🔬</div><h3>النظريات والمداخل النظرية</h3></div>
-    <div class="dyn-list" id="dl-theories"></div>
-    <button class="btn-add" onclick="addSimple('dl-theories','نظرية أو مدخل نظري')">+ إضافة نظرية</button>
+    <div class="ch"><div class="ci">🗂️</div><h3>الدراسات السابقة</h3></div>
+    <div class="tip"><span style="font-size:14px">📌</span> تُعرض في جدول احترافي بألوان مختلفة لكل عمود.</div>
+    <div class="dlist" id="dl-lits"></div>
+    <button class="badd" onclick="addLit()">+ إضافة دراسة سابقة</button>
   </div>
 
-  <div class="card">
-    <div class="card-head"><div class="card-icon">🗂️</div><h3>الدراسات السابقة</h3></div>
-    <div class="tip"><span class="tip-icon">📌</span> ستُعرض الدراسات السابقة في جدول احترافي مرتب حسب الباحث والسنة والنتائج.</div>
-    <div class="dyn-list" id="dl-literatures"></div>
-    <button class="btn-add" onclick="addLit()">+ إضافة دراسة سابقة</button>
-  </div>
-
-  <div class="nav-bar">
-    <button class="btn-prev" onclick="goTo(1)">→ السابق</button>
-    <button class="btn-next" onclick="goTo(3)">التالي: المنهجية ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(1)">→ السابق</button><button class="bnext" onclick="goTo(3)">التالي: المنهجية ←</button></div>
 </section>
 
-<!-- ══ STEP 3: METHODOLOGY ══ -->
-<section class="section" id="sec-3">
-  <div class="section-head">
-    <h2>المنهجية والنتائج <span class="section-tag">الخطوة ٤ من ٦</span></h2>
-    <p>المنهج المتبع، الأدوات الإحصائية، والنتائج القياسية</p>
+<!-- ── STEP 3 ── -->
+<section class="section" id="s3">
+  <div class="sh"><h2>المنهجية والنتائج <span class="stag">الخطوة ٤ من ٦</span></h2><p>المنهج المتبع، الأدوات، والنتائج القياسية</p></div>
+
+  <div class="card">
+    <div class="ch"><div class="ci">🔧</div><h3>المنهجية والأدوات</h3></div>
+    <div class="g g2">
+      <div class="field"><label>المنهج المتبع</label><input type="text" id="methodology" placeholder="المنهج الاستنباطي القياسي"></div>
+      <div class="field"><label>مصدر البيانات</label><input type="text" id="dataSource" placeholder="بنك الجزائر، البنك الدولي"></div>
+    </div>
+    <div class="g g2" style="margin-top:11px">
+      <div class="field"><label>الفترة الزمنية</label><input type="text" id="timePeriod" placeholder="2000 — 2023"></div>
+      <div class="field"><label>برنامج التحليل</label><input type="text" id="software" placeholder="EViews 12, R 4.3"></div>
+    </div>
+    <div style="margin-top:14px"><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:7px">الاختبارات الإحصائية</label><div class="dlist" id="dl-tests"></div><button class="badd" onclick="addS('dl-tests','اختبار')">+ إضافة اختبار</button></div>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🔧</div><h3>المنهجية والأدوات</h3></div>
-    <div class="grid cols-2">
-      <div class="field"><label>المنهج المتبع <span class="req">*</span></label>
-        <input type="text" id="methodology" placeholder="مثال: المنهج الاستنباطي القياسي"></div>
-      <div class="field"><label>مصدر البيانات</label>
-        <input type="text" id="dataSource" placeholder="مثال: بيانات بنك الجزائر، البنك الدولي"></div>
-    </div>
-    <div class="grid cols-2" style="margin-top:14px">
-      <div class="field"><label>الفترة الزمنية</label>
-        <input type="text" id="timePeriod" placeholder="مثال: 2000 — 2023 (بيانات سنوية)"></div>
-      <div class="field"><label>برنامج التحليل</label>
-        <input type="text" id="software" placeholder="مثال: EViews 12, R 4.3"></div>
-    </div>
-    <div style="margin-top:18px">
-      <label class="field" style="margin-bottom:10px"><span style="font-size:13px;font-weight:700;color:var(--navy)">الاختبارات الإحصائية المستخدمة</span></label>
-      <div class="dyn-list" id="dl-statisticalTests"></div>
-      <button class="btn-add" onclick="addSimple('dl-statisticalTests','اختبار إحصائي')">+ إضافة اختبار</button>
-    </div>
+    <div class="ch"><div class="ci">📊</div><h3>المؤشرات الإحصائية</h3><span class="cbadge">KPI Dashboard</span></div>
+    <div class="tip"><span style="font-size:14px">🔢</span> ستُعرض بأرقام كبيرة بارزة — النظام لا يُضيف أي بيانات من عنده.</div>
+    <div class="kgrid" id="kgrid"></div>
+    <button class="badd" onclick="addKPI()" style="margin-top:10px">+ إضافة مؤشر رقمي</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">📊</div><h3>المؤشرات الإحصائية الرئيسية</h3></div>
-    <div class="tip"><span class="tip-icon">🔢</span> سيتم عرض هذه الأرقام بخط كبير بارز في شريحة "لوحة المؤشرات" (KPI Dashboard).</div>
-    <div class="kpi-grid" id="kpi-grid"></div>
-    <button class="btn-add" onclick="addKPI()" style="margin-top:12px">+ إضافة مؤشر رقمي</button>
+    <div class="ch"><div class="ci">✅</div><h3>نتائج البحث التفصيلية</h3></div>
+    <div class="dlist" id="dl-results"></div>
+    <button class="badd" onclick="addS('dl-results','نتيجة')">+ إضافة نتيجة</button>
   </div>
 
-  <div class="card">
-    <div class="card-head"><div class="card-icon">✅</div><h3>نتائج البحث التفصيلية</h3></div>
-    <div class="dyn-list" id="dl-mainResults"></div>
-    <button class="btn-add" onclick="addSimple('dl-mainResults','نتيجة')">+ إضافة نتيجة</button>
-  </div>
-
-  <div class="nav-bar">
-    <button class="btn-prev" onclick="goTo(2)">→ السابق</button>
-    <button class="btn-next" onclick="goTo(4)">التالي: الخاتمة ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(2)">→ السابق</button><button class="bnext" onclick="goTo(4)">التالي: الخاتمة ←</button></div>
 </section>
 
-<!-- ══ STEP 4: CONCLUSION ══ -->
-<section class="section" id="sec-4">
-  <div class="section-head">
-    <h2>الخاتمة والتوصيات <span class="section-tag">الخطوة ٥ من ٦</span></h2>
-    <p>الاستنتاجات العامة، التوصيات، والآفاق المستقبلية</p>
+<!-- ── STEP 4 ── -->
+<section class="section" id="s4">
+  <div class="sh"><h2>الخاتمة والتوصيات <span class="stag">الخطوة ٥ من ٦</span></h2><p>الاستنتاجات العامة والتوصيات والآفاق</p></div>
+
+  <div class="card">
+    <div class="ch"><div class="ci">🏁</div><h3>الاستنتاج العام</h3></div>
+    <div class="field"><label>خلاصة ما توصل إليه البحث</label><textarea id="conclusion" rows="5" placeholder="لخّص أبرز ما توصل إليه بحثك..."></textarea></div>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🏁</div><h3>الاستنتاج العام</h3></div>
-    <div class="field">
-      <label>خلاصة ما توصل إليه البحث</label>
-      <textarea id="generalConclusion" rows="5" placeholder="لخّص أبرز ما توصل إليه بحثك في فقرة موجزة..."></textarea>
-    </div>
+    <div class="ch"><div class="ci">📋</div><h3>التوصيات</h3></div>
+    <div class="dlist" id="dl-recs"></div>
+    <button class="badd" onclick="addS('dl-recs','توصية')">+ إضافة توصية</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">📋</div><h3>التوصيات</h3></div>
-    <div class="dyn-list" id="dl-recommendations"></div>
-    <button class="btn-add" onclick="addSimple('dl-recommendations','توصية')">+ إضافة توصية</button>
+    <div class="ch"><div class="ci">🚀</div><h3>آفاق وامتدادات البحث</h3></div>
+    <div class="dlist" id="dl-future"></div>
+    <button class="badd" onclick="addS('dl-future','آفق بحثي')">+ إضافة آفق</button>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🚀</div><h3>آفاق وامتدادات البحث</h3></div>
-    <div class="dyn-list" id="dl-futureWork"></div>
-    <button class="btn-add" onclick="addSimple('dl-futureWork','آفق بحثي')">+ إضافة آفق</button>
+    <div class="ch"><div class="ci">📚</div><h3>أبرز المراجع</h3></div>
+    <div class="dlist" id="dl-refs"></div>
+    <button class="badd" onclick="addS('dl-refs','مرجع')">+ إضافة مرجع</button>
   </div>
 
-  <div class="card">
-    <div class="card-head"><div class="card-icon">📚</div><h3>أبرز المراجع</h3></div>
-    <div class="dyn-list" id="dl-references"></div>
-    <button class="btn-add" onclick="addSimple('dl-references','مرجع')">+ إضافة مرجع</button>
-  </div>
-
-  <div class="nav-bar">
-    <button class="btn-prev" onclick="goTo(3)">→ السابق</button>
-    <button class="btn-next" onclick="goTo(5); buildPreview()">المراجعة والإنشاء ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(3)">→ السابق</button><button class="bnext" onclick="goTo(5);buildPrev()">المراجعة والإنشاء ←</button></div>
 </section>
 
-<!-- ══ STEP 5: GENERATE ══ -->
-<section class="section" id="sec-5">
-  <div class="section-head">
-    <h2>المراجعة والإنشاء <span class="section-tag">الخطوة ٦ من ٦</span></h2>
-    <p>راجع البيانات ثم أنشئ عرضك الاحترافي</p>
-  </div>
+<!-- ── STEP 5 ── -->
+<section class="section" id="s5">
+  <div class="sh"><h2>المراجعة والإنشاء <span class="stag">الخطوة ٦ من ٦</span></h2><p>راجع البيانات ثم أنشئ عرضك الاحترافي</p></div>
 
-  <div class="preview-banner" id="preview-banner">
+  <div class="pbanner" id="pbanner">
     <h3>📋 ملخص البيانات المدخلة</h3>
-    <div class="preview-meta" id="preview-meta"></div>
+    <div class="pmeta" id="pmeta"></div>
   </div>
 
   <div class="card">
-    <div class="card-head"><div class="card-icon">🖼️</div><h3>هيكل العرض التقديمي</h3></div>
-    <div class="slides-preview-grid" id="slides-preview-grid"></div>
+    <div class="ch"><div class="ci">🖼️</div><h3>هيكل العرض التقديمي</h3></div>
+    <div class="sgrid" id="sgrid"></div>
   </div>
 
-  <div class="generate-area">
-    <button class="btn-generate" id="btn-gen" onclick="generate()">
-      🚀 إنشاء العرض الاحترافي
-    </button>
-    <p class="generate-hint">سيتم إنشاء ملف PowerPoint .pptx جاهز للتحميل مباشرة</p>
+  <div class="garea">
+    <button class="bgen" id="bgen" onclick="generate()">🚀 إنشاء العرض الاحترافي</button>
+    <p class="ghint">سيتم إنشاء ملف PowerPoint .pptx جاهز للتحميل</p>
   </div>
 
-  <div class="nav-bar">
-    <button class="btn-prev" onclick="goTo(4)">→ السابق</button>
-    <div></div>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(4)">→ السابق</button><div></div></div>
 </section>
 
 </main>
 
-<!-- ═══════════ MODAL ═══════════ -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-icon-ring spinning" id="modal-icon">⚙️</div>
-    <h3 id="modal-title">جاري إنشاء العرض...</h3>
-    <p id="modal-sub">يتم معالجة البيانات وبناء الشرائح الاحترافية</p>
-    <div class="progress-track" id="prog-track">
-      <div class="progress-fill" id="prog-fill"></div>
-    </div>
-    <div class="progress-label" id="prog-label">0%</div>
+<!-- AUTOSAVE -->
+<div class="asbar" id="asbar"><div class="asdot"></div>تم حفظ بياناتك تلقائياً<button onclick="document.getElementById('asbar').classList.remove('vis')" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;margin-right:4px">×</button></div>
+
+<!-- MODAL -->
+<div class="ov" id="ov">
+  <div class="mbox">
+    <div class="mic mspin" id="mic">⚙️</div>
+    <h3 id="mtitle">جاري إنشاء العرض...</h3>
+    <p id="msub">يتم معالجة البيانات وبناء الشرائح الاحترافية</p>
+    <div class="ptrack" id="ptrack"><div class="pfill" id="pfill"></div></div>
+    <div class="plbl" id="plbl">0%</div>
   </div>
 </div>
 
 <script>
 'use strict';
+// ── THEMES ──────────────────────────────────────────────
+const THEMES = [
+  {id:'navy_gold',       name:'كلاسيك أزرق ذهبي',    layout:'Classic', la:'كلاسيكي',  bg:'linear-gradient(135deg,#07172F,#0E274D)', ac:'#C6A03C', bars:['#C6A03C','#0E274D','#E8C97B','#2A5598']},
+  {id:'dark_teal',       name:'نيل أخضر داكن',        layout:'Bold',    la:'جريء',      bg:'linear-gradient(135deg,#061A28,#044E6E)', ac:'#00D4AA', bars:['#00D4AA','#044E6E','#0993C3','#67E8D3']},
+  {id:'burgundy',        name:'بوردو فاخر',           layout:'Minimal', la:'مينيمال',   bg:'linear-gradient(135deg,#3A0018,#6B1537)', ac:'#F0B8CC', bars:['#F0B8CC','#6B1537','#CC3D73','#FAD4E2']},
+  {id:'forest',          name:'غابة ملكي',            layout:'Classic', la:'كلاسيكي',  bg:'linear-gradient(135deg,#0F2D1E,#1E4D36)', ac:'#86BB56', bars:['#86BB56','#1E4D36','#4A996B','#B4D984']},
+  {id:'midnight_purple', name:'أرجواني منتصف الليل', layout:'Bold',    la:'جريء',      bg:'linear-gradient(135deg,#12052E,#2D106B)', ac:'#C07AFF', bars:['#C07AFF','#2D106B','#7B3FE0','#DDB3FF']},
+  {id:'charcoal_orange', name:'فحمي برتقالي',         layout:'Minimal', la:'مينيمال',   bg:'linear-gradient(135deg,#1A1A2E,#2D2D44)', ac:'#FF6B35', bars:['#FF6B35','#2D2D44','#FFA070','#E54E1A']},
+  {id:'ice_blue',        name:'أزرق جليدي',           layout:'Classic', la:'كلاسيكي',  bg:'linear-gradient(135deg,#0A254A,#1A4A8A)', ac:'#4AB3FF', bars:['#4AB3FF','#1A4A8A','#8ED0FF','#0A254A']},
+  {id:'sand_gold',       name:'رمل ذهبي دافئ',        layout:'Bold',    la:'جريء',      bg:'linear-gradient(135deg,#2C1A0E,#5C3D20)', ac:'#C8861F', bars:['#C8861F','#5C3D20','#E8B964','#2C1A0E']},
+];
+const LDESC = {
+  Classic:'نظام <strong>Classic</strong> — شرائح داكنة وفاتحة متناوبة، بطاقات بظل، شريط جانبي.',
+  Bold:   'نظام <strong>Bold</strong> — عمود accent عريض على اليسار، خطوط ضخمة، تباين عالي جداً.',
+  Minimal:'نظام <strong>Minimal</strong> — فضاء أبيض واسع، خطوط رفيعة، تصميم تحريري أنيق.',
+};
 
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
-let step = 0;
-function goTo(n) {
-  document.querySelector('.section.active')?.classList.remove('active');
-  document.querySelector('.step-btn.active')?.classList.remove('active');
-  document.getElementById('sec-' + n).classList.add('active');
-  document.getElementById('snav-' + n).classList.add('active');
-  for (let i = 0; i < n; i++) document.getElementById('snav-' + i).classList.add('done');
-  step = n;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ═══════════════════════════════════════════
-// DYNAMIC LISTS — SIMPLE (single text input)
-// ═══════════════════════════════════════════
-function addSimple(listId, ph) {
-  const list = document.getElementById(listId);
-  const n = list.querySelectorAll('.dyn-item').length + 1;
-  const div = document.createElement('div');
-  div.className = 'dyn-item';
-  div.innerHTML = `
-    <div class="dyn-num">${n}</div>
-    <div class="dyn-fields">
-      <input type="text" placeholder="${ph} ${n}...">
-    </div>
-    <button class="btn-remove" onclick="removeItem(this)" title="حذف">×</button>`;
-  list.appendChild(div);
-}
-
-function removeItem(btn) {
-  const item = btn.closest('.dyn-item');
-  const list = item.parentElement;
-  item.remove();
-  list.querySelectorAll('.dyn-num').forEach((el, i) => el.textContent = i + 1);
-}
-
-function getSimpleList(listId) {
-  return Array.from(document.querySelectorAll(`#${listId} .dyn-fields input`))
-    .map(i => i.value.trim()).filter(Boolean);
-}
-
-// ═══════════════════════════════════════════
-// CONCEPTS (name + definition)
-// ═══════════════════════════════════════════
-function addConcept() {
-  const list = document.getElementById('dl-concepts');
-  const n = list.querySelectorAll('.dyn-item').length + 1;
-  const div = document.createElement('div');
-  div.className = 'dyn-item';
-  div.innerHTML = `
-    <div class="dyn-num">${n}</div>
-    <div class="dyn-fields" style="flex-direction:column">
-      <input type="text" placeholder="اسم المفهوم..." style="margin-bottom:6px">
-      <textarea placeholder="التعريف والشرح المختصر..." rows="2"></textarea>
-    </div>
-    <button class="btn-remove" onclick="removeItem(this)" title="حذف">×</button>`;
-  list.appendChild(div);
-}
-
-function getConcepts() {
-  return Array.from(document.querySelectorAll('#dl-concepts .dyn-item')).map(item => ({
-    name: item.querySelector('input')?.value.trim() || '',
-    def:  item.querySelector('textarea')?.value.trim() || ''
-  })).filter(c => c.name);
-}
-
-// ═══════════════════════════════════════════
-// LITERATURES
-// ═══════════════════════════════════════════
-function addLit() {
-  const list = document.getElementById('dl-literatures');
-  const n = list.querySelectorAll('.dyn-item').length + 1;
-  const div = document.createElement('div');
-  div.className = 'dyn-item';
-  div.innerHTML = `
-    <div class="dyn-num">${n}</div>
-    <div class="dyn-fields" style="flex-direction:column;gap:7px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <input type="text" placeholder="الباحث / المؤلف...">
-        <input type="text" placeholder="السنة...">
+(function buildGrid(){
+  const g=document.getElementById('tgrid');
+  g.innerHTML=THEMES.map((t,i)=>`
+    <label class="topt">
+      <input type="radio" name="theme" value="${t.id}" ${i===0?'checked':''} onchange="onTC('${t.id}','${t.layout}','${t.name}')">
+      <div class="tcard" style="background:${t.bg}">
+        <div class="tb">
+          <div class="ttop">
+            <div><div class="tname" style="color:${t.ac}">${t.name}</div><div class="tlayout" style="color:rgba(255,255,255,.55)">${t.layout} · ${t.la}</div></div>
+            <div class="tchk">✓</div>
+          </div>
+          <div class="tbars">${t.bars.map((c,j)=>`<div class="tbar" style="background:${c};height:${[13,9,11,7][j]}px;opacity:.85"></div>`).join('')}</div>
+        </div>
       </div>
-      <input type="text" placeholder="عنوان الدراسة...">
-      <textarea placeholder="أبرز نتائج الدراسة..." rows="2"></textarea>
-    </div>
-    <button class="btn-remove" onclick="removeItem(this)" title="حذف">×</button>`;
-  list.appendChild(div);
+    </label>`).join('');
+})();
+
+function onTC(id,layout,name){
+  document.getElementById('sel-name').textContent=name;
+  document.getElementById('linfo-txt').innerHTML=LDESC[layout]||'';
 }
 
-function getLiteratures() {
-  return Array.from(document.querySelectorAll('#dl-literatures .dyn-item')).map(item => {
-    const inputs = item.querySelectorAll('input');
-    return {
-      author:   inputs[0]?.value.trim() || '',
-      year:     inputs[1]?.value.trim() || '',
-      title:    inputs[2]?.value.trim() || '',
-      findings: item.querySelector('textarea')?.value.trim() || ''
-    };
-  }).filter(l => l.title || l.author);
+// ── NAVIGATION ──────────────────────────────────────────
+let cur=0;
+function goTo(n){
+  document.querySelector('.section.active')?.classList.remove('active');
+  document.querySelector('.sbtn.active')?.classList.remove('active');
+  document.getElementById('s'+n).classList.add('active');
+  document.getElementById('sn'+n).classList.add('active');
+  for(let i=0;i<n;i++) document.getElementById('sn'+i).classList.add('done');
+  cur=n;
+  document.getElementById('pbar').style.setProperty('--p',(n/5*100)+'%');
+  window.scrollTo({top:0,behavior:'smooth'});
+  autoSave();
 }
 
-// ═══════════════════════════════════════════
-// KPI STATS
-// ═══════════════════════════════════════════
-function addKPI() {
-  const grid = document.getElementById('kpi-grid');
-  const card = document.createElement('div');
-  card.className = 'kpi-card';
-  card.innerHTML = `
-    <button class="kpi-del" onclick="this.closest('.kpi-card').remove()" title="حذف">×</button>
-    <input class="kpi-lbl" type="text" placeholder="اسم المؤشر (مثال: معامل R²)">
-    <input class="kpi-val" type="text" placeholder="0.94">`;
-  grid.appendChild(card);
+// ── VALIDATION ──────────────────────────────────────────
+function validate0(){
+  const fields=[['studentName','fld-studentName'],['major','fld-major'],['university','fld-university'],['supervisor','fld-supervisor'],['titleAr','fld-titleAr']];
+  let ok=true;
+  fields.forEach(([id,fid])=>{
+    const el=document.getElementById(id), fc=document.getElementById(fid);
+    if(!el.value.trim()){fc?.classList.add('has-err');el.classList.add('ferr');ok=false;}
+    else{fc?.classList.remove('has-err');el.classList.remove('ferr');}
+  });
+  if(!ok){document.querySelector('.has-err input')?.focus();return;}
+  goTo(1);
+}
+document.addEventListener('input',e=>{
+  if(e.target.classList.contains('ferr')){
+    e.target.classList.remove('ferr');
+    e.target.closest('.field')?.classList.remove('has-err');
+  }
+});
+
+// ── DYNAMIC LISTS ───────────────────────────────────────
+function addS(lid,ph){
+  const l=document.getElementById(lid),n=l.querySelectorAll('.ditem').length+1;
+  const d=document.createElement('div');d.className='ditem';
+  d.innerHTML=`<div class="dn">${n}</div><div class="df"><input type="text" placeholder="${ph} ${n}..."></div><button class="brm" onclick="rmItem(this)">×</button>`;
+  l.appendChild(d);
+}
+function rmItem(btn){
+  const item=btn.closest('.ditem'),l=item.parentElement;
+  item.remove();
+  l.querySelectorAll('.dn').forEach((el,i)=>el.textContent=i+1);
+}
+function getL(lid){return Array.from(document.querySelectorAll(`#${lid} .df input`)).map(i=>i.value.trim()).filter(Boolean);}
+
+function addConcept(){
+  const l=document.getElementById('dl-concepts'),n=l.querySelectorAll('.ditem').length+1;
+  const d=document.createElement('div');d.className='ditem';
+  d.innerHTML=`<div class="dn">${n}</div><div class="df" style="flex-direction:column"><input type="text" placeholder="اسم المفهوم..." style="margin-bottom:5px"><textarea placeholder="التعريف المختصر..." rows="2"></textarea></div><button class="brm" onclick="rmItem(this)" style="align-self:flex-start">×</button>`;
+  l.appendChild(d);
+}
+function getConcepts(){
+  return Array.from(document.querySelectorAll('#dl-concepts .ditem')).map(item=>({
+    name:item.querySelector('input')?.value.trim()||'',
+    def:item.querySelector('textarea')?.value.trim()||''
+  })).filter(c=>c.name);
 }
 
-function getKPIs() {
-  return Array.from(document.querySelectorAll('#kpi-grid .kpi-card')).map(card => {
-    const [lbl, val] = card.querySelectorAll('input');
-    return { label: lbl?.value.trim() || '', value: val?.value.trim() || '' };
-  }).filter(k => k.label && k.value);
+function addLit(){
+  const l=document.getElementById('dl-lits'),n=l.querySelectorAll('.ditem').length+1;
+  const d=document.createElement('div');d.className='ditem';
+  d.innerHTML=`<div class="dn">${n}</div><div class="df" style="flex-direction:column;gap:5px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input type="text" placeholder="الباحث..."><input type="text" placeholder="السنة..."></div>
+    <input type="text" placeholder="عنوان الدراسة...">
+    <textarea placeholder="أبرز النتائج..." rows="2"></textarea>
+  </div><button class="brm" onclick="rmItem(this)" style="align-self:flex-start">×</button>`;
+  l.appendChild(d);
+}
+function getLits(){
+  return Array.from(document.querySelectorAll('#dl-lits .ditem')).map(item=>{
+    const inputs=item.querySelectorAll('input');
+    return{author:inputs[0]?.value.trim()||'',year:inputs[1]?.value.trim()||'',title:inputs[2]?.value.trim()||'',findings:item.querySelector('textarea')?.value.trim()||''};
+  }).filter(l=>l.title||l.author);
 }
 
-// ═══════════════════════════════════════════
-// DATA COLLECTION
-// ═══════════════════════════════════════════
-function collect() {
-  return {
-    studentName:       document.getElementById('studentName').value.trim(),
-    studentId:         document.getElementById('studentId').value.trim(),
-    major:             document.getElementById('major').value.trim(),
-    level:             document.getElementById('level').value,
-    year:              document.getElementById('year').value.trim(),
-    university:        document.getElementById('university').value.trim(),
-    faculty:           document.getElementById('faculty').value.trim(),
-    supervisor:        document.getElementById('supervisor').value.trim(),
-    department:        document.getElementById('department').value.trim(),
-    titleAr:           document.getElementById('titleAr').value.trim(),
-    titleFr:           document.getElementById('titleFr').value.trim(),
-    keywords:          document.getElementById('keywords').value.trim(),
-    defenseDate:       document.getElementById('defenseDate').value,
-    theme:             document.querySelector('input[name="theme"]:checked')?.value || 'navy_gold',
-    mainProblem:       document.getElementById('mainProblem').value.trim(),
-    subQuestions:      getSimpleList('dl-subQuestions'),
-    objectives:        getSimpleList('dl-objectives'),
-    hypotheses:        getSimpleList('dl-hypotheses'),
-    importance:        document.getElementById('importance').value.trim(),
-    reasons:           document.getElementById('reasons').value.trim(),
-    concepts:          getConcepts(),
-    theories:          getSimpleList('dl-theories'),
-    literatures:       getLiteratures(),
-    methodology:       document.getElementById('methodology').value.trim(),
-    dataSource:        document.getElementById('dataSource').value.trim(),
-    timePeriod:        document.getElementById('timePeriod').value.trim(),
-    software:          document.getElementById('software').value.trim(),
-    statisticalTests:  getSimpleList('dl-statisticalTests'),
-    stats:             getKPIs(),
-    mainResults:       getSimpleList('dl-mainResults'),
-    generalConclusion: document.getElementById('generalConclusion').value.trim(),
-    recommendations:   getSimpleList('dl-recommendations'),
-    futureWork:        getSimpleList('dl-futureWork'),
-    references:        getSimpleList('dl-references'),
+// ── KPI ─────────────────────────────────────────────────
+function addKPI(){
+  const g=document.getElementById('kgrid'),c=document.createElement('div');c.className='kcard';
+  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="اسم المؤشر (R²...)"><input class="kval" type="text" placeholder="0.94">`;
+  g.appendChild(c);
+}
+function getKPIs(){
+  return Array.from(document.querySelectorAll('#kgrid .kcard')).map(c=>{
+    const[l,v]=c.querySelectorAll('input');return{label:l?.value.trim()||'',value:v?.value.trim()||''};
+  }).filter(k=>k.label&&k.value);
+}
+
+// ── COLLECT ─────────────────────────────────────────────
+function collect(){
+  const v=id=>document.getElementById(id)?.value.trim()||'';
+  return{
+    studentName:v('studentName'),studentId:v('studentId'),major:v('major'),
+    level:document.getElementById('level').value,year:v('year'),
+    university:v('university'),faculty:v('faculty'),supervisor:v('supervisor'),
+    department:v('department'),titleAr:v('titleAr'),titleFr:v('titleFr'),
+    keywords:v('keywords'),defenseDate:v('defenseDate'),
+    theme:document.querySelector('input[name="theme"]:checked')?.value||'navy_gold',
+    mainProblem:v('mainProblem'),
+    subQuestions:getL('dl-subQ'),objectives:getL('dl-obj'),hypotheses:getL('dl-hyp'),
+    importance:v('importance'),reasons:v('reasons'),
+    concepts:getConcepts(),theories:getL('dl-theories'),literatures:getLits(),
+    methodology:v('methodology'),dataSource:v('dataSource'),
+    timePeriod:v('timePeriod'),software:v('software'),
+    statisticalTests:getL('dl-tests'),stats:getKPIs(),
+    mainResults:getL('dl-results'),generalConclusion:v('conclusion'),
+    recommendations:getL('dl-recs'),futureWork:getL('dl-future'),references:getL('dl-refs'),
   };
 }
 
-// ═══════════════════════════════════════════
-// PREVIEW
-// ═══════════════════════════════════════════
-const THEMES_CSS = {
-  navy_gold: { bg: 'linear-gradient(135deg,#07172F,#1A3A6E)', accent: '#C6A03C' },
-  dark_teal: { bg: 'linear-gradient(135deg,#061A28,#044E6E)', accent: '#00D4AA' },
-  burgundy:  { bg: 'linear-gradient(135deg,#3A0018,#6B1537)', accent: '#F0B8CC' },
-  forest:    { bg: 'linear-gradient(135deg,#0F2D1E,#1E4D36)', accent: '#86BB56' },
-};
+// ── AUTOSAVE ─────────────────────────────────────────────
+let saveT=null;
+function autoSave(){
+  clearTimeout(saveT);
+  saveT=setTimeout(()=>{
+    try{
+      localStorage.setItem('mp_draft',JSON.stringify(collect()));
+      const b=document.getElementById('asbar');
+      b.classList.add('vis');
+      setTimeout(()=>b.classList.remove('vis'),2500);
+    }catch(e){}
+  },1000);
+}
+document.addEventListener('input',()=>autoSave());
+document.addEventListener('change',()=>autoSave());
 
-function buildPreview() {
-  const d = collect();
-  const theme = THEMES_CSS[d.theme] || THEMES_CSS.navy_gold;
+function loadDraft(){
+  try{
+    const raw=localStorage.getItem('mp_draft');if(!raw)return;
+    const d=JSON.parse(raw);
+    const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined&&v!=='')el.value=v;};
+    ['studentName','studentId','major','year','university','faculty','supervisor',
+     'department','titleAr','titleFr','keywords','defenseDate','mainProblem',
+     'importance','reasons','methodology','dataSource','timePeriod','software',
+     'conclusion'].forEach(id=>sv(id,d[id]));
+    if(d.level)document.getElementById('level').value=d.level;
+    if(d.theme){
+      const r=document.querySelector(`input[name="theme"][value="${d.theme}"]`);
+      if(r){r.checked=true;const t=THEMES.find(t=>t.id===d.theme);if(t)onTC(t.id,t.layout,t.name);}
+    }
+    const rL=(lid,items,adder)=>{
+      if(!Array.isArray(items)||!items.length)return;
+      items.forEach(item=>{
+        adder(lid,'');
+        const last=document.querySelector(`#${lid} .ditem:last-child`);
+        if(!last)return;
+        if(typeof item==='string'){const inp=last.querySelector('input');if(inp)inp.value=item;}
+        else if(typeof item==='object'){
+          const ins=last.querySelectorAll('input'),ta=last.querySelector('textarea');
+          if(item.name&&ins[0])ins[0].value=item.name;
+          if(item.def&&ta)ta.value=item.def;
+          if(item.author&&ins[0])ins[0].value=item.author;
+          if(item.year&&ins[1])ins[1].value=item.year;
+          if(item.title&&ins[2])ins[2].value=item.title;
+          if(item.findings&&ta)ta.value=item.findings;
+        }
+      });
+    };
+    if(d.subQuestions?.length)  rL('dl-subQ',d.subQuestions,addS);
+    if(d.objectives?.length)    rL('dl-obj',d.objectives,addS);
+    if(d.hypotheses?.length)    rL('dl-hyp',d.hypotheses,addS);
+    if(d.concepts?.length)      rL('dl-concepts',d.concepts,()=>addConcept());
+    if(d.theories?.length)      rL('dl-theories',d.theories,addS);
+    if(d.literatures?.length)   rL('dl-lits',d.literatures,()=>addLit());
+    if(d.statisticalTests?.length)rL('dl-tests',d.statisticalTests,addS);
+    if(d.mainResults?.length)   rL('dl-results',d.mainResults,addS);
+    if(d.recommendations?.length)rL('dl-recs',d.recommendations,addS);
+    if(d.futureWork?.length)    rL('dl-future',d.futureWork,addS);
+    if(d.references?.length)    rL('dl-refs',d.references,addS);
+    if(d.stats?.length)d.stats.forEach(s=>{
+      addKPI();
+      const last=document.querySelector('#kgrid .kcard:last-child');
+      if(last){const[l,v]=last.querySelectorAll('input');if(l)l.value=s.label;if(v)v.value=s.value;}
+    });
+  }catch(e){}
+}
 
-  // Meta banner
-  document.getElementById('preview-meta').innerHTML = `
-    <div class="pm-item"><div class="pm-label">الطالب</div><div class="pm-value">${d.studentName || '—'}</div></div>
-    <div class="pm-item"><div class="pm-label">المشرف</div><div class="pm-value">${d.supervisor || '—'}</div></div>
-    <div class="pm-item"><div class="pm-label">الجامعة</div><div class="pm-value">${d.university || '—'}</div></div>
-    <div class="pm-item"><div class="pm-label">التخصص</div><div class="pm-value">${d.major || '—'}</div></div>
-    <div class="pm-item full"><div class="pm-label">العنوان</div><div class="pm-value" style="font-size:13px">${d.titleAr || '—'}</div></div>
-    <div class="pm-item"><div class="pm-label">القالب</div><div class="pm-value" style="color:${theme.accent}">${d.theme}</div></div>
-    <div class="pm-item"><div class="pm-label">تاريخ المناقشة</div><div class="pm-value">${d.defenseDate || '—'}</div></div>`;
-
-  // Slides structure
-  const slides = [
-    {i:'🏠',l:'الغلاف'},
-    {i:'📋',l:'المحتويات'},
-    {i:'❓',l:'الإشكالية'},
-    {i:'🎯',l:'الأهداف'},
-    ...(d.importance||d.reasons ? [{i:'⭐',l:'الأهمية'}] : []),
-    ...(d.concepts.length ? [{i:'📚',l:'الإطار النظري'}] : []),
-    ...(d.literatures.length ? [{i:'🗂️',l:'الدراسات السابقة'}] : []),
+// ── PREVIEW ─────────────────────────────────────────────
+function buildPrev(){
+  const d=collect();
+  const th=THEMES.find(t=>t.id===d.theme)||THEMES[0];
+  const pb=document.getElementById('pbanner');
+  pb.style.background=th.bg;
+  document.getElementById('pmeta').innerHTML=`
+    <div class="pm"><div class="pml">الطالب</div><div class="pmv">${d.studentName||'—'}</div></div>
+    <div class="pm"><div class="pml">المشرف</div><div class="pmv">${d.supervisor||'—'}</div></div>
+    <div class="pm"><div class="pml">الجامعة</div><div class="pmv">${d.university||'—'}</div></div>
+    <div class="pm"><div class="pml">التخصص</div><div class="pmv">${d.major||'—'}</div></div>
+    <div class="pm full"><div class="pml">العنوان</div><div class="pmv" style="font-size:12px">${d.titleAr||'—'}</div></div>
+    <div class="pm"><div class="pml">القالب</div><div class="pmv" style="color:${th.ac}">${th.name}</div></div>
+    <div class="pm"><div class="pml">نظام التصميم</div><div class="pmv">${th.layout} · ${th.la}</div></div>`;
+  const slides=[
+    {i:'🏠',l:'الغلاف'},{i:'📋',l:'المحتويات'},{i:'❓',l:'الإشكالية'},{i:'🎯',l:'الأهداف'},
+    ...(d.importance||d.reasons?[{i:'⭐',l:'الأهمية'}]:[]),
+    ...(d.concepts.length?[{i:'📚',l:'الإطار النظري'}]:[]),
+    ...(d.literatures.length?[{i:'🗂️',l:'الدراسات السابقة'}]:[]),
     {i:'🔧',l:'المنهجية'},
-    ...(d.stats.length ? [{i:'📊',l:'المؤشرات الإحصائية'}] : []),
-    ...(d.mainResults.length ? [{i:'✅',l:'النتائج'}] : []),
-    ...(d.recommendations.length ? [{i:'💡',l:'التوصيات'}] : []),
-    ...(d.futureWork.length ? [{i:'🚀',l:'الآفاق'}] : []),
-    {i:'🏁',l:'الخاتمة'},
-    {i:'🙏',l:'شكر وتقدير'},
+    ...(d.stats.length?[{i:'📊',l:'المؤشرات'}]:[]),
+    ...(d.mainResults.length?[{i:'✅',l:'النتائج'}]:[]),
+    ...(d.recommendations.length?[{i:'💡',l:'التوصيات'}]:[]),
+    ...(d.futureWork.length?[{i:'🚀',l:'الآفاق'}]:[]),
+    {i:'🏁',l:'الخاتمة'},{i:'🙏',l:'شكر وتقدير'},
   ];
-
-  document.getElementById('slides-preview-grid').innerHTML = slides.map(s => `
-    <div class="slide-thumb" style="background:${theme.bg}">
+  document.getElementById('sgrid').innerHTML=slides.map(s=>`
+    <div class="sthumb" style="background:${th.bg}">
       <div class="si">${s.i}</div>
-      <div class="sl" style="color:${theme.accent}">${s.l}</div>
+      <div class="sl" style="color:${th.ac}">${s.l}</div>
     </div>`).join('');
 }
 
-// ═══════════════════════════════════════════
-// GENERATE
-// ═══════════════════════════════════════════
-async function generate() {
-  const d = collect();
-  if (!d.titleAr || !d.studentName) {
-    alert('الرجاء إدخال اسم الطالب وعنوان المذكرة على الأقل.');
-    goTo(0); return;
-  }
-
-  openModal();
-  const steps = [
-    [15, 'جاري إعداد البيانات...'],
-    [32, 'بناء شريحة الغلاف...'],
-    [48, 'تصميم هيكل العرض...'],
-    [65, 'معالجة المحتوى الأكاديمي...'],
-    [80, 'تطبيق القالب والألوان...'],
-    [92, 'تجميع ملف PowerPoint...'],
-  ];
-  for (const [pct, msg] of steps) {
-    await sleep(480);
-    setProgress(pct, msg);
-  }
-
-  try {
-    const resp = await fetch('/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(d),
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ error: resp.statusText }));
-      throw new Error(err.error || 'خطأ في الخادم');
-    }
-
-    const blob = await resp.blob();
-    const url  = URL.createObjectURL(blob);
-    setProgress(100, 'اكتمل الإنشاء بنجاح!');
-    await sleep(350);
-    showSuccess(url, d.studentName);
-
-  } catch (err) {
-    closeModal();
-    alert('حدث خطأ: ' + err.message + '\n\nتأكد من تشغيل الخادم: python server.py');
-  }
+// ── GENERATE ────────────────────────────────────────────
+async function generate(){
+  const d=collect();
+  if(!d.titleAr||!d.studentName){alert('الرجاء إدخال اسم الطالب وعنوان المذكرة على الأقل.');goTo(0);return;}
+  openM();
+  const steps=[[12,'جاري إعداد البيانات...'],[28,'بناء شريحة الغلاف...'],[46,'تصميم هيكل العرض...'],[63,'معالجة المحتوى الأكاديمي...'],[79,'تطبيق نظام التصميم...'],[93,'تجميع ملف PowerPoint...']];
+  for(const[p,m]of steps){await sl(480);setP(p,m);}
+  try{
+    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'خطأ في الخادم');}
+    const blob=await r.blob(),url=URL.createObjectURL(blob);
+    setP(100,'اكتمل الإنشاء!');await sl(320);
+    showOk(url,d.studentName);
+    localStorage.removeItem('mp_draft');
+  }catch(e){closeM();alert('حدث خطأ: '+e.message);}
 }
 
-function openModal() {
-  const m = document.getElementById('modal');
-  const icon = document.getElementById('modal-icon');
-  m.classList.add('open');
-  icon.className = 'modal-icon-ring spinning';
-  icon.textContent = '⚙️';
-  document.getElementById('modal-title').textContent = 'جاري إنشاء العرض...';
-  document.getElementById('modal-sub').textContent = 'يتم معالجة البيانات وبناء الشرائح الاحترافية';
-  document.getElementById('prog-track').style.display = '';
-  document.getElementById('prog-label').style.display = '';
-  setProgress(0, '0%');
+function openM(){
+  document.getElementById('ov').classList.add('open');
+  const ic=document.getElementById('mic');ic.className='mic mspin';ic.textContent='⚙️';
+  document.getElementById('mtitle').textContent='جاري إنشاء العرض...';
+  document.getElementById('msub').textContent='يتم معالجة البيانات وبناء الشرائح الاحترافية';
+  document.getElementById('ptrack').style.display='';
+  document.getElementById('plbl').style.display='';
+  setP(0,'0%');
+}
+function closeM(){document.getElementById('ov').classList.remove('open');}
+function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
+
+function showOk(url,name){
+  document.getElementById('mic').className='mic mok';document.getElementById('mic').textContent='✅';
+  document.getElementById('mtitle').textContent='تم الإنشاء بنجاح! 🎉';
+  document.getElementById('msub').textContent='عرضك الأكاديمي الاحترافي جاهز للتحميل';
+  document.getElementById('ptrack').style.display='none';document.getElementById('plbl').style.display='none';
+  const mb=document.querySelector('.mbox');
+  mb.querySelectorAll('.bdl,.bnew').forEach(e=>e.remove());
+  const a=document.createElement('a');
+  a.href=url;a.download=`عرض_مذكرة_${(name||'').replace(/\s+/g,'_')}.pptx`;
+  a.className='bdl';a.innerHTML='⬇️ تحميل العرض الاحترافي';mb.appendChild(a);
+  const r=document.createElement('button');r.className='bnew';r.textContent='🔄 إنشاء عرض جديد';
+  r.onclick=()=>{localStorage.removeItem('mp_draft');location.reload();};mb.appendChild(r);
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-}
+function sl(ms){return new Promise(r=>setTimeout(r,ms));}
 
-function setProgress(pct, msg) {
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-label').textContent = msg || pct + '%';
-}
-
-function showSuccess(url, name) {
-  const icon = document.getElementById('modal-icon');
-  icon.className = 'modal-icon-ring success';
-  icon.textContent = '✅';
-  document.getElementById('modal-title').textContent = 'تم إنشاء العرض بنجاح! 🎉';
-  document.getElementById('modal-sub').textContent = 'عرضك الأكاديمي الاحترافي جاهز للتحميل';
-  document.getElementById('prog-track').style.display = 'none';
-  document.getElementById('prog-label').style.display = 'none';
-
-  const modal = document.querySelector('.modal');
-  // Remove old buttons
-  modal.querySelectorAll('.btn-download,.btn-new').forEach(el => el.remove());
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `عرض_مذكرة_${(name||'').replace(/\s+/g,'_')}.pptx`;
-  a.className = 'btn-download';
-  a.innerHTML = '⬇️ تحميل العرض الاحترافي';
-  modal.appendChild(a);
-
-  const r = document.createElement('button');
-  r.className = 'btn-new';
-  r.innerHTML = '🔄 إنشاء عرض جديد';
-  r.onclick = () => location.reload();
-  modal.appendChild(r);
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ═══════════════════════════════════════════
-// INIT — seed some default rows
-// ═══════════════════════════════════════════
-(function init() {
-  addSimple('dl-subQuestions', 'تساؤل فرعي');
-  addSimple('dl-objectives', 'هدف');
-  addSimple('dl-hypotheses', 'فرضية');
-  addSimple('dl-theories', 'نظرية');
-  addSimple('dl-statisticalTests', 'اختبار');
-  addSimple('dl-mainResults', 'نتيجة');
-  addSimple('dl-recommendations', 'توصية');
-  addSimple('dl-futureWork', 'آفق بحثي');
-  addSimple('dl-references', 'مرجع');
+// ── INIT ────────────────────────────────────────────────
+(function init(){
+  addS('dl-subQ','تساؤل فرعي');addS('dl-obj','هدف');addS('dl-hyp','فرضية');
+  addS('dl-theories','نظرية');addS('dl-tests','اختبار');addS('dl-results','نتيجة');
+  addS('dl-recs','توصية');addS('dl-future','آفق بحثي');addS('dl-refs','مرجع');
   addKPI();
+  loadDraft();
 })();
 </script>
 </body>
