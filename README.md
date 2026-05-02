@@ -1,111 +1,92 @@
-# مذكرتي Pro 🎓
+# مذكرتي Pro v3 🎓
 
-**منشئ العروض الأكاديمية الاحترافية للجامعات الجزائرية**
-
-> يحوّل بيانات مذكرتك إلى عرض PowerPoint احترافي — نفس المحتوى، تجربة بصرية عالمية
+منشئ عروض أكاديمية احترافية للجامعات الجزائرية  
+**محرك التصميم:** MathKarati PRO v3 — PptxGenJS
 
 ---
 
-## 🚀 النشر على Render (الطريقة الموصى بها)
+## 🏗️ البنية التقنية
 
-### الخطوة 1 — رفع المشروع على GitHub
-
-```bash
-git init
-git add .
-git commit -m "initial commit"
-git remote add origin https://github.com/USERNAME/mathkarati-pro.git
-git push -u origin main
+```
+mathkarati-final/
+├── app.py                    ← Flask server (Python)
+├── requirements.txt          ← Python dependencies
+├── Procfile                  ← gunicorn start command
+├── build.sh                  ← build script for Render
+├── render.yaml               ← Render config
+├── public/
+│   └── index.html            ← الواجهة الكاملة (6 خطوات)
+└── node_scripts/
+    ├── package.json          ← pptxgenjs dependency
+    └── generator_api.js      ← محرك PPTX (MathKarati PRO v3)
 ```
 
-### الخطوة 2 — إنشاء Web Service على Render
+---
 
-1. اذهب إلى [render.com](https://render.com) → **New** → **Web Service**
-2. اربط حسابك بـ GitHub واختر الـ Repository
-3. اضبط الإعدادات:
+## 🚀 النشر على Render
 
-| الحقل | القيمة |
-|---|---|
-| **Name** | `mathkarati-pro` |
-| **Runtime** | `Python 3` |
-| **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `gunicorn app:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT` |
-| **Instance Type** | `Free` (أو Starter للإنتاج) |
+### الطريقة الموصى بها
 
-4. اضغط **Create Web Service**
-5. انتظر 2-3 دقائق حتى ينتهي البناء
-6. الرابط سيكون: `https://mathkarati-pro.onrender.com`
+1. ارفع المشروع على GitHub
+2. أنشئ **Web Service** جديد على [render.com](https://render.com)
+3. اختر **Python** كـ runtime
+4. في **Build Command**:
+   ```bash
+   pip install -r requirements.txt && cd node_scripts && npm install --production
+   ```
+5. في **Start Command**:
+   ```bash
+   gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+   ```
+
+> **مهم:** Render يثبّت Node.js تلقائياً مع Python services — لا تحتاج لإضافته يدوياً.
 
 ---
 
-## 💻 التشغيل المحلي (للتطوير)
+## 💻 التشغيل المحلي
 
 ```bash
-# تثبيت المتطلبات
+# 1. تثبيت Python dependencies
 pip install -r requirements.txt
 
-# تشغيل السيرفر
+# 2. تثبيت Node.js dependencies
+cd node_scripts
+npm install
+cd ..
+
+# 3. تشغيل الخادم
 python app.py
-
-# افتح المتصفح على
-http://localhost:5000
 ```
 
----
-
-## 📁 هيكل المشروع
-
-```
-mathkarati-pro/
-├── app.py              ← Flask server (نقطة الدخول)
-├── requirements.txt    ← Python dependencies
-├── Procfile            ← Render/Heroku start command
-├── render.yaml         ← Render configuration
-├── .gitignore
-├── public/
-│   └── index.html      ← واجهة المستخدم (6 خطوات)
-└── scripts/
-    └── generator.py    ← محرك توليد PPTX
-```
+ثم افتح: http://localhost:5000
 
 ---
 
-## 🎨 القوالب المتاحة
+## 🎨 أنماط التصميم
 
-| الكود | الاسم | الألوان |
-|---|---|---|
-| `navy_gold` | كلاسيك أزرق ذهبي | أزرق داكن + ذهبي |
-| `dark_teal` | نيل أخضر داكن | رمادي داكن + أخضر فيروزي |
-| `burgundy` | بوردو فاخر | خمري + وردي |
-| `forest` | غابة ملكي | أخضر داكن + زيتوني |
-
----
-
-## ⚙️ المتطلبات
-
-- Python 3.10+
-- flask
-- gunicorn
-- python-pptx
+| النمط | الروح | الألوان | الخط |
+|-------|-------|---------|------|
+| **Noir Académique** | أكاديمي فاخر — باريسي | أسود · ذهبي · فضي | Palatino + Cairo |
+| **Atlas Corporate** | استشاري — McKinsey style | أزرق عميق · سيان · برتقالي | Trebuchet + Cairo |
+| **Sakura Créative** | إبداعي — توكيو ستوديو | بنفسجي · مرجاني · بنفسجي فاتح | Georgia + Cairo |
 
 ---
 
-## 📌 ملاحظات مهمة
+## 📊 الشرائح المُنتَجة (حتى 12 شريحة)
 
-- **Render Free Tier**: السيرفر "ينام" بعد 15 دقيقة من عدم الاستخدام — أول طلب بعد النوم يأخذ 30 ثانية
-- **Render Starter ($7/شهر)**: لا ينام — موصى به للاستخدام الجاد
-- **حجم الملفات**: كل PPTX بين 40-80 KB — لا مشكلة في الأداء
-- **لا قاعدة بيانات**: كل شيء يتم في الذاكرة — لا حاجة لـ PostgreSQL
+1. الغلاف السينمائي
+2. جدول المحتويات
+3. الإشكالية والتساؤلات
+4. الأهداف والفرضيات
+5. أهمية البحث *(إذا أُدخلت)*
+6. الإطار النظري *(إذا أُدخل)*
+7. المنهجية والأدوات
+8. لوحة المؤشرات KPI *(إذا أُدخلت)*
+9. نتائج البحث *(إذا أُدخلت)*
+10. مراجعة الدراسات السابقة *(إذا أُدخلت)*
+11. التوصيات *(إذا أُدخلت)*
+12. الخاتمة وشكر
 
 ---
 
-## 🔧 متغيرات البيئة (اختيارية)
-
-| المتغير | القيمة الافتراضية | الوصف |
-|---|---|---|
-| `PORT` | `5000` | يُعيَّن تلقائياً من Render |
-| `FLASK_ENV` | `production` | وضع الإنتاج |
-
----
-
-صُنع بـ 🇩🇿 للطلاب الجزائريين
+*مذكرتي Pro v3 — 2024–2025*
