@@ -4,199 +4,195 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>مذكرتي Pro — منشئ العروض الأكاديمية</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#07172F;--navy-m:#0E274D;--navy-l:#1A3A6E;
   --gold:#C6A03C;--gold-l:#E8C97B;
-  --surface:#F4F6FB;--white:#FFF;
-  --text:#07172F;--muted:#64748B;--border:#E2E8F0;
+  --sf:#F4F6FB;--wh:#FFF;--text:#07172F;--muted:#64748B;--bd:#E2E8F0;
   --ok:#10B981;--err:#EF4444;
-  --r:12px;--r-lg:18px;--t:.2s ease;
-  --sh-sm:0 2px 8px rgba(7,23,47,.06);
-  --sh-md:0 6px 24px rgba(7,23,47,.10);
-  --sh-lg:0 16px 48px rgba(7,23,47,.14);
+  --r:10px;--r-lg:16px;--t:.18s ease;
+  --sh:0 2px 8px rgba(7,23,47,.07);--sh-md:0 6px 22px rgba(7,23,47,.11);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Cairo','Tajawal',system-ui,sans-serif;background:var(--surface);color:var(--text);direction:rtl;min-height:100vh;line-height:1.6}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--sf);color:var(--text);direction:rtl;min-height:100vh;line-height:1.6}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:99px}
 
 /* HEADER */
-.hdr{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-m) 55%,#152d58 100%);position:relative;overflow:hidden}
-.hdr::before{content:'';position:absolute;top:-80px;right:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(198,160,60,.18),transparent 70%);pointer-events:none}
-.hdr-in{max-width:1080px;margin:0 auto;padding:44px 28px 38px;display:flex;align-items:center;gap:20px;position:relative;z-index:1}
-.logo{width:62px;height:62px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 24px rgba(198,160,60,.4)}
-.hdr-txt h1{font-size:26px;font-weight:900;color:#fff}
+.hdr{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-m) 60%,#152d58 100%);position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(198,160,60,.15),transparent 68%);pointer-events:none}
+.hdr-in{max-width:1100px;margin:0 auto;padding:36px 24px 30px;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:wrap}
+.logo{width:56px;height:56px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 20px rgba(198,160,60,.38)}
+.hdr-txt h1{font-size:24px;font-weight:900;color:#fff}
 .hdr-txt h1 em{color:var(--gold);font-style:normal}
-.hdr-txt p{font-size:13px;color:rgba(255,255,255,.6);margin-top:3px}
-.hdr-pill{margin-top:7px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:4px 13px;font-size:11px;color:var(--gold-l)}
-.hdr-pill span{width:6px;height:6px;background:var(--ok);border-radius:50%;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-
-/* STYLE BADGE */
-.engine-badge{margin-right:auto;background:rgba(198,160,60,.15);border:1px solid rgba(198,160,60,.3);border-radius:99px;padding:5px 14px;font-size:11px;color:var(--gold-l);display:flex;align-items:center;gap:6px}
+.hdr-txt p{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
+.hdr-pill{margin-top:6px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:3px 11px;font-size:10px;color:var(--gold-l)}
+.hdr-pill span{width:5px;height:5px;background:var(--ok);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hdr-right{margin-right:auto;display:flex;gap:8px;flex-wrap:wrap}
+.demo-btn{background:rgba(198,160,60,.2);border:1px solid rgba(198,160,60,.4);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--gold-l);cursor:pointer;font-family:inherit;font-weight:700;transition:all var(--t)}
+.demo-btn:hover{background:rgba(198,160,60,.35)}
 
 /* STEPS */
-.steps-wrap{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--sh-sm)}
-.steps-in{max-width:1080px;margin:0 auto;padding:0 28px;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
-.steps-in::-webkit-scrollbar{display:none}
-.sbtn{display:flex;align-items:center;gap:9px;padding:0 15px;height:52px;border:none;background:transparent;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:var(--t);font-family:inherit}
-.sbtn.active{border-bottom-color:var(--gold)}
-.snum{width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--t);flex-shrink:0}
-.sbtn.done .snum{background:var(--ok);color:#fff;font-size:0}
-.sbtn.done .snum::after{content:'✓';font-size:11px}
-.sbtn.active .snum{background:var(--gold);color:var(--navy);box-shadow:0 0 0 4px rgba(198,160,60,.2)}
-.slbl{font-size:13px;font-weight:600;color:var(--muted);transition:var(--t)}
-.sbtn.active .slbl{color:var(--navy)}
-.prog-bar{height:2px;background:linear-gradient(90deg,var(--gold) var(--p,0%),transparent var(--p,0%))}
+.sw{background:var(--wh);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:200;box-shadow:var(--sh)}
+.si{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
+.si::-webkit-scrollbar{display:none}
+.sb{display:flex;align-items:center;gap:8px;padding:0 13px;height:50px;border:none;background:transparent;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:var(--t);font-family:inherit}
+.sb.active{border-bottom-color:var(--gold)}
+.sn{width:22px;height:22px;border-radius:50%;background:var(--bd);color:var(--muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--t);flex-shrink:0}
+.sb.done .sn{background:var(--ok);color:#fff;font-size:0}.sb.done .sn::after{content:'✓';font-size:10px}
+.sb.active .sn{background:var(--gold);color:var(--navy)}
+.sl{font-size:12px;font-weight:700;color:var(--muted);transition:var(--t)}
+.sb.active .sl{color:var(--navy)}
+.prog{height:2px;background:linear-gradient(90deg,var(--gold) var(--p,0%),transparent var(--p,0%))}
 
 /* MAIN */
-.main{max-width:1080px;margin:0 auto;padding:34px 28px 90px}
-.section{display:none}
-.section.active{display:block;animation:fu .28s ease}
-@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
+.sec{display:none}.sec.active{display:block;animation:fu .22s ease}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
 /* SECTION HEAD */
-.sh{margin-bottom:22px}
-.sh h2{font-size:20px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.stag{background:var(--gold);color:var(--navy);font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px;flex-shrink:0}
-.sh p{font-size:13px;color:var(--muted);margin-top:3px}
+.sh{margin-bottom:18px}
+.sh h2{font-size:19px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stag{background:var(--gold);color:var(--navy);font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;flex-shrink:0}
+.sh p{font-size:12px;color:var(--muted);margin-top:2px}
 
 /* CARD */
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:16px;box-shadow:var(--sh-sm);transition:box-shadow var(--t)}
-.card:focus-within{box-shadow:var(--sh-md)}
-.ch{display:flex;align-items:center;gap:11px;margin-bottom:18px;padding-bottom:13px;border-bottom:1px solid var(--border)}
-.ci{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--navy),var(--navy-m));display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
-.ch h3{font-size:14px;font-weight:700;color:var(--navy)}
-.cbadge{margin-right:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r-lg);padding:20px;margin-bottom:14px;box-shadow:var(--sh)}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:15px;padding-bottom:11px;border-bottom:1px solid var(--bd)}
+.ci{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--navy),var(--navy-m));display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;flex-shrink:0}
+.ch h3{font-size:13px;font-weight:700;color:var(--navy)}
+.cbadge{margin-right:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:var(--sf);color:var(--muted);border:1px solid var(--bd)}
 
 /* GRID */
-.g{display:grid;gap:13px}
+.g{display:grid;gap:11px}
 .g1{grid-template-columns:1fr}
 .g2{grid-template-columns:1fr 1fr}
 .g3{grid-template-columns:1fr 1fr 1fr}
 
 /* FORM */
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:12px;font-weight:700;color:var(--navy)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:700;color:var(--navy)}
 .req{color:var(--err)}
 input[type=text],input[type=date],select,textarea{
-  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r);
-  font-family:inherit;font-size:14px;color:var(--text);background:var(--white);
-  transition:border-color var(--t),box-shadow var(--t);direction:rtl;appearance:none}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(198,160,60,.12)}
+  width:100%;padding:9px 12px;border:1.5px solid var(--bd);border-radius:var(--r);
+  font-family:inherit;font-size:13px;color:var(--text);background:var(--wh);
+  transition:border-color var(--t);direction:rtl;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(198,160,60,.1)}
 input.ferr,select.ferr,textarea.ferr{border-color:var(--err)}
-textarea{resize:vertical;min-height:80px;line-height:1.65}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 11px center;padding-left:32px;cursor:pointer}
-.ferr-msg{font-size:11px;color:var(--err);display:none;margin-top:2px}
+textarea{resize:vertical;min-height:74px;line-height:1.6}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 10px center;padding-left:28px;cursor:pointer}
+.ferr-msg{font-size:10px;color:var(--err);display:none;margin-top:1px}
 .has-err .ferr-msg{display:block}
 
-/* THEME PICKER */
-.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.topt input{display:none}
-.tcard{border-radius:13px;border:3px solid transparent;cursor:pointer;position:relative;overflow:hidden;transition:all var(--t);aspect-ratio:16/9}
-.topt input:checked+.tcard{border-color:var(--gold);box-shadow:0 0 0 4px rgba(198,160,60,.22)}
-.tb{position:absolute;inset:0;padding:10px 13px;display:flex;flex-direction:column;justify-content:space-between}
-.ttop{display:flex;align-items:flex-start;justify-content:space-between}
-.tname{font-size:12px;font-weight:800;line-height:1.3}
-.tlayout{font-size:9px;font-weight:600;opacity:.7;letter-spacing:.4px;text-transform:uppercase;margin-top:2px}
-.tchk{width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:11px;font-weight:900;display:none;align-items:center;justify-content:center}
-.topt input:checked~.tcard .tchk{display:flex}
-.tbars{display:flex;gap:3px;align-items:flex-end}
-.tbar{border-radius:2px;flex:1}
-.style-badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-top:6px}
+/* ══════════════════════════════════════
+   MODLE PICKER — اختيار الموديل أولاً
+   ══════════════════════════════════════ */
+.mpick{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.mopt input{display:none}
+.mcard{border:3px solid var(--bd);border-radius:14px;cursor:pointer;overflow:hidden;transition:all var(--t);position:relative}
+.mopt input:checked+.mcard{border-color:var(--gold);box-shadow:0 0 0 4px rgba(198,160,60,.18)}
+.mcard-top{padding:18px 18px 14px;background:linear-gradient(135deg,var(--navy),var(--navy-m))}
+.mcard-top h4{font-size:15px;font-weight:900;color:#fff}
+.mcard-top p{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px}
+.mcheck{position:absolute;top:12px;left:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:11px;font-weight:900;display:none;align-items:center;justify-content:center}
+.mopt input:checked~.mcard .mcheck{display:flex}
+.mcard-palettes{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;background:#fff}
+.mcard-palettes span{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--sf);color:var(--muted);border:1px solid var(--bd)}
+.mcard-count{font-size:10px;color:var(--muted);padding:0 14px 12px;background:#fff}
+
+/* ══════════════════════════════════════
+   COLOR PICKER — اختيار اللون
+   ══════════════════════════════════════ */
+.cpick-wrap{margin-top:4px}
+.cpick-label{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cpick{display:grid;gap:10px}
+.cpick.classic-colors{grid-template-columns:repeat(4,1fr)}
+.cpick.premium-colors{grid-template-columns:repeat(3,1fr)}
+.copt input{display:none}
+.ccard{border:3px solid var(--bd);border-radius:11px;overflow:hidden;cursor:pointer;transition:all var(--t)}
+.copt input:checked+.ccard{border-color:var(--gold);box-shadow:0 0 0 3px rgba(198,160,60,.2)}
+.ccard-swatch{height:54px;display:flex;align-items:center;justify-content:center;position:relative}
+.ccard-chk{width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.copt input:checked~.ccard .ccard-chk{display:flex}
+.ccard-info{padding:7px 9px;background:#fff;border-top:1px solid var(--bd)}
+.ccard-name{font-size:11px;font-weight:800;color:var(--navy)}
+.ccard-desc{font-size:9px;color:var(--muted);margin-top:1px}
+.color-preview{margin-top:10px;padding:10px 14px;border-radius:9px;font-size:11px;display:flex;align-items:center;gap:8px}
+
+/* TIP */
+.tip{background:rgba(198,160,60,.07);border:1px solid rgba(198,160,60,.22);border-radius:8px;padding:10px 13px;font-size:11px;color:var(--navy);display:flex;align-items:flex-start;gap:6px;margin-bottom:12px}
 
 /* DYNAMIC LISTS */
-.dlist{display:flex;flex-direction:column;gap:8px;margin-bottom:9px}
-.ditem{display:flex;align-items:flex-start;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px;transition:border-color var(--t)}
+.dlist{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
+.ditem{display:flex;align-items:flex-start;gap:7px;background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:9px;transition:border-color var(--t)}
 .ditem:focus-within{border-color:var(--gold)}
-.dn{width:23px;height:23px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:3px}
-.df{flex:1;display:flex;gap:7px;flex-wrap:wrap}
-.df input,.df textarea{flex:1;min-width:150px;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;direction:rtl;background:var(--white);color:var(--text);transition:border-color var(--t)}
+.dn{width:22px;height:22px;border-radius:6px;background:var(--navy);color:#fff;font-size:10px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:3px}
+.df{flex:1;display:flex;gap:6px;flex-wrap:wrap}
+.df input,.df textarea{flex:1;min-width:130px;padding:7px 10px;border:1.5px solid var(--bd);border-radius:8px;font-family:inherit;font-size:12px;direction:rtl;background:var(--wh);color:var(--text);transition:border-color var(--t)}
 .df input:focus,.df textarea:focus{outline:none;border-color:var(--gold)}
-.df textarea{min-height:56px;resize:vertical}
-.brm{width:27px;height:27px;flex-shrink:0;border:none;background:#FEE2E2;color:var(--err);border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all var(--t);margin-top:2px}
+.df textarea{min-height:52px;resize:vertical}
+.brm{width:26px;height:26px;flex-shrink:0;border:none;background:#FEE2E2;color:var(--err);border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all var(--t);margin-top:2px}
 .brm:hover{background:var(--err);color:#fff}
-.badd{width:100%;padding:9px;border:2px dashed var(--border);background:transparent;border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:5px}
-.badd:hover{border-color:var(--gold);color:var(--gold);background:rgba(198,160,60,.05)}
+.badd{width:100%;padding:8px;border:2px dashed var(--bd);background:transparent;border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:5px}
+.badd:hover{border-color:var(--gold);color:var(--gold);background:rgba(198,160,60,.04)}
 
 /* KPI */
-.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
-.kcard{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px;display:flex;flex-direction:column;gap:6px;transition:border-color var(--t);position:relative}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+.kcard{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:5px;position:relative}
 .kcard:focus-within{border-color:var(--gold)}
 .kcard input{border:none;background:transparent;font-family:inherit;direction:rtl;width:100%;padding:0}
 .kcard input:focus{outline:none}
-.klbl{font-size:11px;font-weight:700;color:var(--muted)}
-.kval{font-size:21px;font-weight:900;color:var(--navy)}
-.kdel{position:absolute;top:6px;left:6px;width:19px;height:19px;border-radius:5px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:11px;display:none;align-items:center;justify-content:center}
+.klbl{font-size:10px;font-weight:700;color:var(--muted)}
+.kval{font-size:20px;font-weight:900;color:var(--navy)}
+.kdel{position:absolute;top:5px;left:5px;width:18px;height:18px;border-radius:4px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center}
 .kcard:hover .kdel{display:flex}
 
-/* TIP */
-.tip{background:rgba(198,160,60,.07);border:1px solid rgba(198,160,60,.26);border-radius:9px;padding:11px 14px;font-size:12px;color:var(--navy);display:flex;align-items:flex-start;gap:7px;margin-bottom:14px}
-
-/* NAV BUTTONS */
-.nbar{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
-.bprev{padding:11px 24px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;gap:6px}
-.bprev:hover{background:var(--border)}
-.bnext{padding:11px 26px;border-radius:var(--r);background:linear-gradient(135deg,var(--navy),var(--navy-m));color:#fff;font-family:inherit;font-size:14px;font-weight:700;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(7,23,47,.22);transition:all var(--t);display:flex;align-items:center;gap:6px}
-.bnext:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(7,23,47,.32)}
-
-/* PREVIEW */
-.pbanner{border-radius:var(--r-lg);padding:24px 28px;margin-bottom:18px}
-.pbanner h3{font-size:13px;font-weight:700;margin-bottom:13px;opacity:.8;color:#fff}
-.pmeta{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.pm{background:rgba(255,255,255,.1);border-radius:9px;padding:10px 13px}
-.pml{font-size:10px;opacity:.6;margin-bottom:2px;color:#fff}
-.pmv{font-size:13px;font-weight:700;color:#fff}
-.pm.full{grid-column:1/-1}
-.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:9px;margin-bottom:20px}
-.sthumb{aspect-ratio:16/9;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px;text-align:center;border:2px solid rgba(255,255,255,.1);transition:transform .2s}
-.sthumb:hover{transform:scale(1.04)}
-.si{font-size:17px}
-.sl{font-size:9px;font-weight:700}
+/* NAV */
+.nbar{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid var(--bd)}
+.bprev{padding:10px 22px;border-radius:var(--r);border:1.5px solid var(--bd);background:var(--wh);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--t)}
+.bprev:hover{background:var(--bd)}
+.bnext{padding:10px 24px;border-radius:var(--r);background:linear-gradient(135deg,var(--navy),var(--navy-m));color:#fff;font-family:inherit;font-size:13px;font-weight:700;border:none;cursor:pointer;box-shadow:0 5px 18px rgba(7,23,47,.2);transition:all var(--t)}
+.bnext:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(7,23,47,.3)}
 
 /* GENERATE */
-.garea{text-align:center;padding:26px 0 8px}
-.bgen{padding:16px 48px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);font-family:inherit;font-size:16px;font-weight:900;border:none;cursor:pointer;box-shadow:0 8px 28px rgba(198,160,60,.38);transition:all .24s;display:inline-flex;align-items:center;gap:8px}
-.bgen:hover{transform:translateY(-3px);box-shadow:0 14px 38px rgba(198,160,60,.48)}
+.garea{text-align:center;padding:22px 0 6px}
+.bgen{padding:14px 44px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);font-family:inherit;font-size:15px;font-weight:900;border:none;cursor:pointer;box-shadow:0 7px 24px rgba(198,160,60,.35);transition:all .22s;display:inline-flex;align-items:center;gap:7px}
+.bgen:hover{transform:translateY(-3px);box-shadow:0 12px 34px rgba(198,160,60,.44)}
 .bgen:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.ghint{font-size:11px;color:var(--muted);margin-top:9px}
+.ghint{font-size:10px;color:var(--muted);margin-top:7px}
 
 /* AUTOSAVE */
-.asbar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;display:flex;align-items:center;gap:7px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:var(--sh-lg)}
-.asbar.vis{opacity:1;pointer-events:auto}
-.asdot{width:6px;height:6px;background:var(--ok);border-radius:50%}
+.asbar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:600;padding:7px 16px;border-radius:99px;display:flex;align-items:center;gap:6px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 8px 28px rgba(7,23,47,.25)}
+.asbar.vis{opacity:1}
+.asdot{width:5px;height:5px;background:var(--ok);border-radius:50%}
 
 /* MODAL */
-.ov{position:fixed;inset:0;background:rgba(7,23,47,.72);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:1000}
+.ov{position:fixed;inset:0;background:rgba(7,23,47,.75);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:1000}
 .ov.open{display:flex}
-.mbox{background:#fff;border-radius:22px;padding:46px 50px;text-align:center;max-width:450px;width:92%;box-shadow:0 32px 80px rgba(7,23,47,.35);animation:min .27s ease}
-@keyframes min{from{opacity:0;transform:scale(.94) translateY(13px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.mic{width:78px;height:78px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:34px}
+.mbox{background:#fff;border-radius:20px;padding:42px 46px;text-align:center;max-width:420px;width:92%;box-shadow:0 28px 70px rgba(7,23,47,.32);animation:min .24s ease}
+@keyframes min{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mic{width:74px;height:74px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:32px}
 .mspin{background:linear-gradient(135deg,var(--navy),var(--navy-m));animation:pr 1.5s ease-in-out infinite}
 .mok{background:linear-gradient(135deg,#10B981,#34D399)}
 .merr{background:linear-gradient(135deg,#EF4444,#F87171)}
-@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(7,23,47,.38)}50%{box-shadow:0 0 0 13px rgba(7,23,47,0)}}
-.mbox h3{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:6px}
-.mbox p{font-size:13px;color:var(--muted);margin-bottom:24px}
-.ptrack{height:7px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:8px}
-.pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:99px;transition:width .42s ease;width:0}
-.plbl{font-size:12px;color:var(--muted)}
-.bdl{display:inline-flex;align-items:center;gap:7px;padding:13px 34px;border-radius:var(--r);background:linear-gradient(135deg,#10B981,#059669);color:#fff;font-family:inherit;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-top:16px;text-decoration:none;transition:all .2s;box-shadow:0 6px 20px rgba(16,185,129,.3)}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(7,23,47,.38)}50%{box-shadow:0 0 0 12px rgba(7,23,47,0)}}
+.mbox h3{font-size:19px;font-weight:800;color:var(--navy);margin-bottom:5px}
+.mbox p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.ptrack{height:6px;background:var(--bd);border-radius:99px;overflow:hidden;margin-bottom:7px}
+.pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:99px;transition:width .4s ease;width:0}
+.plbl{font-size:11px;color:var(--muted)}
+.bdl{display:inline-flex;align-items:center;gap:6px;padding:12px 30px;border-radius:var(--r);background:linear-gradient(135deg,#10B981,#059669);color:#fff;font-family:inherit;font-size:13px;font-weight:700;border:none;cursor:pointer;margin-top:14px;text-decoration:none;transition:all .2s}
 .bdl:hover{transform:translateY(-2px)}
-.bnew{display:block;margin:10px auto 0;padding:9px 22px;border-radius:var(--r);border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.bnew{display:block;margin:8px auto 0;padding:8px 20px;border-radius:var(--r);border:1.5px solid var(--bd);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
 .bnew:hover{border-color:var(--gold);color:var(--gold)}
 
 @media(max-width:660px){
-  .hdr-in{padding:26px 14px 22px;flex-direction:column;text-align:center}
-  .main{padding:20px 13px 80px}
+  .mpick{grid-template-columns:1fr}
+  .cpick.classic-colors{grid-template-columns:repeat(2,1fr)}
+  .cpick.premium-colors{grid-template-columns:repeat(1,1fr)}
   .g2,.g3{grid-template-columns:1fr}
-  .tgrid{grid-template-columns:repeat(1,1fr)}
-  .pmeta{grid-template-columns:1fr}
-  .pm.full{grid-column:auto}
-  .mbox{padding:32px 20px}
+  .mbox{padding:28px 18px}
 }
 </style>
 </head>
@@ -207,339 +203,251 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="logo">🎓</div>
     <div class="hdr-txt">
       <h1>مذكرتي <em>Pro</em></h1>
-      <p>منشئ العروض الأكاديمية الاحترافية للجامعات الجزائرية</p>
-      <div class="hdr-pill"><span></span>محرك التصميم: MathKarati PRO v3 — PptxGenJS</div>
+      <p>منشئ العروض الأكاديمية للجامعات الجزائرية · موديلان + 11 خيار لوني</p>
+      <div class="hdr-pill"><span></span>محركان: Classic (python-pptx) + Premium (PptxGenJS)</div>
     </div>
-    <div class="engine-badge">✦ 3 أنماط عالمية · 12 شريحة</div>
+    <div class="hdr-right">
+      <button class="demo-btn" onclick="fillDemo()">🧪 تعبئة تجريبية</button>
+    </div>
   </div>
 </header>
 
-<nav class="steps-wrap">
-  <div class="steps-in">
-    <button class="sbtn active" id="sn0" onclick="goTo(0)"><div class="snum">1</div><span class="slbl">بيانات الطالب</span></button>
-    <button class="sbtn" id="sn1" onclick="goTo(1)"><div class="snum">2</div><span class="slbl">الإشكالية</span></button>
-    <button class="sbtn" id="sn2" onclick="goTo(2)"><div class="snum">3</div><span class="slbl">الإطار النظري</span></button>
-    <button class="sbtn" id="sn3" onclick="goTo(3)"><div class="snum">4</div><span class="slbl">المنهجية والنتائج</span></button>
-    <button class="sbtn" id="sn4" onclick="goTo(4)"><div class="snum">5</div><span class="slbl">التوصيات والمراجع</span></button>
-    <button class="sbtn" id="sn5" onclick="goTo(5)"><div class="snum">6</div><span class="slbl">النمط والمعاينة</span></button>
+<nav class="sw">
+  <div class="si">
+    <button class="sb active" id="sn0" onclick="goTo(0)"><div class="sn">1</div><span class="sl">بيانات الطالب</span></button>
+    <button class="sb" id="sn1" onclick="goTo(1)"><div class="sn">2</div><span class="sl">الإشكالية</span></button>
+    <button class="sb" id="sn2" onclick="goTo(2)"><div class="sn">3</div><span class="sl">الإطار النظري</span></button>
+    <button class="sb" id="sn3" onclick="goTo(3)"><div class="sn">4</div><span class="sl">المنهجية والنتائج</span></button>
+    <button class="sb" id="sn4" onclick="goTo(4)"><div class="sn">5</div><span class="sl">التوصيات</span></button>
+    <button class="sb" id="sn5" onclick="goTo(5)"><div class="sn">6</div><span class="sl">الموديل واللون</span></button>
   </div>
-  <div class="prog-bar" id="pbar"></div>
+  <div class="prog" id="pbar"></div>
 </nav>
 
 <main class="main">
 
-<!-- STEP 0: بيانات الطالب -->
-<section class="section active" id="s0">
-  <div class="sh">
-    <h2>🎓 بيانات الطالب والمذكرة <span class="stag">الخطوة 1 / 6</span></h2>
-    <p>المعلومات الأساسية التي ستظهر على الغلاف وشريط المعلومات</p>
-  </div>
-
+<!-- STEP 0 -->
+<section class="sec active" id="s0">
+  <div class="sh"><h2>🎓 بيانات الطالب والمذكرة <span class="stag">1 / 6</span></h2></div>
   <div class="card">
     <div class="ch"><div class="ci">👤</div><h3>هوية الطالب</h3></div>
     <div class="g g2">
-      <div class="field" id="fld-studentName">
-        <label>اسم الطالب / الطالبة <span class="req">*</span></label>
-        <input type="text" id="studentName" placeholder="رامي بن يوسف">
-        <div class="ferr-msg">هذا الحقل مطلوب</div>
-      </div>
-      <div class="field">
-        <label>رقم التسجيل</label>
-        <input type="text" id="studentId" placeholder="2024-MAG-1234">
-      </div>
-      <div class="field" id="fld-major">
-        <label>التخصص <span class="req">*</span></label>
-        <input type="text" id="major" placeholder="مالية وإدارة أعمال">
-        <div class="ferr-msg">هذا الحقل مطلوب</div>
-      </div>
-      <div class="field">
-        <label>المستوى الدراسي</label>
-        <select id="level">
-          <option value="ماستر 2">ماستر 2</option>
-          <option value="ماستر 1">ماستر 1</option>
-          <option value="دكتوراه">دكتوراه</option>
-          <option value="ليسانس">ليسانس</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>السنة الجامعية</label>
-        <input type="text" id="year" placeholder="2024–2025">
-      </div>
-      <div class="field">
-        <label>تاريخ المناقشة</label>
-        <input type="date" id="defenseDate">
-      </div>
+      <div class="field" id="fld-studentName"><label>اسم الطالب / الطالبة <span class="req">*</span></label><input type="text" id="studentName" placeholder="رامي بن يوسف"><div class="ferr-msg">مطلوب</div></div>
+      <div class="field"><label>رقم التسجيل</label><input type="text" id="studentId" placeholder="2024-MAG-1234"></div>
+      <div class="field" id="fld-major"><label>التخصص <span class="req">*</span></label><input type="text" id="major" placeholder="مالية وإدارة أعمال"><div class="ferr-msg">مطلوب</div></div>
+      <div class="field"><label>المستوى</label><select id="level"><option>ماستر 2</option><option>ماستر 1</option><option>دكتوراه</option><option>ليسانس</option></select></div>
+      <div class="field"><label>السنة الجامعية</label><input type="text" id="year" placeholder="2024–2025"></div>
+      <div class="field"><label>تاريخ المناقشة</label><input type="date" id="defenseDate"></div>
     </div>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">🏛️</div><h3>المؤسسة الجامعية</h3></div>
     <div class="g g1">
-      <div class="field" id="fld-university">
-        <label>الجامعة <span class="req">*</span></label>
-        <input type="text" id="university" placeholder="جامعة الأمير عبد القادر للعلوم الإسلامية — قسنطينة">
-        <div class="ferr-msg">هذا الحقل مطلوب</div>
-      </div>
+      <div class="field" id="fld-university"><label>الجامعة <span class="req">*</span></label><input type="text" id="university" placeholder="جامعة الأمير عبد القادر للعلوم الإسلامية — قسنطينة"><div class="ferr-msg">مطلوب</div></div>
     </div>
-    <div class="g g2" style="margin-top:13px">
-      <div class="field">
-        <label>الكلية / المعهد</label>
-        <input type="text" id="faculty" placeholder="كلية العلوم الاقتصادية والتجارية">
-      </div>
-      <div class="field">
-        <label>القسم</label>
-        <input type="text" id="department" placeholder="قسم المالية والمحاسبة">
-      </div>
+    <div class="g g2" style="margin-top:11px">
+      <div class="field"><label>الكلية</label><input type="text" id="faculty" placeholder="كلية العلوم الاقتصادية والتجارية"></div>
+      <div class="field"><label>القسم</label><input type="text" id="department" placeholder="قسم المالية والمحاسبة"></div>
     </div>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">📋</div><h3>بيانات المذكرة</h3></div>
     <div class="g g1">
-      <div class="field" id="fld-supervisor">
-        <label>المشرف / المشرفة <span class="req">*</span></label>
-        <input type="text" id="supervisor" placeholder="أ.د. سارة كريمي">
-        <div class="ferr-msg">هذا الحقل مطلوب</div>
-      </div>
-      <div class="field" id="fld-titleAr" style="margin-top:13px">
-        <label>عنوان المذكرة بالعربية <span class="req">*</span></label>
-        <textarea id="titleAr" rows="2" placeholder="أثر سياسات التمويل على الأداء المالي للمؤسسات الجزائرية — دراسة قياسية 2015–2023"></textarea>
-        <div class="ferr-msg">هذا الحقل مطلوب</div>
-      </div>
-      <div class="field" style="margin-top:13px">
-        <label>Titre en français (اختياري)</label>
-        <textarea id="titleFr" rows="2" placeholder="Impact des politiques de financement sur la performance financière..."></textarea>
-      </div>
-      <div class="field" style="margin-top:13px">
-        <label>مجال البحث بالإنجليزية (للغلاف)</label>
-        <input type="text" id="fieldEn" placeholder="Financial Economics  ·  Corporate Finance">
-      </div>
-      <div class="field" style="margin-top:13px">
-        <label>الكلمات المفتاحية</label>
-        <input type="text" id="keywords" placeholder="هيكل رأس المال، الأداء المالي، الرفع المالي، بيانات البانل">
-      </div>
+      <div class="field" id="fld-supervisor"><label>المشرف <span class="req">*</span></label><input type="text" id="supervisor" placeholder="أ.د. سارة كريمي"><div class="ferr-msg">مطلوب</div></div>
+      <div class="field" id="fld-titleAr" style="margin-top:11px"><label>عنوان المذكرة بالعربية <span class="req">*</span></label><textarea id="titleAr" rows="2" placeholder="أثر سياسات التمويل على الأداء المالي للمؤسسات الجزائرية — دراسة قياسية 2015–2023"></textarea><div class="ferr-msg">مطلوب</div></div>
+      <div class="field" style="margin-top:11px"><label>Titre en français</label><textarea id="titleFr" rows="2" placeholder="Impact des politiques de financement sur la performance financière..."></textarea></div>
+      <div class="field" style="margin-top:11px"><label>مجال البحث بالإنجليزية</label><input type="text" id="fieldEn" placeholder="Financial Economics  ·  Corporate Finance"></div>
+      <div class="field" style="margin-top:11px"><label>الكلمات المفتاحية</label><input type="text" id="keywords" placeholder="هيكل رأس المال، الأداء المالي، الرفع المالي، بيانات البانل"></div>
     </div>
   </div>
-
-  <div class="nbar"><div></div><button class="bnext" onclick="validate0()">التالي: الإشكالية ←</button></div>
+  <div class="nbar"><div></div><button class="bnext" onclick="validate0()">التالي ←</button></div>
 </section>
 
-<!-- STEP 1: الإشكالية -->
-<section class="section" id="s1">
-  <div class="sh">
-    <h2>❓ الإشكالية والتساؤلات <span class="stag">الخطوة 2 / 6</span></h2>
-    <p>ستظهر الإشكالية الرئيسية في اللوحة اليسرى الداكنة، والتساؤلات الفرعية في اليمين</p>
-  </div>
-
+<!-- STEP 1 -->
+<section class="sec" id="s1">
+  <div class="sh"><h2>❓ الإشكالية والتساؤلات <span class="stag">2 / 6</span></h2></div>
   <div class="card">
     <div class="ch"><div class="ci">🔍</div><h3>الإشكالية الرئيسية</h3></div>
-    <div class="field">
-      <label>نص الإشكالية <span class="req">*</span></label>
-      <textarea id="mainProblem" rows="4" placeholder="تواجه المؤسسات الاقتصادية الجزائرية تحديات هيكلية متعددة في ضبط سياسات التمويل الملائمة..."></textarea>
-    </div>
+    <div class="field"><label>نص الإشكالية</label><textarea id="mainProblem" rows="4" placeholder="تواجه المؤسسات الاقتصادية الجزائرية تحديات هيكلية متعددة في ضبط سياسات التمويل الملائمة..."></textarea></div>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">❔</div><h3>التساؤلات الفرعية</h3><span class="cbadge">حتى 5</span></div>
     <div class="dlist" id="dl-subQ"></div>
     <button class="badd" onclick="addS('dl-subQ','تساؤل فرعي')">＋ إضافة تساؤل</button>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">⭐</div><h3>أهمية البحث وأسباب اختياره</h3><span class="cbadge">اختياري</span></div>
     <div class="g g2">
-      <div class="field">
-        <label>الأهمية العلمية والعملية</label>
-        <textarea id="importance" rows="3" placeholder="يسهم هذا البحث في سد فجوة معرفية..."></textarea>
-      </div>
-      <div class="field">
-        <label>أسباب اختيار الموضوع</label>
-        <textarea id="reasons" rows="3" placeholder="شخصية وموضوعية..."></textarea>
-      </div>
+      <div class="field"><label>الأهمية العلمية والعملية</label><textarea id="importance" rows="3" placeholder="يسهم هذا البحث في سد فجوة معرفية..."></textarea></div>
+      <div class="field"><label>أسباب اختيار الموضوع</label><textarea id="reasons" rows="3" placeholder="الأسباب الشخصية والموضوعية..."></textarea></div>
     </div>
   </div>
-
-  <div class="nbar">
-    <button class="bprev" onclick="goTo(0)">→ السابق</button>
-    <button class="bnext" onclick="goTo(2)">التالي: الإطار النظري ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(0)">→ السابق</button><button class="bnext" onclick="goTo(2)">التالي ←</button></div>
 </section>
 
-<!-- STEP 2: الإطار النظري -->
-<section class="section" id="s2">
-  <div class="sh">
-    <h2>📚 الإطار النظري والأهداف <span class="stag">الخطوة 3 / 6</span></h2>
-  </div>
-
+<!-- STEP 2 -->
+<section class="sec" id="s2">
+  <div class="sh"><h2>📚 الإطار النظري والأهداف <span class="stag">3 / 6</span></h2></div>
   <div class="card">
     <div class="ch"><div class="ci">🎯</div><h3>الأهداف والفرضيات</h3></div>
     <div class="g g2">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">الأهداف <span class="cbadge">حتى 5</span></div>
-        <div class="dlist" id="dl-obj"></div>
-        <button class="badd" onclick="addS('dl-obj','هدف')">＋ هدف</button>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">الفرضيات <span class="cbadge">حتى 5</span></div>
-        <div class="dlist" id="dl-hyp"></div>
-        <button class="badd" onclick="addS('dl-hyp','فرضية')">＋ فرضية</button>
-      </div>
+      <div><div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px">الأهداف <span class="cbadge">حتى 6</span></div><div class="dlist" id="dl-obj"></div><button class="badd" onclick="addS('dl-obj','هدف')">＋ هدف</button></div>
+      <div><div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px">الفرضيات <span class="cbadge">حتى 6</span></div><div class="dlist" id="dl-hyp"></div><button class="badd" onclick="addS('dl-hyp','فرضية')">＋ فرضية</button></div>
     </div>
   </div>
-
   <div class="card">
-    <div class="ch"><div class="ci">💡</div><h3>المفاهيم النظرية</h3><span class="cbadge">حتى 6</span></div>
-    <div class="tip">💡 كل مفهوم سيظهر كبطاقة منفصلة في شريحة الإطار النظري</div>
+    <div class="ch"><div class="ci">💡</div><h3>المفاهيم والنظريات</h3><span class="cbadge">حتى 6</span></div>
+    <div class="tip">💡 كل مفهوم = بطاقة مستقلة في شريحة الإطار النظري</div>
     <div class="dlist" id="dl-concepts"></div>
     <button class="badd" onclick="addConcept()">＋ إضافة مفهوم / نظرية</button>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">🗂️</div><h3>الدراسات السابقة</h3><span class="cbadge">حتى 5</span></div>
     <div class="dlist" id="dl-lits"></div>
     <button class="badd" onclick="addLit()">＋ إضافة دراسة سابقة</button>
   </div>
-
-  <div class="nbar">
-    <button class="bprev" onclick="goTo(1)">→ السابق</button>
-    <button class="bnext" onclick="goTo(3)">التالي: المنهجية ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(1)">→ السابق</button><button class="bnext" onclick="goTo(3)">التالي ←</button></div>
 </section>
 
-<!-- STEP 3: المنهجية والنتائج -->
-<section class="section" id="s3">
-  <div class="sh">
-    <h2>🔧 المنهجية والنتائج <span class="stag">الخطوة 4 / 6</span></h2>
-  </div>
-
+<!-- STEP 3 -->
+<section class="sec" id="s3">
+  <div class="sh"><h2>🔧 المنهجية والنتائج <span class="stag">4 / 6</span></h2></div>
   <div class="card">
     <div class="ch"><div class="ci">🔬</div><h3>المنهجية والأدوات</h3></div>
     <div class="g g2">
-      <div class="field">
-        <label>المنهج المتبع</label>
-        <input type="text" id="methodology" placeholder="بيانات البانل — نموذج التأثيرات الثابتة FEM">
-      </div>
-      <div class="field">
-        <label>مصدر البيانات</label>
-        <input type="text" id="dataSource" placeholder="قوائم مالية 48 مؤسسة جزائرية">
-      </div>
-      <div class="field">
-        <label>الفترة الزمنية</label>
-        <input type="text" id="timePeriod" placeholder="2015 — 2023">
-      </div>
-      <div class="field">
-        <label>برنامج التحليل</label>
-        <input type="text" id="software" placeholder="Stata 17  ·  EViews 12">
-      </div>
+      <div class="field"><label>المنهج المتبع</label><input type="text" id="methodology" placeholder="بيانات البانل — نموذج التأثيرات الثابتة FEM"></div>
+      <div class="field"><label>مصدر البيانات</label><input type="text" id="dataSource" placeholder="قوائم مالية 48 مؤسسة جزائرية"></div>
+      <div class="field"><label>الفترة الزمنية</label><input type="text" id="timePeriod" placeholder="2015 — 2023"></div>
+      <div class="field"><label>برنامج التحليل</label><input type="text" id="software" placeholder="Stata 17  ·  EViews 12"></div>
     </div>
-    <div style="margin-top:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">الاختبارات الإحصائية <span class="cbadge">حتى 5</span></div>
-      <div class="dlist" id="dl-tests"></div>
-      <button class="badd" onclick="addS('dl-tests','اختبار')">＋ إضافة اختبار</button>
-    </div>
+    <div style="margin-top:14px"><div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px">الاختبارات الإحصائية</div><div class="dlist" id="dl-tests"></div><button class="badd" onclick="addS('dl-tests','اختبار')">＋ إضافة اختبار</button></div>
   </div>
-
   <div class="card">
-    <div class="ch"><div class="ci">📊</div><h3>المؤشرات الإحصائية (KPI)</h3><span class="cbadge">حتى 8</span></div>
-    <div class="tip">💡 ستظهر هذه المؤشرات في شريحة لوحة KPI بأرقام كبيرة بارزة</div>
+    <div class="ch"><div class="ci">📊</div><h3>المؤشرات الإحصائية KPI</h3><span class="cbadge">حتى 8</span></div>
+    <div class="tip">💡 أرقام بارزة كبيرة في شريحة لوحة المؤشرات</div>
     <div class="kgrid" id="kgrid"></div>
-    <button class="badd" style="margin-top:10px" onclick="addKPI()">＋ إضافة مؤشر</button>
+    <button class="badd" style="margin-top:8px" onclick="addKPI()">＋ إضافة مؤشر</button>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">✅</div><h3>نتائج البحث</h3><span class="cbadge">حتى 7</span></div>
     <div class="dlist" id="dl-results"></div>
     <button class="badd" onclick="addS('dl-results','نتيجة')">＋ إضافة نتيجة</button>
   </div>
-
-  <div class="nbar">
-    <button class="bprev" onclick="goTo(2)">→ السابق</button>
-    <button class="bnext" onclick="goTo(4)">التالي: التوصيات ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(2)">→ السابق</button><button class="bnext" onclick="goTo(4)">التالي ←</button></div>
 </section>
 
-<!-- STEP 4: التوصيات والمراجع -->
-<section class="section" id="s4">
-  <div class="sh">
-    <h2>💡 التوصيات والخاتمة <span class="stag">الخطوة 5 / 6</span></h2>
-  </div>
-
+<!-- STEP 4 -->
+<section class="sec" id="s4">
+  <div class="sh"><h2>💡 التوصيات والخاتمة <span class="stag">5 / 6</span></h2></div>
   <div class="card">
     <div class="ch"><div class="ci">✍️</div><h3>الخاتمة العامة</h3></div>
-    <div class="field">
-      <label>نص الخاتمة / الاستنتاج الرئيسي</label>
-      <textarea id="conclusion" rows="4" placeholder="أثبت البحث وجود أثر معنوي وإيجابي لسياسات التمويل المتوازنة على الأداء المالي للمؤسسات الجزائرية..."></textarea>
-    </div>
+    <div class="field"><textarea id="conclusion" rows="4" placeholder="أثبت البحث وجود أثر معنوي وإيجابي لسياسات التمويل المتوازنة على الأداء المالي للمؤسسات الجزائرية..."></textarea></div>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">📌</div><h3>التوصيات</h3><span class="cbadge">حتى 6</span></div>
     <div class="dlist" id="dl-recs"></div>
     <button class="badd" onclick="addS('dl-recs','توصية')">＋ إضافة توصية</button>
   </div>
-
   <div class="card">
-    <div class="ch"><div class="ci">🚀</div><h3>آفاق البحث المستقبلية</h3><span class="cbadge">اختياري</span></div>
+    <div class="ch"><div class="ci">🚀</div><h3>آفاق البحث</h3><span class="cbadge">اختياري</span></div>
     <div class="dlist" id="dl-future"></div>
-    <button class="badd" onclick="addS('dl-future','آفق بحثي')">＋ إضافة آفق بحثي</button>
+    <button class="badd" onclick="addS('dl-future','آفق')">＋ إضافة آفق بحثي</button>
   </div>
-
   <div class="card">
     <div class="ch"><div class="ci">📚</div><h3>أبرز المراجع</h3><span class="cbadge">حتى 5</span></div>
     <div class="dlist" id="dl-refs"></div>
     <button class="badd" onclick="addS('dl-refs','مرجع')">＋ إضافة مرجع</button>
   </div>
-
-  <div class="nbar">
-    <button class="bprev" onclick="goTo(3)">→ السابق</button>
-    <button class="bnext" onclick="goTo(5)">التالي: النمط والمعاينة ←</button>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(3)">→ السابق</button><button class="bnext" onclick="goTo(5)">التالي ←</button></div>
 </section>
 
-<!-- STEP 5: النمط والتوليد -->
-<section class="section" id="s5">
-  <div class="sh">
-    <h2>🎨 النمط البصري والمعاينة <span class="stag">الخطوة 6 / 6</span></h2>
-    <p>3 أنماط تصميمية عالمية — كل نمط عالم بصري مستقل</p>
-  </div>
+<!-- STEP 5: MODLE + COLOR -->
+<section class="sec" id="s5">
+  <div class="sh"><h2>🎨 اختيار الموديل واللون <span class="stag">6 / 6</span></h2><p>اختر الموديل أولاً، ثم اللون المناسب لتخصصك</p></div>
 
+  <!-- STEP A: MODLE SELECTION -->
   <div class="card">
-    <div class="ch"><div class="ci">🖌️</div><h3>اختر النمط البصري</h3></div>
-    <div class="tgrid" id="tgrid"></div>
-    <div style="margin-top:14px;padding:12px 16px;background:var(--surface);border-radius:10px;font-size:12px;color:var(--navy)" id="style-desc">
-      <strong>Noir Académique</strong> — نمط أكاديمي فاخر. خلفية داكنة · ذهبي دافئ · طباعة Palatino.
-      مستوحى من المجلات الأكاديمية الباريسية.
+    <div class="ch"><div class="ci">📐</div><h3>الخطوة أ — اختر الموديل البصري</h3></div>
+    <div class="tip">💡 كل موديل يختلف في هيكل الشرائح وتوزيع العناصر — ليس فقط الألوان</div>
+    <div class="mpick">
+
+      <!-- MODLE 1: Classic -->
+      <label class="mopt">
+        <input type="radio" name="engine" value="classic" checked onchange="onEngineChange()">
+        <div class="mcard">
+          <div class="mcheck">✓</div>
+          <div class="mcard-top" style="background:linear-gradient(135deg,#07172F,#0E274D)">
+            <h4>Classic Academic</h4>
+            <p>3 هياكل بصرية × 8 خيارات لونية</p>
+          </div>
+          <div class="mcard-palettes">
+            <span style="background:#07172F;color:#C6A03C;border-color:#07172F">أزرق ذهبي</span>
+            <span style="background:#061A28;color:#00D4AA;border-color:#061A28">تيل داكن</span>
+            <span style="background:#3A0018;color:#F0B8CC;border-color:#3A0018">بورغندي</span>
+            <span style="background:#0F2D1E;color:#86BB56;border-color:#0F2D1E">أخضر غابي</span>
+            <span style="background:#12052E;color:#C07AFF;border-color:#12052E">بنفسجي</span>
+            <span>برتقالي</span>
+            <span>أزرق ثلجي</span>
+            <span>ذهبي رملي</span>
+          </div>
+          <div class="mcard-count">⚙️ المحرك: python-pptx · حتى 14 شريحة · 3 تخطيطات مختلفة</div>
+        </div>
+      </label>
+
+      <!-- MODLE 2: Premium -->
+      <label class="mopt">
+        <input type="radio" name="engine" value="premium" onchange="onEngineChange()">
+        <div class="mcard">
+          <div class="mcheck">✓</div>
+          <div class="mcard-top" style="background:linear-gradient(135deg,#0A0C12,#C9A84C)">
+            <h4>Premium v3 ✨</h4>
+            <p>تصاميم عالمية · 3 أنماط بصرية فاخرة</p>
+          </div>
+          <div class="mcard-palettes">
+            <span style="background:#0A0C12;color:#C9A84C;border-color:#0A0C12">Noir — أكاديمي فاخر</span>
+            <span style="background:#040D1E;color:#00D4FF;border-color:#040D1E">Atlas — استشاري</span>
+            <span style="background:#1C0E2B;color:#FF5C5C;border-color:#1C0E2B">Sakura — إبداعي</span>
+          </div>
+          <div class="mcard-count">⚙️ المحرك: PptxGenJS · حتى 12 شريحة · معماريات متميزة</div>
+        </div>
+      </label>
+
     </div>
   </div>
 
-  <div class="card" id="preview-card">
-    <div class="ch"><div class="ci">👁️</div><h3>معاينة المحتوى</h3></div>
-    <div class="pbanner" id="pbanner" style="background:linear-gradient(135deg,#0A0C12,#131620)">
-      <div class="pmeta" id="pmeta"></div>
+  <!-- STEP B: COLOR SELECTION -->
+  <div class="card">
+    <div class="ch"><div class="ci">🎨</div><h3>الخطوة ب — اختر الخيار اللوني</h3></div>
+    <div class="cpick-wrap">
+      <div id="classic-colors-wrap">
+        <div class="cpick-label">🎨 8 خيارات لونية للموديل الكلاسيكي</div>
+        <div class="cpick classic-colors" id="cpick-classic"></div>
+      </div>
+      <div id="premium-colors-wrap" style="display:none">
+        <div class="cpick-label">🎨 3 أنماط للموديل Premium</div>
+        <div class="cpick premium-colors" id="cpick-premium"></div>
+      </div>
     </div>
-    <div class="sgrid" id="sgrid"></div>
+    <div class="color-preview" id="color-preview"></div>
   </div>
 
   <div class="garea">
     <button class="bgen" id="bgen" onclick="generate()">🚀 إنشاء العرض الاحترافي</button>
-    <div class="ghint">⚡ يستغرق التوليد 10–30 ثانية حسب حجم المحتوى</div>
+    <div class="ghint">⚡ يستغرق التوليد 10–40 ثانية</div>
   </div>
 
-  <div class="nbar">
-    <button class="bprev" onclick="goTo(4)">→ السابق</button>
-    <div></div>
-  </div>
+  <div class="nbar"><button class="bprev" onclick="goTo(4)">→ السابق</button><div></div></div>
 </section>
 
 </main>
 
-<div class="asbar" id="asbar"><div class="asdot"></div>تم حفظ بياناتك تلقائياً<button onclick="document.getElementById('asbar').classList.remove('vis')" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;margin-right:4px">×</button></div>
+<div class="asbar" id="asbar"><div class="asdot"></div>تم الحفظ تلقائياً</div>
 
 <div class="ov" id="ov">
   <div class="mbox">
     <div class="mic mspin" id="mic">⚙️</div>
     <h3 id="mtitle">جاري إنشاء العرض...</h3>
-    <p id="msub">يتم بناء الشرائح الاحترافية بمحرك MathKarati PRO v3</p>
+    <p id="msub">المحرك يبني الشرائح الاحترافية</p>
     <div class="ptrack" id="ptrack"><div class="pfill" id="pfill"></div></div>
     <div class="plbl" id="plbl">0%</div>
   </div>
@@ -548,85 +456,124 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script>
 'use strict';
 
-// ── THEMES ──────────────────────────────────────────────
-const THEMES = [
-  {
-    id: 'noir', name: 'Noir Académique', nameAr: 'أكاديمي فاخر',
-    engine: 'noir', la: 'Luxury Academic',
-    bg: 'linear-gradient(135deg,#0A0C12,#131620)', ac: '#C9A84C',
-    bars: ['#C9A84C','#9BA8B5','#E8C97A','#5A6B7A'],
-    desc: '<strong>Noir Académique</strong> — نمط أكاديمي فاخر. خلفية داكنة · ذهبي دافئ · Palatino.<br>مستوحى من المجلات الأكاديمية الباريسية. الأنسب للعلوم الإنسانية والقانون.',
-  },
-  {
-    id: 'atlas', name: 'Atlas Corporate', nameAr: 'مؤسسي استشاري',
-    engine: 'atlas', la: 'McKinsey Style',
-    bg: 'linear-gradient(135deg,#040D1E,#082040)', ac: '#00D4FF',
-    bars: ['#00D4FF','#FF6B00','#7AEAFF','#0A4A8A'],
-    desc: '<strong>Atlas Corporate</strong> — نمط استشاري احترافي. أزرق عميق · سيان كهربائي · Trebuchet.<br>مستوحى من McKinsey و The Economist. الأنسب للاقتصاد والإدارة والمالية.',
-  },
-  {
-    id: 'sakura', name: 'Sakura Créative', nameAr: 'إبداعي رفيع',
-    engine: 'sakura', la: 'Tokyo Studio',
-    bg: 'linear-gradient(135deg,#1C0E2B,#2D1B45)', ac: '#FF5C5C',
-    bars: ['#FF5C5C','#8B5CF6','#FFAAAA','#4C1D80'],
-    desc: '<strong>Sakura Créative</strong> — نمط إبداعي أنيق. بنفسجي داكن · مرجاني · Georgia.<br>مستوحى من استوديوهات تصميم طوكيو. الأنسب للعلوم الاجتماعية والتربية.',
-  },
+// ═══════════════════════════════════════════
+// PALETTE DEFINITIONS
+// ═══════════════════════════════════════════
+const CLASSIC_PALETTES = [
+  { id:'navy_gold',       name:'أزرق ملكي ذهبي',  desc:'كلاسيكي أكاديمي — الأنسب للعلوم الإنسانية والقانون',      bg1:'#07172F', bg2:'#0E274D', ac:'#C6A03C', bars:['#C6A03C','#1A4072','#E8C97B','#2A5598'] },
+  { id:'dark_teal',       name:'تيل داكن',         desc:'عصري حيوي — الأنسب للعلوم الطبيعية والتقنية',            bg1:'#061A28', bg2:'#044E6E', ac:'#00D4AA', bars:['#00D4AA','#044E6E','#0993C3','#67E8D3'] },
+  { id:'burgundy',        name:'بورغندي أنيق',     desc:'فاخر وأنيق — الأنسب للأدب والتاريخ والفلسفة',            bg1:'#3A0018', bg2:'#6B1537', ac:'#F0B8CC', bars:['#F0B8CC','#6B1537','#CC3D73','#FAD4E2'] },
+  { id:'forest',          name:'أخضر غابي',        desc:'طبيعي هادئ — الأنسب للبيئة والزراعة والبيولوجيا',        bg1:'#0F2D1E', bg2:'#1E4D36', ac:'#86BB56', bars:['#86BB56','#1E4D36','#4A996B','#B4D984'] },
+  { id:'midnight_purple', name:'بنفسجي ليلي',      desc:'إبداعي غامض — الأنسب للتعليم والسيكولوجيا',              bg1:'#12052E', bg2:'#2D106B', ac:'#C07AFF', bars:['#C07AFF','#2D106B','#7B3FE0','#DDB3FF'] },
+  { id:'charcoal_orange', name:'فحمي برتقالي',     desc:'ديناميكي جريء — الأنسب للإدارة والهندسة',                bg1:'#1A1A2E', bg2:'#2D2D44', ac:'#FF6B35', bars:['#FF6B35','#2D2D44','#FFA070','#E54E1A'] },
+  { id:'ice_blue',        name:'أزرق ثلجي',        desc:'نظيف احترافي — الأنسب للاقتصاد والمالية والإحصاء',       bg1:'#0A254A', bg2:'#1A4A8A', ac:'#4AB3FF', bars:['#4AB3FF','#1A4A8A','#8ED0FF','#23D72D9'] },
+  { id:'sand_gold',       name:'ذهبي رملي دافئ',   desc:'دافئ وأصيل — الأنسب للشريعة والعلوم الإسلامية',         bg1:'#2C1A0E', bg2:'#5C3D20', ac:'#C8861F', bars:['#C8861F','#5C3D20','#E8B964','#2C1A0E'] },
 ];
 
-(function buildGrid(){
-  const g = document.getElementById('tgrid');
-  g.innerHTML = THEMES.map((t, i) => `
-    <label class="topt">
-      <input type="radio" name="theme" value="${t.id}" ${i===0?'checked':''} onchange="onTC(${i})">
-      <div class="tcard" style="background:${t.bg}">
-        <div class="tb">
-          <div class="ttop">
-            <div>
-              <div class="tname" style="color:${t.ac}">${t.name}</div>
-              <div class="tlayout" style="color:rgba(255,255,255,.55)">${t.la}</div>
-            </div>
-            <div class="tchk">✓</div>
+const PREMIUM_PALETTES = [
+  { id:'noir',   name:'Noir Académique', desc:'أكاديمي فاخر — ذهبي داكن · Palatino · مستوحى من المجلات الباريسية', bg1:'#0A0C12', bg2:'#131620', ac:'#C9A84C', bars:['#C9A84C','#9BA8B5','#E8C97A','#5A6B7A'] },
+  { id:'atlas',  name:'Atlas Corporate', desc:'استشاري احترافي — سيان كهربائي · Trebuchet · McKinsey style',       bg1:'#040D1E', bg2:'#082040', ac:'#00D4FF', bars:['#00D4FF','#FF6B00','#7AEAFF','#0A4A8A'] },
+  { id:'sakura', name:'Sakura Créative', desc:'إبداعي رفيع — مرجاني · Georgia · توكيو ستوديو',                    bg1:'#1C0E2B', bg2:'#2D1B45', ac:'#FF5C5C', bars:['#FF5C5C','#8B5CF6','#FFAAAA','#4C1D80'] },
+];
+
+// ═══════════════════════════════════════════
+// BUILD COLOR PICKERS
+// ═══════════════════════════════════════════
+function buildPickers() {
+  const gc = document.getElementById('cpick-classic');
+  gc.innerHTML = CLASSIC_PALETTES.map((p,i) => `
+    <label class="copt">
+      <input type="radio" name="palette" value="${p.id}" ${i===0?'checked':''} onchange="onPaletteChange()">
+      <div class="ccard">
+        <div class="ccard-swatch" style="background:linear-gradient(135deg,${p.bg1},${p.bg2})">
+          <div style="display:flex;gap:3px;align-items:flex-end">
+            ${p.bars.map((c,j)=>`<div style="width:10px;height:${[16,11,13,9][j]}px;background:${c};border-radius:2px;opacity:.9"></div>`).join('')}
           </div>
-          <div>
-            <div class="tbars">${t.bars.map((c,j)=>`<div class="tbar" style="background:${c};height:${[13,9,11,7][j]}px;opacity:.85"></div>`).join('')}</div>
-            <div class="style-badge" style="background:${t.ac}20;color:${t.ac};border:1px solid ${t.ac}40">${t.nameAr}</div>
-          </div>
+          <div class="ccard-chk">✓</div>
+        </div>
+        <div class="ccard-info">
+          <div class="ccard-name" style="color:${p.ac}">${p.name}</div>
+          <div class="ccard-desc">${p.desc}</div>
         </div>
       </div>
     </label>`).join('');
-})();
 
-function onTC(i){
-  const t = THEMES[i];
-  document.getElementById('style-desc').innerHTML = t.desc;
-  buildPrev();
+  const gp = document.getElementById('cpick-premium');
+  gp.innerHTML = PREMIUM_PALETTES.map((p,i) => `
+    <label class="copt">
+      <input type="radio" name="palette" value="${p.id}" onchange="onPaletteChange()">
+      <div class="ccard">
+        <div class="ccard-swatch" style="background:linear-gradient(135deg,${p.bg1},${p.bg2});height:70px">
+          <div style="display:flex;gap:4px;align-items:flex-end">
+            ${p.bars.map((c,j)=>`<div style="width:14px;height:${[20,14,17,11][j]}px;background:${c};border-radius:2px;opacity:.9"></div>`).join('')}
+          </div>
+          <div class="ccard-chk">✓</div>
+        </div>
+        <div class="ccard-info">
+          <div class="ccard-name" style="color:${p.ac}">${p.name}</div>
+          <div class="ccard-desc">${p.desc}</div>
+        </div>
+      </div>
+    </label>`).join('');
+}
+buildPickers();
+onPaletteChange();
+
+function onEngineChange() {
+  const eng = document.querySelector('input[name="engine"]:checked').value;
+  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ? '' : 'none';
+  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ? '' : 'none';
+  // Reset palette selection
+  if (eng==='classic') {
+    const first = document.querySelector('#cpick-classic input[type=radio]');
+    if(first) first.checked = true;
+  } else {
+    const first = document.querySelector('#cpick-premium input[type=radio]');
+    if(first) first.checked = true;
+  }
+  onPaletteChange();
 }
 
-// ── NAVIGATION ──────────────────────────────────────────
+function onPaletteChange() {
+  const eng = document.querySelector('input[name="engine"]:checked')?.value || 'classic';
+  const all = eng==='classic' ? CLASSIC_PALETTES : PREMIUM_PALETTES;
+  const selected = document.querySelector(`input[name="palette"]:checked`)?.value;
+  const p = all.find(x=>x.id===selected) || all[0];
+  if(!p) return;
+  const prev = document.getElementById('color-preview');
+  prev.style.background = `linear-gradient(135deg,${p.bg1},${p.bg2})`;
+  prev.innerHTML = `<div style="display:flex;gap:4px;align-items:flex-end">
+    ${p.bars.map((c,j)=>`<div style="width:12px;height:${[18,12,15,10][j]}px;background:${c};border-radius:2px"></div>`).join('')}
+  </div>
+  <div style="color:#fff;font-size:12px;font-weight:700">${p.name}</div>
+  <div style="color:rgba(255,255,255,.6);font-size:10px;margin-right:auto">${p.desc}</div>`;
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
 let cur = 0;
 function goTo(n){
-  document.querySelector('.section.active')?.classList.remove('active');
-  document.querySelector('.sbtn.active')?.classList.remove('active');
+  document.querySelector('.sec.active')?.classList.remove('active');
+  document.querySelector('.sb.active')?.classList.remove('active');
   document.getElementById('s'+n).classList.add('active');
   document.getElementById('sn'+n).classList.add('active');
   for(let i=0;i<n;i++) document.getElementById('sn'+i).classList.add('done');
-  cur = n;
+  cur=n;
   document.getElementById('pbar').style.setProperty('--p',(n/5*100)+'%');
   window.scrollTo({top:0,behavior:'smooth'});
-  if(n===5) buildPrev();
   autoSave();
 }
 
-// ── VALIDATION ──────────────────────────────────────────
 function validate0(){
   const fields=[['studentName','fld-studentName'],['major','fld-major'],['university','fld-university'],['supervisor','fld-supervisor'],['titleAr','fld-titleAr']];
   let ok=true;
   fields.forEach(([id,fid])=>{
     const el=document.getElementById(id), fc=document.getElementById(fid);
-    if(!el.value.trim()){fc?.classList.add('has-err');el.classList.add('ferr');ok=false;}
-    else{fc?.classList.remove('has-err');el.classList.remove('ferr');}
+    if(!el?.value.trim()){fc?.classList.add('has-err');el?.classList.add('ferr');ok=false;}
+    else{fc?.classList.remove('has-err');el?.classList.remove('ferr');}
   });
-  if(!ok){document.querySelector('.has-err input, .has-err textarea')?.focus();return;}
+  if(!ok){document.querySelector('.has-err input,.has-err textarea')?.focus();return;}
   goTo(1);
 }
 document.addEventListener('input',e=>{
@@ -636,7 +583,9 @@ document.addEventListener('input',e=>{
   }
 });
 
-// ── DYNAMIC LISTS ───────────────────────────────────────
+// ═══════════════════════════════════════════
+// DYNAMIC LISTS
+// ═══════════════════════════════════════════
 function addS(lid, ph){
   const l=document.getElementById(lid), n=l.querySelectorAll('.ditem').length+1;
   const d=document.createElement('div'); d.className='ditem';
@@ -644,38 +593,38 @@ function addS(lid, ph){
   l.appendChild(d);
 }
 function rmItem(btn){
-  const item=btn.closest('.ditem'), l=item.parentElement;
+  const item=btn.closest('.ditem'),l=item.parentElement;
   item.remove();
   l.querySelectorAll('.dn').forEach((el,i)=>el.textContent=i+1);
 }
 function getL(lid){return Array.from(document.querySelectorAll(`#${lid} .df input`)).map(i=>i.value.trim()).filter(Boolean);}
 
 function addConcept(){
-  const l=document.getElementById('dl-concepts'), n=l.querySelectorAll('.ditem').length+1;
+  const l=document.getElementById('dl-concepts'),n=l.querySelectorAll('.ditem').length+1;
   const d=document.createElement('div'); d.className='ditem';
-  d.innerHTML=`<div class="dn">${n}</div><div class="df" style="flex-direction:column;gap:6px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+  d.innerHTML=`<div class="dn">${n}</div><div class="df" style="flex-direction:column;gap:5px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
       <input type="text" placeholder="اسم المفهوم بالعربية...">
-      <input type="text" placeholder="Name in English (optional)">
+      <input type="text" placeholder="Name in English">
     </div>
-    <textarea placeholder="تعريف مختصر للمفهوم..." rows="2"></textarea>
+    <textarea placeholder="تعريف مختصر..." rows="2"></textarea>
   </div><button class="brm" onclick="rmItem(this)" style="align-self:flex-start">×</button>`;
   l.appendChild(d);
 }
 function getConcepts(){
   return Array.from(document.querySelectorAll('#dl-concepts .ditem')).map(item=>{
-    const inputs=item.querySelectorAll('input');
-    return{name:inputs[0]?.value.trim()||'', nameEn:inputs[1]?.value.trim()||'', def:item.querySelector('textarea')?.value.trim()||''};
+    const ins=item.querySelectorAll('input');
+    return{name:ins[0]?.value.trim()||'',nameEn:ins[1]?.value.trim()||'',def:item.querySelector('textarea')?.value.trim()||''};
   }).filter(c=>c.name);
 }
 
 function addLit(){
-  const l=document.getElementById('dl-lits'), n=l.querySelectorAll('.ditem').length+1;
+  const l=document.getElementById('dl-lits'),n=l.querySelectorAll('.ditem').length+1;
   const d=document.createElement('div'); d.className='ditem';
   d.innerHTML=`<div class="dn">${n}</div><div class="df" style="flex-direction:column;gap:5px">
-    <div style="display:grid;grid-template-columns:1fr auto;gap:6px">
+    <div style="display:grid;grid-template-columns:1fr 80px;gap:5px">
       <input type="text" placeholder="الباحث / المؤلف...">
-      <input type="text" placeholder="السنة" style="width:80px;flex:none">
+      <input type="text" placeholder="السنة">
     </div>
     <input type="text" placeholder="عنوان الدراسة...">
     <textarea placeholder="أبرز النتائج..." rows="2"></textarea>
@@ -684,198 +633,208 @@ function addLit(){
 }
 function getLits(){
   return Array.from(document.querySelectorAll('#dl-lits .ditem')).map(item=>{
-    const inputs=item.querySelectorAll('input');
-    return{author:inputs[0]?.value.trim()||'', year:inputs[1]?.value.trim()||'', title:inputs[2]?.value.trim()||'', findings:item.querySelector('textarea')?.value.trim()||''};
+    const ins=item.querySelectorAll('input');
+    return{author:ins[0]?.value.trim()||'',year:ins[1]?.value.trim()||'',title:ins[2]?.value.trim()||'',findings:item.querySelector('textarea')?.value.trim()||''};
   }).filter(l=>l.title||l.author);
 }
 
-// ── KPI ─────────────────────────────────────────────────
 function addKPI(){
-  const g=document.getElementById('kgrid'); const c=document.createElement('div'); c.className='kcard';
-  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="اسم المؤشر (R²...)"><input class="kval" type="text" placeholder="0.94">`;
+  const g=document.getElementById('kgrid');
+  const c=document.createElement('div'); c.className='kcard';
+  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="اسم المؤشر..."><input class="kval" type="text" placeholder="القيمة (مثلاً 0.94)">`;
   g.appendChild(c);
 }
 function getKPIs(){
   return Array.from(document.querySelectorAll('#kgrid .kcard')).map(c=>{
-    const[l,v]=c.querySelectorAll('input'); return{label:l?.value.trim()||'', value:v?.value.trim()||''};
+    const[l,v]=c.querySelectorAll('input');
+    return{label:l?.value.trim()||'',value:v?.value.trim()||''};
   }).filter(k=>k.label&&k.value);
 }
 
-// ── COLLECT ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// COLLECT DATA
+// ═══════════════════════════════════════════
 function collect(){
   const v=id=>document.getElementById(id)?.value.trim()||'';
-  const theme = document.querySelector('input[name="theme"]:checked')?.value || 'noir';
+  const eng  = document.querySelector('input[name="engine"]:checked')?.value || 'classic';
+  const theme= document.querySelector('input[name="palette"]:checked')?.value ||
+               (eng==='classic' ? 'navy_gold' : 'noir');
   return{
-    studentName:v('studentName'), studentId:v('studentId'), major:v('major'),
-    level:document.getElementById('level').value, year:v('year'),
-    university:v('university'), faculty:v('faculty'), supervisor:v('supervisor'),
-    department:v('department'), titleAr:v('titleAr'), titleFr:v('titleFr'),
-    fieldEn:v('fieldEn'), keywords:v('keywords'), defenseDate:v('defenseDate'),
-    theme,
+    studentName:v('studentName'),studentId:v('studentId'),major:v('major'),
+    level:document.getElementById('level').value,year:v('year'),
+    university:v('university'),faculty:v('faculty'),department:v('department'),
+    supervisor:v('supervisor'),titleAr:v('titleAr'),titleFr:v('titleFr'),
+    fieldEn:v('fieldEn'),keywords:v('keywords'),defenseDate:v('defenseDate'),
+    engine:eng, theme,
     mainProblem:v('mainProblem'),
-    subQuestions:getL('dl-subQ'), objectives:getL('dl-obj'), hypotheses:getL('dl-hyp'),
-    importance:v('importance'), reasons:v('reasons'),
-    concepts:getConcepts(), literatures:getLits(),
-    methodology:v('methodology'), dataSource:v('dataSource'),
-    timePeriod:v('timePeriod'), software:v('software'),
-    statisticalTests:getL('dl-tests'), stats:getKPIs(),
+    subQuestions:getL('dl-subQ'),objectives:getL('dl-obj'),hypotheses:getL('dl-hyp'),
+    importance:v('importance'),reasons:v('reasons'),
+    concepts:getConcepts(),literatures:getLits(),
+    methodology:v('methodology'),dataSource:v('dataSource'),
+    timePeriod:v('timePeriod'),software:v('software'),
+    statisticalTests:getL('dl-tests'),stats:getKPIs(),
     mainResults:getL('dl-results'),
     generalConclusion:v('conclusion'),
-    recommendations:getL('dl-recs'), futureWork:getL('dl-future'), references:getL('dl-refs'),
+    recommendations:getL('dl-recs'),futureWork:getL('dl-future'),references:getL('dl-refs'),
   };
 }
 
-// ── AUTOSAVE ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════════════════
+function fillDemo(){
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  sv('studentName','رامي بن يوسف');sv('studentId','2024-MAG-0312');
+  sv('major','مالية وإدارة أعمال');sv('year','2024–2025');
+  sv('university','جامعة الأمير عبد القادر للعلوم الإسلامية — قسنطينة');
+  sv('faculty','كلية العلوم الاقتصادية والتجارية');sv('department','قسم المالية والمحاسبة');
+  sv('supervisor','أ.د. سارة كريمي');
+  sv('titleAr','أثر سياسات التمويل على الأداء المالي للمؤسسات الجزائرية — دراسة قياسية 2015–2023');
+  sv('titleFr','Impact des politiques de financement sur la performance financière des entreprises algériennes');
+  sv('fieldEn','Financial Economics  ·  Corporate Finance');
+  sv('keywords','هيكل رأس المال، الأداء المالي، الرفع المالي، بيانات البانل');
+  sv('defenseDate','2025-06-15');
+  sv('mainProblem','تواجه المؤسسات الاقتصادية الجزائرية تحديات هيكلية متعددة في ضبط سياسات التمويل الملائمة، مما يؤثر سلباً على مستوى أدائها المالي وقدرتها التنافسية على المدى البعيد في ظل المتغيرات الاقتصادية الراهنة.');
+  sv('importance','يسهم هذا البحث في سد فجوة معرفية تتعلق بتأثير هيكل التمويل على الأداء المالي في السياق الجزائري.');
+  sv('reasons','اهتمام شخصي بالتمويل المؤسسي وندرة الدراسات المتعلقة بالمؤسسات الجزائرية.');
+  sv('methodology','بيانات البانل — نموذج التأثيرات الثابتة (FEM) ونموذج التأثيرات العشوائية (REM)');
+  sv('dataSource','قوائم مالية سنوية من 48 مؤسسة جزائرية عامة وخاصة');
+  sv('timePeriod','2015 — 2023 (9 سنوات × 48 مؤسسة = 432 مشاهدة)');
+  sv('software','Stata 17  ·  EViews 12  ·  Excel');
+  sv('conclusion','أثبت البحث وجود أثر معنوي وإيجابي لسياسات التمويل المتوازنة على الأداء المالي للمؤسسات الجزائرية، مع تأكيد الدور الوسيط الجوهري للحوكمة المؤسسية في ترشيد قرارات التمويل وتحسين مؤشري ROA وROE خلال الفترة 2015–2023.');
+
+  // Dynamic lists
+  const demoLists = {
+    'dl-subQ': [
+      'ما طبيعة العلاقة بين هيكل رأس المال ومعدل العائد على الأصول ROA في المؤسسات الجزائرية؟',
+      'هل يؤثر مستوى الرفع المالي تأثيراً دالاً إحصائياً على سيولة المؤسسة في الأمد القصير؟',
+      'كيف تنعكس سياسة التمويل الخارجي على الملاءة المالية طويلة الأجل للمؤسسة؟',
+    ],
+    'dl-obj': [
+      'تشخيص طبيعة العلاقة بين هيكل التمويل ومؤشرات الأداء المالي',
+      'قياس أثر الرفع المالي على معدلات الربحية والسيولة',
+      'مقارنة سياسات التمويل بين القطاعين العام والخاص',
+    ],
+    'dl-hyp': [
+      'H₁ : يوجد أثر إيجابي دال إحصائياً لهيكل التمويل على العائد على الأصول ROA',
+      'H₂ : يوجد أثر سلبي للرفع المالي المرتفع على نسب السيولة',
+      'H₃ : للحوكمة المؤسسية دور وسيط في العلاقة بين التمويل والأداء',
+    ],
+    'dl-tests': ['اختبار Hausman', 'اختبار VIF للتعددية الخطية', 'اختبار ADF لجذر الوحدة'],
+    'dl-results': [
+      'يوجد أثر معنوي وإيجابي لهيكل التمويل على ROA عند مستوى 1%',
+      'ارتفاع ROE بمعدل 2.3 نقطة مئوية مقابل كل وحدة زيادة في الرفع المالي',
+      'الحوكمة المؤسسية تُحسّن من كفاءة قرارات التمويل بشكل ملحوظ',
+    ],
+    'dl-recs': [
+      'تطوير أسواق رأس المال لاستيعاب الإصدارات وتوسيع قاعدة التمويل',
+      'تفعيل منظومة الحوكمة المؤسسية وإلزامية معايير الإفصاح والشفافية',
+      'دمج الصكوك والتمويل الإسلامي كبدائل تمويلية تنويعية مستدامة',
+    ],
+    'dl-refs': [
+      'Modigliani, F., & Miller, M. (1958). The cost of capital, corporation finance. American Economic Review.',
+      'Jensen, M., & Meckling, W. (1976). Theory of the firm. Journal of Financial Economics.',
+      'بن زيد وآخرون (2019). هيكل التمويل والأداء في المؤسسات الجزائرية.',
+    ],
+  };
+  Object.entries(demoLists).forEach(([lid, items]) => {
+    const l=document.getElementById(lid); if(!l) return;
+    l.innerHTML='';
+    items.forEach(txt => {
+      addS(lid,'');
+      const last=l.querySelector('.ditem:last-child input');
+      if(last) last.value=txt;
+    });
+  });
+
+  // Concepts
+  const dc=document.getElementById('dl-concepts'); dc.innerHTML='';
+  [
+    {n:'نظرية Modigliani-Miller',e:'Capital Structure Irrelevance',d:'لا يؤثر هيكل رأس المال على قيمة المؤسسة في الأسواق الكاملة.'},
+    {n:'نظرية التوازن الثابت',e:'Trade-Off Theory',d:'تسعى المؤسسة لإيجاد هيكل أمثل يوازن الوفرات الضريبية وتكاليف الضائقة المالية.'},
+    {n:'نظرية الوكالة',e:'Agency Theory',d:'تنشأ تكاليف عن تعارض مصالح المساهمين والمديرين والدائنين.'},
+  ].forEach(c=>{addConcept();const last=dc.querySelector('.ditem:last-child');if(last){const ins=last.querySelectorAll('input');if(ins[0])ins[0].value=c.n;if(ins[1])ins[1].value=c.e;const ta=last.querySelector('textarea');if(ta)ta.value=c.d;}});
+
+  // Lits
+  const dl=document.getElementById('dl-lits'); dl.innerHTML='';
+  [{a:'Modigliani & Miller',y:'1958',t:'نظرية هيكل رأس المال — Capital Structure',f:'لا أثر في الأسواق الكاملة'},{a:'Jensen & Meckling',y:'1976',t:'نظرية الوكالة والملكية',f:'تكاليف الوكالة تحدد الهيكل الأمثل'}].forEach(l=>{addLit();const last=dl.querySelector('.ditem:last-child');if(last){const ins=last.querySelectorAll('input');if(ins[0])ins[0].value=l.a;if(ins[1])ins[1].value=l.y;if(ins[2])ins[2].value=l.t;const ta=last.querySelector('textarea');if(ta)ta.value=l.f;}});
+
+  // KPIs
+  document.getElementById('kgrid').innerHTML='';
+  [{l:'معدل العائد على الأصول ROA',v:'78.4%'},{l:'قوة النموذج التفسيرية R²',v:'0.81'},{l:'مؤسسات التمويل الخارجي',v:'63%'},{l:'نمو ROE 2020–2023',v:'+15.7%'}].forEach(k=>{addKPI();const last=document.querySelector('#kgrid .kcard:last-child');if(last){const[li,vi]=last.querySelectorAll('input');if(li)li.value=k.l;if(vi)vi.value=k.v;}});
+
+  goTo(0);
+  const bar=document.getElementById('asbar'); bar.querySelector('.asdot').style.background='#3B82F6';
+  bar.querySelector('div:last-child')?.remove();
+  const span=document.createElement('span'); span.textContent='تم تحميل البيانات التجريبية ✓';
+  bar.appendChild(span); bar.classList.add('vis');
+  setTimeout(()=>{bar.classList.remove('vis');bar.querySelector('.asdot').style.background='var(--ok)';}  ,2800);
+}
+
+// ═══════════════════════════════════════════
+// AUTOSAVE
+// ═══════════════════════════════════════════
 let saveT=null;
 function autoSave(){
   clearTimeout(saveT);
   saveT=setTimeout(()=>{
-    try{
-      localStorage.setItem('mp_draft',JSON.stringify(collect()));
-      const b=document.getElementById('asbar');
-      b.classList.add('vis');
-      setTimeout(()=>b.classList.remove('vis'),2500);
-    }catch(e){}
-  },1000);
+    try{localStorage.setItem('mp_v4',JSON.stringify(collect()));
+      const b=document.getElementById('asbar');b.classList.add('vis');
+      setTimeout(()=>b.classList.remove('vis'),2000);}catch(e){}
+  },1200);
 }
 document.addEventListener('input',()=>autoSave());
 document.addEventListener('change',()=>autoSave());
 
-function loadDraft(){
-  try{
-    const raw=localStorage.getItem('mp_draft'); if(!raw)return;
-    const d=JSON.parse(raw);
-    const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined&&v!=='')el.value=v;};
-    ['studentName','studentId','major','year','university','faculty','supervisor',
-     'department','titleAr','titleFr','fieldEn','keywords','defenseDate','mainProblem',
-     'importance','reasons','methodology','dataSource','timePeriod','software',
-     'conclusion'].forEach(id=>sv(id,d[id]));
-    if(d.level) document.getElementById('level').value=d.level;
-    if(d.theme){
-      const r=document.querySelector(`input[name="theme"][value="${d.theme}"]`);
-      if(r){r.checked=true; const idx=THEMES.findIndex(t=>t.id===d.theme); if(idx>=0) onTC(idx);}
-    }
-    const rL=(lid,items,adder)=>{
-      if(!Array.isArray(items)||!items.length)return;
-      items.forEach(item=>{
-        adder();
-        const last=document.querySelector(`#${lid} .ditem:last-child`);
-        if(!last)return;
-        if(typeof item==='string'){const inp=last.querySelector('input');if(inp)inp.value=item;}
-        else if(typeof item==='object'){
-          const ins=last.querySelectorAll('input'),ta=last.querySelector('textarea');
-          if(item.name&&ins[0])ins[0].value=item.name;
-          if(item.nameEn&&ins[1])ins[1].value=item.nameEn;
-          if(item.def&&ta)ta.value=item.def;
-          if(item.author&&ins[0])ins[0].value=item.author;
-          if(item.year&&ins[1])ins[1].value=item.year;
-          if(item.title&&ins[2])ins[2].value=item.title;
-          if(item.findings&&ta)ta.value=item.findings;
-        }
-      });
-    };
-    if(d.subQuestions?.length)   rL('dl-subQ',d.subQuestions,()=>addS('dl-subQ','تساؤل فرعي'));
-    if(d.objectives?.length)     rL('dl-obj',d.objectives,()=>addS('dl-obj','هدف'));
-    if(d.hypotheses?.length)     rL('dl-hyp',d.hypotheses,()=>addS('dl-hyp','فرضية'));
-    if(d.concepts?.length)       rL('dl-concepts',d.concepts,()=>addConcept());
-    if(d.literatures?.length)    rL('dl-lits',d.literatures,()=>addLit());
-    if(d.statisticalTests?.length) rL('dl-tests',d.statisticalTests,()=>addS('dl-tests','اختبار'));
-    if(d.mainResults?.length)    rL('dl-results',d.mainResults,()=>addS('dl-results','نتيجة'));
-    if(d.recommendations?.length) rL('dl-recs',d.recommendations,()=>addS('dl-recs','توصية'));
-    if(d.futureWork?.length)     rL('dl-future',d.futureWork,()=>addS('dl-future','آفق بحثي'));
-    if(d.references?.length)     rL('dl-refs',d.references,()=>addS('dl-refs','مرجع'));
-    if(d.stats?.length) d.stats.forEach(s=>{
-      addKPI();
-      const last=document.querySelector('#kgrid .kcard:last-child');
-      if(last){const[l,v]=last.querySelectorAll('input');if(l)l.value=s.label;if(v)v.value=s.value;}
-    });
-  }catch(e){}
-}
-
-// ── PREVIEW ─────────────────────────────────────────────
-function buildPrev(){
-  const d=collect();
-  const th=THEMES.find(t=>t.id===d.theme)||THEMES[0];
-  const pb=document.getElementById('pbanner');
-  pb.style.background=th.bg;
-  document.getElementById('pmeta').innerHTML=`
-    <div class="pm"><div class="pml">الطالب</div><div class="pmv">${d.studentName||'—'}</div></div>
-    <div class="pm"><div class="pml">المشرف</div><div class="pmv">${d.supervisor||'—'}</div></div>
-    <div class="pm"><div class="pml">الجامعة</div><div class="pmv">${d.university||'—'}</div></div>
-    <div class="pm"><div class="pml">التخصص</div><div class="pmv">${d.major||'—'}</div></div>
-    <div class="pm full"><div class="pml">العنوان</div><div class="pmv" style="font-size:12px">${d.titleAr||'—'}</div></div>
-    <div class="pm"><div class="pml">النمط</div><div class="pmv" style="color:${th.ac}">${th.name}</div></div>
-    <div class="pm"><div class="pml">هوية التصميم</div><div class="pmv">${th.la}</div></div>`;
-
-  const slides=[
-    {i:'🏠',l:'الغلاف'},{i:'📋',l:'المحتويات'},{i:'❓',l:'الإشكالية'},{i:'🎯',l:'الأهداف'},
-    ...(d.importance||d.reasons?[{i:'⭐',l:'الأهمية'}]:[]),
-    ...(d.concepts.length?[{i:'📚',l:'الإطار النظري'}]:[]),
-    {i:'🔧',l:'المنهجية'},
-    ...(d.stats.length?[{i:'📊',l:'المؤشرات'}]:[]),
-    ...(d.mainResults.length?[{i:'✅',l:'النتائج'}]:[]),
-    ...(d.literatures.length?[{i:'🗂️',l:'الدراسات السابقة'}]:[]),
-    ...(d.recommendations.length?[{i:'💡',l:'التوصيات'}]:[]),
-    {i:'🏁',l:'الخاتمة'},
-  ];
-  document.getElementById('sgrid').innerHTML=slides.map(s=>`
-    <div class="sthumb" style="background:${th.bg}">
-      <div class="si">${s.i}</div>
-      <div class="sl" style="color:${th.ac}">${s.l}</div>
-    </div>`).join('');
-}
-
-// ── GENERATE ────────────────────────────────────────────
+// ═══════════════════════════════════════════
+// GENERATE
+// ═══════════════════════════════════════════
 async function generate(){
   const d=collect();
-  if(!d.titleAr||!d.studentName){alert('الرجاء إدخال اسم الطالب وعنوان المذكرة على الأقل.');goTo(0);return;}
+  if(!d.titleAr||!d.studentName){alert('الرجاء إدخال اسم الطالب وعنوان المذكرة.');goTo(0);return;}
   openM();
-  const steps=[[12,'جاري إعداد البيانات...'],[28,'بناء شريحة الغلاف السينمائي...'],[46,'تصميم هيكل العرض...'],[63,'معالجة المحتوى الأكاديمي...'],[79,'تطبيق نظام التصميم...'],[93,'تجميع ملف PowerPoint...']];
-  for(const[p,m]of steps){await sl(420);setP(p,m);}
+  const steps=[[10,'جاري إعداد البيانات...'],[25,'بناء شريحة الغلاف...'],[45,'تصميم هيكل العرض...'],[65,'معالجة المحتوى الأكاديمي...'],[82,'تطبيق نظام الخطوط والألوان...'],[94,'تجميع ملف PowerPoint...']];
+  for(const[p,m] of steps){await sl(400);setP(p,m);}
   try{
     const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
     if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'خطأ في الخادم');}
-    const blob=await r.blob(), url=URL.createObjectURL(blob);
+    const blob=await r.blob(),url=URL.createObjectURL(blob);
     setP(100,'اكتمل الإنشاء!');await sl(300);
-    showOk(url, d.studentName);
-    localStorage.removeItem('mp_draft');
-  }catch(e){closeM();alert('حدث خطأ: '+e.message);}
+    showOk(url,d.studentName);
+    localStorage.removeItem('mp_v4');
+  }catch(e){closeM();alert('حدث خطأ:\n'+e.message);}
 }
 
 function openM(){
   document.getElementById('ov').classList.add('open');
   const ic=document.getElementById('mic');ic.className='mic mspin';ic.textContent='⚙️';
   document.getElementById('mtitle').textContent='جاري إنشاء العرض...';
-  document.getElementById('msub').textContent='يتم بناء الشرائح الاحترافية بمحرك MathKarati PRO v3';
-  document.getElementById('ptrack').style.display='';
-  document.getElementById('plbl').style.display='';
-  setP(0,'0%');
+  document.getElementById('msub').textContent='المحرك يبني الشرائح الاحترافية';
+  document.getElementById('ptrack').style.display='';document.getElementById('plbl').style.display='';
+  setP(0,'');
 }
 function closeM(){document.getElementById('ov').classList.remove('open');}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
-
 function showOk(url,name){
   document.getElementById('mic').className='mic mok';document.getElementById('mic').textContent='✅';
   document.getElementById('mtitle').textContent='تم الإنشاء بنجاح! 🎉';
-  document.getElementById('msub').textContent='عرضك الأكاديمي الاحترافي جاهز للتحميل';
+  document.getElementById('msub').textContent='عرضك الاحترافي جاهز للتحميل';
   document.getElementById('ptrack').style.display='none';document.getElementById('plbl').style.display='none';
   const mb=document.querySelector('.mbox');
   mb.querySelectorAll('.bdl,.bnew').forEach(e=>e.remove());
   const a=document.createElement('a');
-  a.href=url; a.download=`عرض_مذكرة_${(name||'').replace(/\s+/g,'_')}.pptx`;
-  a.className='bdl'; a.innerHTML='⬇️ تحميل العرض الاحترافي'; mb.appendChild(a);
+  a.href=url;a.download=`عرض_${(name||'').replace(/\s+/g,'_')}.pptx`;
+  a.className='bdl';a.innerHTML='⬇️ تحميل العرض الاحترافي';mb.appendChild(a);
   const r=document.createElement('button');r.className='bnew';r.textContent='🔄 إنشاء عرض جديد';
-  r.onclick=()=>{localStorage.removeItem('mp_draft');location.reload();};mb.appendChild(r);
+  r.onclick=()=>{localStorage.removeItem('mp_v4');location.reload();};mb.appendChild(r);
 }
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
 
-function sl(ms){return new Promise(r=>setTimeout(r,ms));}
-
+// Init
 (function init(){
-  addS('dl-subQ','تساؤل فرعي'); addS('dl-obj','هدف'); addS('dl-hyp','فرضية');
-  addS('dl-tests','اختبار'); addS('dl-results','نتيجة');
-  addS('dl-recs','توصية'); addS('dl-refs','مرجع');
+  addS('dl-subQ','تساؤل فرعي');addS('dl-obj','هدف');addS('dl-hyp','فرضية');
+  addS('dl-tests','اختبار');addS('dl-results','نتيجة');addS('dl-recs','توصية');
   addKPI();
-  loadDraft();
 })();
 </script>
 </body>
