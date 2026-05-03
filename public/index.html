@@ -1557,22 +1557,63 @@ function loadDraft(){
 }
 
 // ═══════════════════════════════════════════════════════
+// API BASE — works on Render, localhost, or any domain
+// ═══════════════════════════════════════════════════════
+const API_BASE = (()=>{
+  // If opened as file:// there's no server — warn clearly
+  if(location.protocol === 'file:') return null;
+  // Otherwise use same origin (works on Render + localhost)
+  return '';
+})();
+
+// ═══════════════════════════════════════════════════════
 // GENERATE
 // ═══════════════════════════════════════════════════════
 async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
+
+  // Guard: if opened as a local file, show clear error immediately
+  if(API_BASE === null){
+    alert('⚠️ لا يمكن توليد العرض عند فتح الملف مباشرة.\nيرجى تشغيل الخادم (python app.py) ثم فتح http://localhost:5000');
+    return;
+  }
+
   openM();
-  const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
-  for(const[p,m] of steps){await sl(380);setP(p,m);}
+
+  // Start progress animation AND the actual fetch in parallel
+  const progressDone = (async()=>{
+    const steps=[[10,''],[25,t('modal_sub')],[45,''],[65,''],[82,''],[94,'']];
+    for(const[p,m] of steps){await sl(300);setP(p,m);}
+  })();
+
   try{
-    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
-    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
-    const blob=await r.blob(),url=URL.createObjectURL(blob);
-    setP(100,t('modal_ok'));await sl(300);
+    const r=await fetch(API_BASE+'/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(d)
+    });
+    if(!r.ok){
+      let errMsg='Server error '+r.status;
+      try{const e=await r.json();errMsg=e.error||errMsg;}catch{}
+      throw new Error(errMsg);
+    }
+    const blob=await r.blob();
+    if(blob.size<500) throw new Error('الملف المُولَّد فارغ — تحقق من الخادم');
+    const url=URL.createObjectURL(blob);
+    await progressDone; // wait for animation to finish
+    setP(100,t('modal_ok'));await sl(250);
     showOk(url,d.studentName);
     localStorage.removeItem('mp_v4');
-  }catch(e){closeM();alert(e.message);}
+  }catch(e){
+    closeM();
+    // Show a user-friendly Arabic error
+    const msg = e.message||'حدث خطأ غير متوقع';
+    const isNet = msg.includes('Failed to fetch')||msg.includes('NetworkError')||msg.includes('Load failed');
+    alert(isNet
+      ? '❌ تعذّر الاتصال بالخادم.\nتأكد أن الخادم يعمل على http://localhost:5000 أو تحقق من رابط النشر.'
+      : '❌ خطأ في توليد العرض:\n'+msg);
+  }
 }
 
 function openM(){
@@ -1581,7 +1622,7 @@ function openM(){
   document.getElementById('mtitle').textContent=t('modal_title');
   document.getElementById('msub').textContent=t('modal_sub');
   document.getElementById('ptrack').style.display='';document.getElementById('plbl').style.display='';
-  setP(0,'');
+  setP(3, t('modal_sub'));
 }
 function closeM(){document.getElementById('ov').classList.remove('open');}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}

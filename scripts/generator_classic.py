@@ -1,7 +1,8 @@
 """
-مذكرتي Pro — محرك التحويل البصري v5.0
+مذكرتي Pro — محرك التحويل البصري v6.0
 Radical Design System · 3 Structural Layouts × 8 Palettes
 Every layout is architecturally different — not just colours.
+New v6: Chapter Dividers + Theory/Literature slides activated.
 """
 import json, sys, datetime, math
 from pptx import Presentation
@@ -42,9 +43,7 @@ def oval(slide, x, y, w, h, fill, alpha=0):
 
 def txt(slide, text, x, y, w, h,
         font="Cairo", size=13, bold=False, italic=False,
-        color=None, align=PP_ALIGN.RIGHT, mg=0.1,
-        line_spacing=None, space_after=None):
-    """Base text function — use the typography helpers below when possible."""
+        color=None, align=PP_ALIGN.RIGHT, mg=0.1):
     if w <= 0 or h <= 0: return None
     tb = slide.shapes.add_textbox(cm(x), cm(y), cm(w), cm(h))
     tb.word_wrap = True
@@ -52,16 +51,6 @@ def txt(slide, text, x, y, w, h,
     tf.margin_left = cm(mg); tf.margin_right = cm(mg)
     tf.margin_top = cm(0.04); tf.margin_bottom = cm(0.04)
     p = tf.paragraphs[0]; p.alignment = align
-    if line_spacing:
-        from pptx.util import Pt as _Pt
-        from pptx.oxml.ns import qn
-        from lxml import etree
-        pPr = p._pPr
-        if pPr is None:
-            pPr = p._p.get_or_add_pPr()
-        lnSpc = etree.SubElement(pPr, qn('a:lnSpc'))
-        spcPct = etree.SubElement(lnSpc, qn('a:spcPct'))
-        spcPct.set('val', str(int(line_spacing * 1000)))
     run = p.add_run()
     run.text = str(text) if text is not None else ""
     run.font.name = font; run.font.size = Pt(size)
@@ -74,184 +63,26 @@ def ln(slide, x, y, w, color, h=0.06):
 
 # ─────────────────────────────────────────────────────────────────────
 # TYPOGRAPHY SYSTEM
-# نظام الخطوط الاحترافي — كل نوع نص له خط وحجم وسمك خاص
-#
-# هرمية الخطوط:
-#   DISPLAY  — عنوان الغلاف الرئيسي (أكبر عنصر)
-#   H1       — عنوان الشريحة الرئيسي
-#   H2       — عنوان قسم أو بطاقة
-#   H3       — عنوان فرعي داخل محتوى
-#   OVERLINE — تسمية صغيرة فوق العنوان (مثل SECTION · القسم)
-#   BODY     — فقرة نصية عادية
-#   BODY_SM  — فقرة صغيرة / ملاحظة
-#   BULLET   — نقطة قائمة (مع مسافة بادئة)
-#   KPI_VAL  — قيمة رقمية كبيرة (KPI)
-#   KPI_LBL  — تسمية أسفل الرقم
-#   CAPTION  — تعليق / مرجع / تاريخ صغير
-#   LABEL    — تسمية مربع أو خلية جدول
-#   META     — معلومات هوية صغيرة (رقم تسجيل، تاريخ...)
 # ─────────────────────────────────────────────────────────────────────
-
 class TY:
-    """Typography constants — sizes in pt, all Arabic-aware."""
-
-    # ── DISPLAY: عنوان الغلاف ───────────────────────────────
-    # أكبر نص في العرض، فقط على شريحة الغلاف
-    DISPLAY      = dict(size=26, bold=True,  italic=False)
-
-    # ── H1: عنوان الشريحة ───────────────────────────────────
-    # يظهر مرة واحدة في أعلى كل شريحة
-    H1           = dict(size=28, bold=True,  italic=False)
-
-    # ── H2: عنوان بطاقة / قسم ──────────────────────────────
-    # عنوان بطاقة، عنوان عمود، عنوان قائمة
-    H2           = dict(size=16, bold=True,  italic=False)
-
-    # ── H3: عنوان فرعي داخلي ───────────────────────────────
-    # داخل البطاقة أو فوق فقرة
-    H3           = dict(size=13, bold=True,  italic=False)
-
-    # ── OVERLINE: تسمية أعلى العنوان ───────────────────────
-    # نص صغير بأحرف كبيرة فوق H1 (مثال: SECTION 01 · القسم)
-    OVERLINE     = dict(size=9,  bold=True,  italic=False)
-
-    # ── BODY: فقرة نصية ────────────────────────────────────
-    # المحتوى الرئيسي — الإشكالية، الخاتمة، الفرضيات الطويلة
-    BODY         = dict(size=13, bold=False, italic=False)
-
-    # ── BODY_SM: فقرة صغيرة ────────────────────────────────
-    # تفاصيل، ملاحظات، نص داخل جدول
-    BODY_SM      = dict(size=11, bold=False, italic=False)
-
-    # ── BULLET: نقطة قائمة ─────────────────────────────────
-    # عنصر قائمة — نتيجة، توصية، هدف (نص متوسط)
-    BULLET       = dict(size=12, bold=False, italic=False)
-
-    # ── KPI_VAL: قيمة رقمية KPI ────────────────────────────
-    # الرقم الكبير في لوحة المؤشرات (يُحسب ديناميكياً حسب الطول)
-    KPI_VAL_MAX  = 56   # أقصى حجم
-    KPI_VAL_MIN  = 28   # أدنى حجم
-
-    # ── KPI_LBL: تسمية المؤشر ──────────────────────────────
-    # النص أسفل الرقم في لوحة KPI
-    KPI_LBL      = dict(size=12, bold=False, italic=False)
-
-    # ── CAPTION: تعليق صغير ────────────────────────────────
-    # مصدر، تاريخ، ملاحظة أسفل الصفحة
-    CAPTION      = dict(size=9,  bold=False, italic=True)
-
-    # ── LABEL: تسمية خلية / مربع ───────────────────────────
-    # عنوان عمود جدول، اسم مربع منهجية
-    LABEL        = dict(size=13, bold=True,  italic=False)
-
-    # ── META: معلومات هوية ─────────────────────────────────
-    # اسم الطالب الصغير، التاريخ، الكلمات المفتاحية
-    META         = dict(size=11, bold=False, italic=False)
-
-    # ── EN_SUB: نص إنجليزي فرعي ────────────────────────────
-    # الترجمة الإنجليزية أسفل العنوان العربي
-    EN_SUB       = dict(size=11, bold=False, italic=True)
-
-    # ── NUMBER: أرقام ترتيبية كبيرة ─────────────────────────
-    # 01 02 03 في القوائم والبطاقات
-    NUMBER       = dict(size=28, bold=True,  italic=False)
+    DISPLAY   = dict(size=26, bold=True,  italic=False)
+    H1        = dict(size=28, bold=True,  italic=False)
+    H2        = dict(size=16, bold=True,  italic=False)
+    H3        = dict(size=13, bold=True,  italic=False)
+    OVERLINE  = dict(size=9,  bold=True,  italic=False)
+    BODY      = dict(size=13, bold=False, italic=False)
+    BODY_SM   = dict(size=11, bold=False, italic=False)
+    BULLET    = dict(size=12, bold=False, italic=False)
+    KPI_VAL_MAX = 56
+    KPI_VAL_MIN = 28
+    KPI_LBL   = dict(size=12, bold=False, italic=False)
+    CAPTION   = dict(size=9,  bold=False, italic=True)
+    LABEL     = dict(size=13, bold=True,  italic=False)
+    META      = dict(size=11, bold=False, italic=False)
+    EN_SUB    = dict(size=11, bold=False, italic=True)
+    NUMBER    = dict(size=28, bold=True,  italic=False)
 
 
-def t_display(slide, text, x, y, w, h, T, align=PP_ALIGN.RIGHT):
-    """عنوان الغلاف الرئيسي — أكبر نص، Cairo Bold"""
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=T["TL"],
-               **TY.DISPLAY)
-
-def t_h1(slide, text, x, y, w, h, T, light=True, align=PP_ALIGN.RIGHT):
-    """عنوان الشريحة — Georgia/HF Bold كبير"""
-    c = T["TL"] if light else T["TD"]
-    return txt(slide, text, x, y, w, h,
-               font=T["HF"], align=align, color=c,
-               **TY.H1)
-
-def t_h2(slide, text, x, y, w, h, T, light=True, color=None, align=PP_ALIGN.RIGHT):
-    """عنوان بطاقة أو قسم — Cairo Bold متوسط"""
-    c = color or (T["TL"] if light else T["TD"])
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=c,
-               **TY.H2)
-
-def t_h3(slide, text, x, y, w, h, T, light=True, color=None, align=PP_ALIGN.RIGHT):
-    """عنوان فرعي داخلي — Cairo Bold صغير"""
-    c = color or (T["TL"] if light else T["TD"])
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=c,
-               **TY.H3)
-
-def t_overline(slide, text, x, y, w, T, color=None, align=PP_ALIGN.LEFT):
-    """نص أعلى العنوان — صغير مسافات واسعة"""
-    c = color or T["A"]
-    return txt(slide, text.upper(), x, y, w, 0.38,
-               font="Calibri", align=align, color=c,
-               **TY.OVERLINE)
-
-def t_body(slide, text, x, y, w, h, T, light=True, align=PP_ALIGN.RIGHT):
-    """فقرة نصية — Cairo عادي، مقروء"""
-    c = T["TL"] if light else T["TD"]
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=c,
-               **TY.BODY)
-
-def t_body_sm(slide, text, x, y, w, h, T, light=True, color=None, align=PP_ALIGN.RIGHT):
-    """فقرة صغيرة — Cairo 11pt"""
-    c = color or (T["TL"] if light else T["TM"])
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=c,
-               **TY.BODY_SM)
-
-def t_bullet(slide, text, x, y, w, h, T, light=True, color=None, align=PP_ALIGN.RIGHT):
-    """نقطة قائمة — Cairo 12pt بمسافة بادئة"""
-    c = color or (T["TL"] if light else T["TD"])
-    return txt(slide, text, x+0.15, y, w-0.15, h,
-               font=T["BF"], align=align, color=c,
-               **TY.BULLET)
-
-def t_caption(slide, text, x, y, w, T, light=False, align=PP_ALIGN.RIGHT):
-    """تعليق صغير مائل — 9pt"""
-    c = T["TM"] if not light else rgb(0xCC,0xCC,0xCC)
-    return txt(slide, text, x, y, w, 0.44,
-               font="Calibri", align=align, color=c,
-               **TY.CAPTION)
-
-def t_en_sub(slide, text, x, y, w, T, align=PP_ALIGN.LEFT):
-    """نص إنجليزي فرعي — Calibri مائل"""
-    return txt(slide, text, x, y, w, 0.56,
-               font="Calibri", align=align, color=T["A"],
-               **TY.EN_SUB)
-
-def t_label(slide, text, x, y, w, h, T, bg_color=None, align=PP_ALIGN.RIGHT):
-    """تسمية مربع — Cairo Bold على خلفية ملونة"""
-    c = T["D"] if bg_color else T["TL"]
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=c,
-               **TY.LABEL)
-
-def t_number(slide, num, x, y, w, h, color, align=PP_ALIGN.CENTER):
-    """رقم ترتيبي كبير — Calibri Bold"""
-    return txt(slide, f"{int(num):02d}", x, y, w, h,
-               font="Calibri", align=align, color=color,
-               **TY.NUMBER)
-
-def t_kpi_val(slide, value, x, y, w, h, color):
-    """قيمة KPI كبيرة — حجم ديناميكي حسب طول النص"""
-    v = str(value)
-    sz = max(TY.KPI_VAL_MIN, TY.KPI_VAL_MAX - max(0, len(v) - 4) * 6)
-    return txt(slide, v, x, y, w, h * 0.62,
-               font="Calibri", bold=True, align=PP_ALIGN.CENTER, color=color,
-               size=sz)
-
-def t_meta(slide, text, x, y, w, h, T, light=True, align=PP_ALIGN.RIGHT):
-    """معلومات هوية صغيرة — 11pt"""
-    c = T["TL"] if light else T["TM"]
-    return txt(slide, text, x, y, w, h,
-               font=T["BF"], align=align, color=c,
-               **TY.META)
 
 # ─────────────────────────────────────────────────────────────────────
 # PALETTES  (8 colour sets — architecture-agnostic)
@@ -395,32 +226,24 @@ class Classic:
 
     @staticmethod
     def section_dark(slide, T, title_ar, sub_en=None):
-        """عنوان شريحة داكنة — H1 Bold + EN_SUB Italic"""
+        """Full-width dark slide header. Returns content_y."""
         rect(slide, 0, 0, W, 0.40, T["A"])
-        # H1: عنوان الشريحة الرئيسي — HF Bold كبير
         txt(slide, title_ar, 1.0, 0.60, W-2.0, 1.16,
-            font=T["HF"], size=TY.H1["size"], bold=True,
-            color=T["TL"], align=PP_ALIGN.RIGHT)
+            font=T["HF"], size=28, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
         if sub_en:
-            # EN_SUB: الترجمة الإنجليزية — Calibri Italic صغير
             txt(slide, sub_en, 1.0, 1.82, W-2.0, 0.60,
-                font="Calibri", size=TY.EN_SUB["size"], italic=True,
-                color=T["A"], align=PP_ALIGN.RIGHT)
+                font="Calibri", size=12, italic=True, color=T["A"], align=PP_ALIGN.RIGHT)
         return 2.64
 
     @staticmethod
     def section_light(slide, T, title_ar, sub_en=None):
-        """عنوان شريحة فاتحة — H1 داكن + EN_SUB ملون"""
+        """Light slide header with left pillar. Returns content_y."""
         rect(slide, 0, 0, W, 0.40, T["D"])
-        # H1: عنوان الشريحة — HF Bold داكن
         txt(slide, title_ar, 1.0, 0.60, W-2.0, 1.16,
-            font=T["HF"], size=TY.H1["size"], bold=True,
-            color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["HF"], size=28, bold=True, color=T["TD"], align=PP_ALIGN.RIGHT)
         if sub_en:
-            # EN_SUB: Calibri Italic مكتوم
             txt(slide, sub_en, 1.0, 1.82, W-2.0, 0.60,
-                font="Calibri", size=TY.EN_SUB["size"], italic=True,
-                color=T["TM"], align=PP_ALIGN.RIGHT)
+                font="Calibri", size=12, italic=True, color=T["TM"], align=PP_ALIGN.RIGHT)
         ln(slide, 1.0, 2.62, W-2.0, T["A"])
         return 2.78
 
@@ -446,7 +269,7 @@ class Classic:
         txt(slide, "✓", bx, by, bs, bs,
             font="Calibri", size=14, bold=True, color=sc, align=PP_ALIGN.CENTER)
         txt(slide, text, x+nw+0.16, y+0.10, bx-x-nw-0.28, h-0.20,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -542,7 +365,7 @@ class Bold:
         txt(slide, f"{i+1:02d}", x+0.38, y+h/2-0.52, idx_w, 1.05,
             font="Calibri", size=22, bold=True, color=sc, align=PP_ALIGN.RIGHT)
         txt(slide, text, x+idx_w+0.55, y+0.10, w-idx_w-0.70, h-0.20,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TL"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TL"], align=PP_ALIGN.RIGHT)
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -638,7 +461,7 @@ class Minimal:
             font="Calibri", size=20, bold=True, color=sc, align=PP_ALIGN.RIGHT)
         ln(slide, x+1.5, y+h/2-0.3, 0.05, sc, 0.6)
         txt(slide, text, x+1.7, y+0.10, w-2.0, h-0.20,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -654,104 +477,66 @@ def get_layout(T):
 # SHARED KPI TEXT (reused by all three layout families)
 # ─────────────────────────────────────────────────────────────────────
 def _kpi_text(slide, T, x, y, w, h, value, label, ac, text_color_override=None):
-    """KPI: قيمة رقمية كبيرة + تسمية — نظام الخطوط الجديد"""
     tc = text_color_override or T["TL"]
     interior = h - 0.58
-    v_str = str(value)
-    # حجم ديناميكي حسب طول النص (KPI_VAL_MAX..KPI_VAL_MIN)
-    vs = clamp(TY.KPI_VAL_MAX - max(0, len(v_str)-4)*6, TY.KPI_VAL_MIN, TY.KPI_VAL_MAX)
+    vs  = clamp(58 - max(0, len(str(value))-4)*5, 28, 56)
     lhv = vs * 0.0353
     lhl = 0.62
     gap = 0.16
     tot = lhv + gap + lhl
     start = y + 0.30 + max(0, (interior - tot) / 2)
-    # الرقم — Calibri Bold كبير بلون الـ accent
-    txt(slide, v_str, x+0.08, start, w-0.16, lhv+0.22,
+    txt(slide, str(value), x+0.08, start,            w-0.16, lhv+0.22,
         font="Calibri", size=vs, bold=True, color=ac, align=PP_ALIGN.CENTER)
-    # التسمية — Cairo عادي أصغر
-    txt(slide, str(label), x+0.08, start+lhv+gap, w-0.16, lhl,
-        font=T["BF"], size=TY.KPI_LBL["size"], bold=False, color=tc, align=PP_ALIGN.CENTER)
+    txt(slide, str(label), x+0.08, start+lhv+gap,    w-0.16, lhl,
+        font=T["BF"], size=12, color=tc, align=PP_ALIGN.CENTER)
 
 
 # ─────────────────────────────────────────────────────────────────────
 # SHARED COVER CONTENT (same text placement for all three cover styles)
 # ─────────────────────────────────────────────────────────────────────
 def _cover_shared(slide, T, data, offset_x=0.9, max_x=None):
-    """
-    محتوى الغلاف المشترك — نظام الخطوط الاحترافي:
-    · H2 (Bold 16): الجامعة والكلية
-    · LABEL (Bold 13): شريط المستوى
-    · DISPLAY (Bold 26): عنوان المذكرة العربي
-    · EN_SUB (Italic 11): العنوان الفرنسي
-    · META (11): اسم الطالب والمشرف والمعلومات
-    · CAPTION (9 Italic): الكلمات المفتاحية
-    """
     sw = (max_x if max_x else W - 0.62) - offset_x
     if sw <= 0: return
-
-    # ── الجامعة — H2 Bold ─────────────────────────────────
-    u = safe(data.get("university"))
+    u  = safe(data.get("university"))
+    f  = " | ".join(filter(None,[safe(data.get("faculty")),safe(data.get("department"))]))
     txt(slide, u, offset_x, 0.26, sw, 1.02,
-        font=T["BF"], size=TY.H2["size"], bold=True,
-        color=T["TL"], align=PP_ALIGN.RIGHT)
-
-    # ── الكلية والقسم — BODY_SM ───────────────────────────
-    f = " | ".join(filter(None, [safe(data.get("faculty")), safe(data.get("department"))]))
+        font=T["BF"], size=17, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
     if f.strip(" |"):
         txt(slide, f, offset_x, 1.34, sw, 0.80,
-            font=T["BF"], size=TY.BODY_SM["size"], bold=False,
-            color=T["A"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["A"], align=PP_ALIGN.RIGHT)
 
-    # ── شريط المستوى — LABEL على خلفية accent ────────────
     bx_w = min(8.2, sw)
     rect(slide, offset_x, 3.04, bx_w, 0.86, T["A"])
-    txt(slide, f"مذكرة تخرج — {safe(data.get('level'), 'ماستر')}",
+    txt(slide, f"مذكرة تخرج — {safe(data.get('level'),'ماستر')}",
         offset_x, 3.04, bx_w, 0.86,
-        font=T["BF"], size=TY.LABEL["size"], bold=True,
-        color=T["D"], align=PP_ALIGN.CENTER)
+        font=T["BF"], size=14, bold=True, color=T["D"], align=PP_ALIGN.CENTER)
 
-    # ── عنوان المذكرة — DISPLAY (أكبر نص في الشريحة) ─────
     txt(slide, safe(data.get("titleAr")), offset_x, 4.16, sw, 3.45,
-        font=T["BF"], size=TY.DISPLAY["size"], bold=True,
-        color=T["TL"], align=PP_ALIGN.RIGHT)
+        font=T["BF"], size=20, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
 
-    # ── العنوان الفرنسي — EN_SUB (Calibri Italic) ─────────
     if data.get("titleFr"):
         txt(slide, data["titleFr"], offset_x, 7.82, sw, 0.80,
-            font="Calibri", size=TY.EN_SUB["size"], italic=True,
-            color=T["A2"], align=PP_ALIGN.LEFT)
+            font="Calibri", size=11, italic=True, color=T["A2"], align=PP_ALIGN.LEFT)
 
-    # ── فاصل ديكوري ───────────────────────────────────────
+    # Decorative divider
     my = H * 0.555
     ln(slide, offset_x, my, sw, T["A"], 0.07)
     for di in range(3):
         oval(slide, offset_x + di*1.35, my-0.23, 0.44, 0.44, T["A"], 0.5)
 
-    # ── اسم الطالب والمشرف — META + H3 ───────────────────
     sy = H * 0.790
     ln(slide, offset_x, sy, sw, T["A"], 0.08)
     half = (sw-0.3)/2 - 0.45
-
-    # تسمية "إعداد" — CAPTION صغير
     txt(slide, "إعداد الطالب", offset_x, sy+0.26, half, 0.50,
-        font=T["BF"], size=TY.CAPTION["size"], bold=False,
-        color=T["A"], align=PP_ALIGN.RIGHT)
-    # اسم الطالب — H3 Bold بارز
+        font=T["BF"], size=11, color=T["A"], align=PP_ALIGN.RIGHT)
     txt(slide, safe(data.get("studentName")), offset_x, sy+0.80, half, 0.86,
-        font=T["BF"], size=TY.H3["size"]+2, bold=True,
-        color=T["TL"], align=PP_ALIGN.RIGHT)
-
+        font=T["BF"], size=17, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
     rx = offset_x + half + 0.95; rw = sw - half - 0.95 - 0.3
-    # تسمية "إشراف" — CAPTION صغير
     txt(slide, "إشراف الأستاذ", rx, sy+0.26, rw, 0.50,
-        font=T["BF"], size=TY.CAPTION["size"], bold=False,
-        color=T["A"], align=PP_ALIGN.RIGHT)
-    # اسم المشرف — H3 Bold بارز
+        font=T["BF"], size=11, color=T["A"], align=PP_ALIGN.RIGHT)
     txt(slide, safe(data.get("supervisor")), rx, sy+0.80, rw, 0.86,
-        font=T["BF"], size=TY.H3["size"]+2, bold=True,
-        color=T["TL"], align=PP_ALIGN.RIGHT)
+        font=T["BF"], size=17, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
 
-    # ── المعلومات الدراسية — META ─────────────────────────
     meta = []
     if data.get("major"): meta.append(f"التخصص: {data['major']}")
     if data.get("year"):  meta.append(f"السنة: {data['year']}")
@@ -761,38 +546,25 @@ def _cover_shared(slide, T, data, offset_x=0.9, max_x=None):
             mo = ["","يناير","فبراير","مارس","أبريل","مايو","يونيو",
                   "يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]
             meta.append(f"تاريخ المناقشة: {d.day} {mo[d.month]} {d.year}")
-        except Exception:
-            meta.append(f"تاريخ المناقشة: {data['defenseDate']}")
+        except Exception: meta.append(f"تاريخ المناقشة: {data['defenseDate']}")
     if meta:
         txt(slide, "   ·   ".join(meta), offset_x, sy+1.90, sw, 0.58,
-            font=T["BF"], size=TY.META["size"], bold=False,
-            color=T["TM"], align=PP_ALIGN.RIGHT)
-
-    # ── الكلمات المفتاحية — CAPTION مائل ─────────────────
+            font=T["BF"], size=11, color=T["TM"], align=PP_ALIGN.RIGHT)
     if data.get("keywords"):
         txt(slide, f"كلمات مفتاحية: {data['keywords']}", offset_x, H-1.15, sw, 0.56,
-            font=T["BF"], size=TY.CAPTION["size"], italic=True,
-            color=T["TM"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=10, color=T["TM"], align=PP_ALIGN.RIGHT)
 
 
 # ─────────────────────────────────────────────────────────────────────
 # SHARED QUOTE BOX
 # ─────────────────────────────────────────────────────────────────────
 def _quote(slide, T, x, y, w, h, text):
-    """
-    صندوق اقتباس — نظام الخطوط:
-    · علامة الاقتباس: Georgia 42pt accent
-    · نص الإشكالية: BODY (Cairo 13pt) — فقرة مقروءة
-    """
     rect(slide, x, y, w, h, T["M"])
     rect(slide, x, y, 0.34, h, T["A"])
-    # علامة الاقتباس الكبيرة — Georgia Bold
     txt(slide, "\u275d", x+0.50, y+0.14, 2.0, 0.98,
-        font="Georgia", size=42, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
-    # نص الإشكالية — BODY (فقرة، 13pt، Cairo عادي)
+        font="Georgia", size=42, color=T["A"], align=PP_ALIGN.RIGHT)
     txt(slide, text, x+0.58, y+1.06, w-0.86, h-1.18,
-        font=T["BF"], size=TY.BODY["size"], bold=False,
-        color=T["TL"], align=PP_ALIGN.RIGHT)
+        font=T["BF"], size=13, color=T["TL"], align=PP_ALIGN.RIGHT)
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -828,10 +600,8 @@ def make_problem(prs, data, T):
 
     if subs:
         sy = cy0 + qh + 0.32
-        # H2: عنوان قسم التساؤلات الفرعية — HF Bold متوسط
         txt(slide, "التساؤلات الفرعية", 1.1, sy, W-2.2, 0.68,
-            font=T["HF"], size=TY.H2["size"], bold=True,
-            color=T["A"], align=PP_ALIGN.RIGHT)
+            font=T["HF"], size=17, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
         avail = H - sy - 0.76 - 0.14*n_s
         rh = max(1.25, avail/n_s)
         for i, q in enumerate(subs[:4]):
@@ -842,13 +612,10 @@ def make_problem(prs, data, T):
             rect(slide, 1.1, ry, 0.22, rh, sc)
             bs  = min(rh-0.20, 0.98); bx = W-3.52; by = ry+(rh-bs)/2
             rect(slide, bx, by, bs, bs, T["A"])
-            # رقم ترتيبي — NUMBER Bold
             txt(slide, str(i+1), bx, by, bs, bs,
                 font="Calibri", size=20, bold=True, color=T["D"], align=PP_ALIGN.CENTER)
-            # نص التساؤل — BULLET (12pt) للقائمة
             txt(slide, q, 1.45, ry+0.10, bx-1.72, rh-0.20,
-                font=T["BF"], size=TY.BULLET["size"], bold=False,
-                color=T["TL"], align=PP_ALIGN.RIGHT)
+                font=T["BF"], size=13, color=T["TL"], align=PP_ALIGN.RIGHT)
     return slide
 
 
@@ -874,7 +641,7 @@ def make_objectives(prs, data, T):
     rx_lbl = 1.1 if T.get("LAYOUT")!="bold" else 2.0
     rect(slide, rx_lbl, cy0, cw, 0.74, T["D"])
     txt(slide, "🎯  الأهداف", rx_lbl, cy0, cw, 0.74,
-        font=T["BF"], size=TY.H3["size"], bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        font=T["BF"], size=14, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
     for i, obj in enumerate(objs[:6]):
         oy = cy0+0.76 + i*(ch+0.16)
         sc = T["SC"][i%len(T["SC"])]
@@ -884,15 +651,15 @@ def make_objectives(prs, data, T):
         nw = 1.70
         rect(slide, rx_lbl, oy, nw, ch, T["D"])
         txt(slide, str(i+1), rx_lbl, oy+ch/2-0.65, nw, 1.3,
-            font="Calibri", size=TY.NUMBER["size"], bold=True, color=sc, align=PP_ALIGN.CENTER)
+            font="Calibri", size=30, bold=True, color=sc, align=PP_ALIGN.CENTER)
         txt(slide, obj, rx_lbl+nw+0.16, oy+0.10, cw-nw-0.28, ch-0.20,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
 
     # Hypotheses — right
     rr = rx_lbl + cw + 0.76
     rect(slide, rr, cy0, cw, 0.74, T["M"])
     txt(slide, "💡  الفرضيات", rr, cy0, cw, 0.74,
-        font=T["BF"], size=TY.H3["size"], bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        font=T["BF"], size=14, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
     for i, hy in enumerate(hypos[:6]):
         hy_y = cy0+0.76 + i*(ch+0.16)
         sc   = T["SC"][i%len(T["SC"])]
@@ -903,7 +670,7 @@ def make_objectives(prs, data, T):
         txt(slide, f"H{i+1}", rr+0.26, hy_y+ch*0.08, bw, ch*0.60,
             font="Calibri", size=20, bold=True, color=sc, align=PP_ALIGN.RIGHT)
         txt(slide, hy, rr+bw+0.32, hy_y+0.10, cw-bw-0.56, ch-0.20,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
     return slide
 
 
@@ -925,10 +692,10 @@ def make_importance(prs, data, T):
         rect(slide, 1.1, py, W-2.2, ph, T["M"])
         rect(slide, 1.1, py, 0.32, ph, T["A"])
         txt(slide, f"{icon}  {lbl}", 1.56, py+0.15, W-3.28, 0.68,
-            font=T["BF"], size=TY.H2["size"], bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=16, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
         ln(slide, 1.56, py+0.99, W-3.28, T["A"], 0.05)
         txt(slide, safe(data.get(key)), 1.56, py+1.12, W-3.28, ph-1.26,
-            font=T["BF"], size=TY.BODY["size"], bold=False, color=T["TL"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=13, color=T["TL"], align=PP_ALIGN.RIGHT)
     return slide
 
 
@@ -969,7 +736,7 @@ def make_theory(prs, data, T, concepts):
         txt(slide, safe(c.get("name")), cx+0.25, cy+0.08, cw-0.42, 0.62,
             font=T["BF"], size=13, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
         txt(slide, safe(c.get("def")), cx+0.25, cy+0.92, cw-0.42, ch-1.06,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
     return slide
 
 
@@ -1039,9 +806,9 @@ def make_methodology(prs, data, T):
         rect(slide, bx,     by,    bw, bh, T["CB"], line_color=T["CE"])
         rect(slide, bx,     by,    bw, 0.78, sc)
         txt(slide, f"{icon}  {lbl}", bx+0.13, by+0.08, bw-0.26, 0.62,
-            font=T["BF"], size=TY.LABEL["size"], bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=13, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
         txt(slide, val, bx+0.13, by+0.96, bw-0.26, bh-1.10,
-            font=T["BF"], size=TY.BODY["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=13, bold=True, color=T["TD"], align=PP_ALIGN.RIGHT)
 
     if has_tests:
         ty    = cy0 + 2*(bh+0.28)
@@ -1144,7 +911,7 @@ def make_recommendations(prs, data, T):
             font="Calibri", size=26, bold=True, color=sc, align=PP_ALIGN.LEFT)
         ln(slide, cx+0.34, cy+ch*0.42, cw-0.50, sc, 0.05)
         txt(slide, rec, cx+0.34, cy+ch*0.48, cw-0.50, ch*0.48,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TL"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TL"], align=PP_ALIGN.RIGHT)
     return slide
 
 
@@ -1185,7 +952,7 @@ def make_future(prs, data, T):
         txt(slide, f"آفق بحثي {i+1}", x0+0.28, fy+0.10, 4.4, 0.48,
             font=T["BF"], size=10, bold=True, color=sc, align=PP_ALIGN.RIGHT)
         txt(slide, fw, x0+0.28, fy+0.60, cw-0.50, fh-0.70,
-            font=T["BF"], size=TY.BULLET["size"], bold=False, color=T["TD"], align=PP_ALIGN.RIGHT)
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
     return slide
 
 
@@ -1262,56 +1029,383 @@ def make_final(prs, data, T):
 # ═════════════════════════════════════════════════════════════════════
 # ORCHESTRATOR
 # ═════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────
+# SLIDE: make_intro
+# ─────────────────────────────────────────────────────────────────────
+def make_intro(prs, data, T):
+    slide = blank(prs)
+    bg(slide, T["D"])
+    rect(slide, 0, 0, W, 0.40, T["A"])
+    L = get_layout(T)
+    cy0 = L.section_dark(slide, T, "المقدمة", "Introduction")
+    overview = safe(data.get("introOverview", ""))
+    approach = safe(data.get("introApproach", ""))
+    if overview:
+        txt(slide, "لمحة عامة", 1.1, cy0, W-2.2, 0.56,
+            font=T["HF"], size=14, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
+        txt(slide, overview, 1.1, cy0+0.60, W-2.2,
+            H - cy0 - (1.65 if approach else 0.40) - 0.60,
+            font=T["BF"], size=13, color=T["TL"], align=PP_ALIGN.RIGHT)
+    if approach:
+        ay = H - 1.58
+        rect(slide, 1.1, ay, W-2.2, 1.42, T["M"])
+        rect(slide, 1.1, ay, 0.22, 1.42, T["A"])
+        txt(slide, "المقاربة النظرية", 1.42, ay+0.10, W-2.8, 0.42,
+            font=T["BF"], size=13, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
+        txt(slide, approach, 1.42, ay+0.54, W-2.8, 0.78,
+            font=T["BF"], size=12, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ─────────────────────────────────────────────────────────────────────
+# SLIDE: make_plan
+# ─────────────────────────────────────────────────────────────────────
+def make_plan(prs, data, T, chapters_data):
+    slide = blank(prs)
+    bg(slide, T["D"])
+    rect(slide, 0, 0, W, 0.40, T["A"])
+    L = get_layout(T)
+    cy0 = L.section_dark(slide, T, "خطة الدراسة", "Plan de l'etude")
+    n_ch = min(len(chapters_data), 4)
+    if n_ch == 0:
+        return slide
+    avail_w = W - 2.20
+    gap = 0.28
+    cw = (avail_w - gap*(n_ch-1)) / n_ch
+    cw = min(cw, 6.5)
+    for ci, ch in enumerate(chapters_data[:4]):
+        cx = 1.10 + ci*(cw+gap)
+        sc = T["SC"][ci % len(T["SC"])]
+        ch_h = H - cy0 - 0.35
+        rect(slide, cx, cy0, cw, ch_h, T["M"])
+        rect(slide, cx, cy0, cw, 0.06, sc)
+        rect(slide, cx, cy0, 0.18, ch_h, sc)
+        txt(slide, "F%d" % (ci+1), cx+0.24, cy0+0.08, cw-0.40, 0.56,
+            font="Calibri", size=26, bold=True, color=sc, align=PP_ALIGN.RIGHT)
+        secs = [s for s in ch.get("sections", []) if s][:5]
+        title_h = 0.82 if secs else ch_h - 0.66
+        txt(slide, safe(ch.get("title","")), cx+0.24, cy0+0.66, cw-0.40, title_h,
+            font=T["BF"], size=13, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        if secs:
+            ln(slide, cx+0.24, cy0+1.54, cw-0.40, T["A"], 0.025)
+            sec_h = (H - cy0 - 1.68 - 0.40) / len(secs)
+            for si, sec in enumerate(secs):
+                sy = cy0 + 1.68 + si*sec_h
+                rect(slide, cx+0.30, sy+sec_h*0.40, 0.07, 0.07, sc)
+                txt(slide, safe(sec), cx+0.44, sy+0.05, cw-0.60, sec_h-0.10,
+                    font=T["BF"], size=11, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ─────────────────────────────────────────────────────────────────────
+# SLIDE: make_references
+# ─────────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────────
+# SLIDE: make_methodology_v2 — مع حقول العينة والمجالات
+# ─────────────────────────────────────────────────────────────────────
+def make_methodology_v2(prs, data, T):
+    slide = blank(prs)
+    if T.get("LAYOUT") == "bold":
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "المنهجية والعينة", "Methodologie")
+
+    meth    = safe(data.get("methodology", ""))
+    dsource = safe(data.get("dataSource", ""))
+    stype   = safe(data.get("sampleType", ""))
+    ssize   = safe(data.get("sampleSize", ""))
+    tool    = safe(data.get("tool", ""))
+    axes    = [a for a in data.get("toolAxes", []) if a]
+    spatial = safe(data.get("spatialScope", ""))
+    temporal= safe(data.get("temporalScope", ""))
+    human_s = safe(data.get("humanScope", ""))
+    software= safe(data.get("software", ""))
+    tests   = [t for t in data.get("statisticalTests", []) if t]
+
+    boxes = []
+    if meth:
+        boxes.append(("المنهج المتبع", meth))
+    if stype or ssize:
+        boxes.append(("العينة", " | ".join(filter(None, [stype, ssize]))))
+    if tool:
+        tval = tool
+        if axes:
+            tval = tool + "\n" + "\n".join(["- " + a for a in axes[:4]])
+        boxes.append(("ادوات الدراسة", tval))
+    if spatial or temporal or human_s:
+        lines = []
+        if spatial:  lines.append("مكاني: " + spatial)
+        if temporal: lines.append("زماني: " + temporal)
+        if human_s:  lines.append("بشري: " + human_s)
+        boxes.append(("مجالات الدراسة", "\n".join(lines)))
+    if software:
+        sw = software
+        if tests:
+            sw = software + "\n" + " | ".join(tests[:4])
+        boxes.append(("البرنامج والاختبارات", sw))
+    if dsource:
+        boxes.append(("مصدر البيانات", dsource))
+
+    if not boxes:
+        return slide
+
+    n    = len(boxes)
+    cols = min(n, 3)
+    rows = math.ceil(n / cols)
+    gx, gy = 0.28, 0.20
+    avail_w = W - 2.20
+    avail_h = H - cy0 - 0.35
+    bw = (avail_w - gx*(cols-1)) / cols
+    bh = (avail_h - gy*(rows-1)) / rows
+
+    for i, (lbl, val) in enumerate(boxes):
+        col = i % cols
+        row = i // cols
+        bx  = 1.10 + col*(bw+gx)
+        by  = cy0 + row*(bh+gy)
+        sc  = T["SC"][i % len(T["SC"])]
+        light = T.get("LAYOUT") != "bold"
+        bg_c  = T["CB"] if light else T["M"]
+        rect(slide, bx, by, bw, bh, bg_c)
+        rect(slide, bx, by, bw, 0.055, sc)
+        rect(slide, bx, by, 0.18, bh,  sc)
+        txt(slide, lbl, bx+0.26, by+0.08, bw-0.38, 0.52,
+            font=T["BF"], size=13, bold=True,
+            color=T["TD"] if light else T["TL"], align=PP_ALIGN.RIGHT)
+        ln(slide, bx+0.26, by+0.64, bw-0.38, sc, 0.022)
+        txt(slide, safe(val), bx+0.26, by+0.72, bw-0.38, max(bh-0.84, 0.40),
+            font=T["BF"], size=11,
+            color=T["TD"] if light else T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+def make_references(prs, data, T):
+    refs = [r for r in data.get("references", []) if r][:6]
+    if not refs:
+        return
+    slide = blank(prs)
+    bg(slide, T["L"])
+    L = get_layout(T)
+    cy0 = L.section_light(slide, T, "ابرز المراجع", "References")
+    avail = H - cy0 - 0.35
+    rh = min(1.10, avail/len(refs))
+    for i, ref in enumerate(refs):
+        ry = cy0 + i*(rh+0.12)
+        sc = T["SC"][i % len(T["SC"])]
+        bgc = T["CB"] if i % 2 == 0 else T["L"]
+        rect(slide, 1.10, ry, W-2.20, rh, bgc)
+        rect(slide, 1.10, ry, 0.18, rh, sc)
+        txt(slide, str(i+1), 1.14, ry+0.06, 0.80, rh-0.12,
+            font="Calibri", size=16, bold=True, color=sc, align=PP_ALIGN.CENTER)
+        txt(slide, safe(ref), 2.00, ry+0.08, W-3.20, rh-0.16,
+            font=T["BF"], size=11, color=T["TD"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ─────────────────────────────────────────────────────────────────────
+# SLIDE: make_importance (updated to use importance list)
+# ─────────────────────────────────────────────────────────────────────
+def make_importance_v2(prs, data, T):
+    """أهمية الدراسة — نقاط"""
+    items_list = [x for x in data.get("importance", []) if x]
+    reasons = safe(data.get("reasons", ""))
+    if not items_list and not reasons:
+        return
+    slide = blank(prs)
+    bg(slide, T["D"])
+    rect(slide, 0, 0, W, 0.40, T["A"])
+    L = get_layout(T)
+    cy0 = L.section_dark(slide, T, "اهمية الدراسة", "Importance de l'etude")
+    all_items = items_list[:]
+    if reasons:
+        all_items.append(reasons)
+    avail = H - cy0 - 0.35
+    n = len(all_items)
+    if n == 0:
+        return slide
+    rh = min(1.40, avail/n)
+    for i, item in enumerate(all_items[:6]):
+        ry = cy0 + i*(rh+0.16)
+        sc = T["SC"][i % len(T["SC"])]
+        rect(slide, 1.10, ry, W-2.20, rh, T["M"])
+        rect(slide, 1.10, ry, 0.22, rh, sc)
+        txt(slide, str(i+1), 1.16, ry+0.06, 0.80, rh-0.12,
+            font="Calibri", size=22, bold=True, color=sc, align=PP_ALIGN.CENTER)
+        txt(slide, safe(item), 2.00, ry+0.10, W-3.20, rh-0.20,
+            font=T["BF"], size=12, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+# ═════════════════════════════════════════════════════════════════════
+# SLIDE: make_chapter_divider — شريحة فاصلة لكل فصل
+# ═════════════════════════════════════════════════════════════════════
+def make_chapter_divider(prs, T, chapter_num, chapter_title, sections=None):
+    """Full-bleed dramatic chapter transition slide"""
+    slide = blank(prs)
+    bg(slide, T["D"])
+
+    L = get_layout(T)
+
+    if L is Bold:
+        # Bold: thick left pillar + large number
+        rect(slide, 0, 0, 1.8, H, T["A"])
+        oval(slide, W*0.38, -3, H*1.2, H*1.2, T["M"], 0.30)
+        oval(slide, W*0.60, H*0.25, H*0.75, H*0.75, T["M"], 0.55)
+        rect(slide, 1.8, 0, W-1.8, 0.38, T["A"])
+        rect(slide, 1.8, H-0.38, W-1.8, 0.38, T["A"])
+        # Big chapter number
+        txt(slide, f"0{chapter_num}" if chapter_num < 10 else str(chapter_num),
+            W*0.38, H/2-3.2, W*0.52, 5.5,
+            font="Calibri", size=180, bold=True, color=T["M"], align=PP_ALIGN.CENTER)
+        txt(slide, "الفصل", 2.2, H/2-2.0, W-4.0, 1.0,
+            font=T["HF"], size=18, bold=False, color=T["A"], align=PP_ALIGN.RIGHT)
+        txt(slide, safe(chapter_title), 2.2, H/2-0.8, W-4.0, 3.2,
+            font=T["HF"], size=28, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        ln(slide, 2.2, H/2+2.58, W-4.0, T["A"], 0.07)
+
+    elif L is Minimal:
+        # Minimal: elegant split — light right, dark left
+        rect(slide, 0, 0, W*0.52, H, T["D"])
+        rect(slide, W*0.52, 0, W*0.48, H, T["L"])
+        oval(slide, W*0.30, H/2-5, 10, 10, T["A"], 0.88)
+        rect(slide, 0, 0, W, 0.22, T["A"])
+        rect(slide, 0, H-0.22, W, 0.22, T["A"])
+        txt(slide, f"0{chapter_num}" if chapter_num < 10 else str(chapter_num),
+            0, H/2-3.5, W*0.52, 5.5,
+            font="Calibri", size=140, bold=True, color=T["A"], align=PP_ALIGN.CENTER)
+        txt(slide, "الفصل", W*0.54, H/2-1.6, W*0.42, 0.72,
+            font=T["BF"], size=13, color=T["TM"], align=PP_ALIGN.RIGHT)
+        txt(slide, safe(chapter_title), W*0.54, H/2-0.70, W*0.42, 3.0,
+            font=T["HF"], size=22, bold=True, color=T["TD"], align=PP_ALIGN.RIGHT)
+        ln(slide, W*0.54, H/2+2.60, W*0.38, T["A"], 0.05)
+
+    else:
+        # Classic: full-bleed dark with right accent strip + big chapter num
+        rect(slide, W-0.62, 0, 0.62, H, T["A"])
+        rect(slide, 0, H-0.46, W-0.62, 0.46, T["A"])
+        oval(slide, W*0.55, -4, W*0.60, H*0.90, T["M"], 0.35)
+        oval(slide, W*0.72, -1, W*0.40, H*0.65, T["A"], 0.80)
+        oval(slide, -5, H*0.60, 12, 12, T["M"], 0.55)
+        # Giant chapter number (decorative, behind text)
+        txt(slide, f"0{chapter_num}" if chapter_num < 10 else str(chapter_num),
+            W*0.25, H/2-4.0, W*0.55, 7.0,
+            font="Calibri", size=200, bold=True, color=T["M"], align=PP_ALIGN.CENTER)
+        # Accent top bar
+        rect(slide, 0, 0, W-0.62, 0.40, T["A"])
+        # Chapter label + title
+        txt(slide, f"الفصل {chapter_num}", 1.0, H/2-2.30, W-2.5, 0.76,
+            font=T["BF"], size=16, bold=False, color=T["A2"], align=PP_ALIGN.RIGHT)
+        txt(slide, safe(chapter_title), 1.0, H/2-1.36, W-2.5, 3.50,
+            font=T["HF"], size=26, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        ln(slide, 1.0, H/2+2.36, W-2.5, T["A"], 0.07)
+
+    # Sections preview (shared across layouts, bottom strip)
+    if sections:
+        valid = [s for s in sections if s][:4]
+        if valid:
+            n = len(valid)
+            strip_y = H - 2.10
+            strip_h = 1.74
+            rect(slide, 0, strip_y, W-0.62 if L is Classic else W, strip_h, T["M"])
+            sw = (W - 2.20) / n
+            for i, sec in enumerate(valid):
+                sx = 1.10 + i * sw
+                sc = T["SC"][i % len(T["SC"])]
+                rect(slide, sx, strip_y, sw - 0.12, 0.055, sc)
+                txt(slide, safe(sec), sx, strip_y + 0.12, sw - 0.16, strip_h - 0.22,
+                    font=T["BF"], size=11, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
 def generate_presentation(data: dict, output_path: str) -> None:
     key = data.get("theme", "navy_gold")
     T   = PALETTES.get(key, PALETTES["navy_gold"])
-
     prs = Presentation()
     prs.slide_width  = Cm(W)
     prs.slide_height = Cm(H)
 
-    chapters = [
-        {"title":"الإشكالية والتساؤلات", "sub":"Research Problem"},
-        {"title":"الأهداف والفرضيات",     "sub":"Objectives & Hypotheses"},
-        {"title":"الإطار النظري",          "sub":"Theoretical Framework"},
-        {"title":"الدراسات السابقة",       "sub":"Literature Review"},
-        {"title":"المنهجية والأدوات",      "sub":"Methodology & Tools"},
-        {"title":"النتائج والتوصيات",      "sub":"Results & Recommendations"},
-    ]
+    slides_cfg = data.get("slides", {})
+    def show(k): return slides_cfg.get(k, True)
+    def fl(k):   return [x for x in data.get(k, []) if x]
 
-    def fl(k): return [x for x in data.get(k,[]) if x]
-
+    # 1. الغلاف — دائماً
     make_cover(prs, data, T)
-    make_toc(prs, data, T, chapters)
-    make_problem(prs, data, T)
-    make_objectives(prs, data, T)
 
-    if data.get("importance") or data.get("reasons"):
-        make_importance(prs, data, T)
+    # 2. المقدمة
+    if show("intro") and (data.get("introOverview") or data.get("introApproach")):
+        make_intro(prs, data, T)
 
-    concepts = [c for c in data.get("concepts",[]) if c.get("name")]
-    if concepts:
+    # 3. خطة الدراسة
+    chs = [c for c in data.get("chapters", []) if c.get("title")]
+    if show("plan") and chs:
+        make_plan(prs, data, T, chs)
+
+    # 4. الإشكالية
+    if show("problem") and (data.get("mainProblem") or data.get("mainQuestion") or fl("subQuestions")):
+        make_problem(prs, data, T)
+
+    # 5. الأهداف والفرضيات
+    if show("objectives") and (fl("objectives") or fl("hypotheses")):
+        make_objectives(prs, data, T)
+
+    # 6. الأهمية
+    if show("importance") and (fl("importance") or data.get("reasons")):
+        make_importance_v2(prs, data, T)
+
+    # 7. الإطار النظري والمفاهيمي
+    concepts = [c for c in data.get("concepts", []) if c.get("name")]
+    if show("theory") and concepts:
         make_theory(prs, data, T, concepts)
 
-    lits = [l for l in data.get("literatures",[]) if l.get("title") or l.get("author")]
-    if lits:
+    # 8. الأدبيات والدراسات السابقة
+    lits = [l for l in data.get("literature", []) if l.get("author") or l.get("title")]
+    if show("literature") and lits:
         make_literature(prs, data, T, lits)
 
-    make_methodology(prs, data, T)
+    # 9. المنهجية والعينة
+    if show("methodology") and (data.get("methodology") or data.get("sampleType") or data.get("tool")):
+        make_methodology_v2(prs, data, T)
 
-    if [s for s in data.get("stats",[]) if s.get("label") and s.get("value")]:
+    # 10. شرائح الفصول (chapter dividers)
+    if show("chapters_dividers") and chs:
+        for i, ch in enumerate(chs):
+            make_chapter_divider(prs, T, i+1, ch.get("title",""), ch.get("sections",[]))
+
+    # 11. KPI
+    stats = [s for s in data.get("stats", []) if s.get("label") and s.get("value")]
+    if show("kpi") and stats:
         make_stats(prs, data, T)
 
-    if fl("mainResults"):     make_results(prs, data, T)
-    if fl("recommendations"): make_recommendations(prs, data, T)
-    if fl("futureWork"):      make_future(prs, data, T)
+    # 12. النتائج
+    if show("results") and fl("mainResults"):
+        make_results(prs, data, T)
 
-    make_conclusion(prs, data, T)
-    make_final(prs, data, T)
+    # 13. الخاتمة
+    if show("conclusion") and data.get("generalConclusion"):
+        make_conclusion(prs, data, T)
+
+    # 14. التوصيات
+    if show("recommendations") and fl("recommendations"):
+        make_recommendations(prs, data, T)
+
+    # 15. الآفاق
+    if show("future") and fl("futureWork"):
+        make_future(prs, data, T)
+
+    # 16. المراجع
+    if show("references") and fl("references"):
+        make_references(prs, data, T)
+
+    # 17. شريحة الشكر
+    if show("thankyou"):
+        make_final(prs, data, T)
 
     prs.save(output_path)
     n = len(prs.slides._sldIdLst)
-    print(f"✅  {n} slides [{T.get('LAYOUT','classic')}·{key}] → {output_path}",
+    print("✅  %d slides [%s·%s] → %s" % (n, T.get("LAYOUT","classic"), key, output_path),
           file=sys.stderr)
 
 
