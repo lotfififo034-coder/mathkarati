@@ -1,13 +1,11 @@
 """
-مذكرتي Pro v4 — محركان + نظام ألوان وخطوط
-Engine A: Classic (python-pptx) — 3 layouts × 8 palettes
-Engine B: MathKarati v3 (Node/PptxGenJS) — 3 premium styles
+مذكرتي Pro v7 — Canva Level
+3 محركات: Classic · Canva · Premium(Node)
 """
 import os, sys, json, subprocess, tempfile, logging, io
 from flask import Flask, request, send_file, jsonify, send_from_directory, make_response
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
-from generator_classic import generate_presentation as gen_classic
 
 app = Flask(__name__, static_folder="public", static_url_path="")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -15,6 +13,9 @@ log = logging.getLogger(__name__)
 
 NODE_SCRIPT  = os.path.join(os.path.dirname(__file__), "node_scripts", "generator_api.js")
 NODE_MODULES = os.path.join(os.path.dirname(__file__), "node_scripts", "node_modules")
+
+CLASSIC_THEMES = {'navy_gold','dark_teal','burgundy','forest','midnight_purple','charcoal_orange','ice_blue','sand_gold'}
+PREMIUM_THEMES = {'noir','atlas','sakura'}
 
 @app.after_request
 def cors(r):
@@ -38,7 +39,7 @@ def index():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "version": "4.0"}), 200
+    return jsonify({"status": "ok", "version": "7.0", "engines": ["canva", "classic", "premium"]}), 200
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -49,28 +50,37 @@ def generate():
         if not data.get("studentName") or not data.get("titleAr"):
             return jsonify({"error": "اسم الطالب وعنوان المذكرة مطلوبان"}), 400
 
-        engine = data.get("engine", "classic")
-        log.info(f"[{engine}] theme={data.get('theme')} student={data.get('studentName','?')}")
+        engine = data.get("engine", "canva")
+        theme  = data.get("theme", "navy_gold")
+        log.info(f"[{engine}] theme={theme} student={data.get('studentName','?')[:20]}")
 
-        if engine == "premium":
+        if engine == "premium" or theme in PREMIUM_THEMES:
             return _gen_premium(data)
-        else:
-            return _gen_classic(data)
+        elif engine == "classic":
+            return _gen_python(data, "generator_classic")
+        else:  # canva (default)
+            return _gen_python(data, "generator_canva")
 
     except Exception as e:
-        log.error(f"Error: {e}", exc_info=True)
+        log.error(f"Unexpected: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
-def _gen_classic(data):
+def _gen_python(data, module_name):
     try:
+        mod = __import__(module_name)
+        # reload to pick up any changes
+        import importlib
+        mod = importlib.import_module(module_name)
+
         with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
             path = f.name
-        gen_classic(data, path)
+        mod.generate_presentation(data, path)
         with open(path, "rb") as f:
             pptx_bytes = f.read()
         os.unlink(path)
-        name = data.get("studentName", "مذكرة").replace(" ", "_")
+
+        name = data.get("studentName","مذكرة").replace(" ","_")
         return send_file(
             io.BytesIO(pptx_bytes),
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -78,8 +88,8 @@ def _gen_classic(data):
             download_name=f"عرض_{name}.pptx",
         )
     except Exception as e:
-        log.error(f"Classic engine error: {e}", exc_info=True)
-        return jsonify({"error": f"خطأ في المحرك الكلاسيكي: {str(e)[:300]}"}), 500
+        log.error(f"{module_name} error: {e}", exc_info=True)
+        return jsonify({"error": f"خطأ في المحرك: {str(e)[:300]}"}), 500
 
 
 def _gen_premium(data):
@@ -99,7 +109,7 @@ def _gen_premium(data):
         pptx_bytes = result.stdout
         if len(pptx_bytes) < 1000:
             return jsonify({"error": "ملف فارغ من المحرك"}), 500
-        name = data.get("studentName", "مذكرة").replace(" ", "_")
+        name = data.get("studentName","مذكرة").replace(" ","_")
         return send_file(
             io.BytesIO(pptx_bytes),
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",

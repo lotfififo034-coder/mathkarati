@@ -1002,6 +1002,94 @@ function slide12_Conclusion(prs, S, d) {
 // ═══════════════════════════════════════════════════════
 // ORCHESTRATOR
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// INTRO SLIDE — مقدمة + خطة الدراسة
+// ═══════════════════════════════════════════════════════
+function slideIntro(prs, S, d) {
+  const slide = prs.addSlide();
+  slide.background = { color: S.ink };
+  decoCircle(slide, S.accent, MX + 0.8, H/2, 2.2, 0.05);
+
+  overline(slide, S, 'INTRODUCTION  ·  مقدمة', MX, MY, W-MX*2);
+  slide.addText(safe(d.introOverview, ''), {
+    x: MX, y: MY+0.28, w: W-MX*2, h: H*0.48,
+    fontSize: 14, fontFace: S.af, color: S.textL,
+    align: 'right', rtlMode: true, valign: 'top', margin: 0,
+  });
+  if (d.introApproach) {
+    const ay = H * 0.62;
+    slide.addShape('rect', { x: MX, y: ay, w: W-MX*2, h: H-ay-MY*0.6, fill: { color: S.inkMid }, line: { type: 'none' } });
+    slide.addShape('rect', { x: MX, y: ay, w: 0.10, h: H-ay-MY*0.6, fill: { color: S.accent }, line: { type: 'none' } });
+    slide.addText('المقاربة النظرية', { x: MX+0.20, y: ay+0.10, w: W-MX*2-0.24, h: 0.38,
+      fontSize: 12, fontFace: S.af, bold: true, color: S.accent, align: 'right', rtlMode: true, margin: 0 });
+    slide.addText(safe(d.introApproach), { x: MX+0.20, y: ay+0.52, w: W-MX*2-0.24, h: H-ay-MY*0.6-0.62,
+      fontSize: 12, fontFace: S.af, color: S.textL, align: 'right', rtlMode: true, valign: 'top', margin: 0 });
+  }
+  return slide;
+}
+
+function slidePlan(prs, S, d, chapters) {
+  const slide = prs.addSlide();
+  slide.background = { color: S.ink };
+  overline(slide, S, "PLAN ETUDE  \u00b7  \u062e\u0637\u0629 \u0627\u0644\u062f\u0631\u0627\u0633\u0629", MX, MY);
+  slide.addText('خطة الدراسة', { x: MX, y: MY+0.26, w: W-MX*2, h: 0.70,
+    fontSize: 28, fontFace: S.af, bold: true, color: S.textL, align: 'right', rtlMode: true, valign: 'middle', margin: 0 });
+  rule(slide, S.accent, MX, MY+1.02, W-MX*2, 0.04);
+
+  const n = Math.min(chapters.length, 4);
+  const cw = (W-MX*2-GU*(n-1))/n;
+  const gridY = MY+1.20;
+  const gridH = H - gridY - MY*0.5;
+
+  chapters.slice(0,4).forEach((ch, i) => {
+    const cx = MX + i*(cw+GU);
+    const sc = S.chart[i % S.chart.length];
+    slide.addShape('rect', { x: cx, y: gridY, w: cw, h: gridH, fill: { color: S.inkMid }, line: { type: 'none' } });
+    slide.addShape('rect', { x: cx, y: gridY, w: cw, h: 0.06, fill: { color: sc }, line: { type: 'none' } });
+    slide.addShape('rect', { x: cx, y: gridY, w: 0.16, h: gridH, fill: { color: sc }, line: { type: 'none' } });
+    slide.addText('F'+(i+1), { x: cx+0.22, y: gridY+0.08, w: cw-0.30, h: 0.60,
+      fontSize: 24, fontFace: 'Calibri', bold: true, color: sc, align: 'right', margin: 0 });
+    slide.addText(safe(ch.title||ch), { x: cx+0.22, y: gridY+0.72, w: cw-0.30, h: 0.80,
+      fontSize: 12, fontFace: S.af, bold: true, color: S.textL, align: 'right', rtlMode: true, valign: 'middle', margin: 0 });
+    const secs = (ch.sections||[]).filter(Boolean).slice(0,5);
+    if (secs.length) {
+      slide.addShape('rect', { x: cx+0.22, y: gridY+1.56, w: cw-0.30, h: 0.03, fill: { color: S.accent }, line: { type: 'none' } });
+      const sh = (gridH-1.62)/secs.length;
+      secs.forEach((sec, j) => {
+        const sy = gridY+1.62+j*sh;
+        slide.addShape('rect', { x: cx+0.28, y: sy+sh*0.40, w: 0.06, h: 0.06, fill: { color: sc }, line: { type: 'none' } });
+        slide.addText(safe(sec), { x: cx+0.40, y: sy+0.04, w: cw-0.54, h: sh-0.08,
+          fontSize: 10, fontFace: S.af, color: S.textL, align: 'right', rtlMode: true, valign: 'middle', margin: 0 });
+      });
+    }
+  });
+  return slide;
+}
+
+function slideThankYou(prs, S, d) {
+  const slide = prs.addSlide();
+  slide.background = { color: S.ink };
+  // ديكور
+  decoCircle(slide, S.accent, W*0.15, H*0.5, 4.0, 0.05);
+  decoCircle(slide, S.accent, W*0.85, H*0.5, 3.0, 0.04);
+  slide.addShape('rect', { x: 0, y: 0, w: W, h: 0.55, fill: { color: S.accent }, line: { type: 'none' } });
+  slide.addShape('rect', { x: 0, y: H-0.55, w: W, h: 0.55, fill: { color: S.accent }, line: { type: 'none' } });
+  // نص الشكر
+  slide.addText('شكراً لحسن استماعكم', { x: MX, y: H*0.22, w: W-MX*2, h: 1.60,
+    fontSize: 42, fontFace: S.af, bold: true, color: S.textL, align: 'center', valign: 'middle', margin: 0 });
+  slide.addText('Merci pour votre attention  ·  Thank you', { x: MX, y: H*0.22+1.70, w: W-MX*2, h: 0.70,
+    fontSize: 18, fontFace: 'Calibri', italic: true, color: S.accent, align: 'center', valign: 'middle', margin: 0 });
+  // فاصل
+  slide.addShape('rect', { x: W*0.3, y: H*0.64, w: W*0.4, h: 0.06, fill: { color: S.accent }, line: { type: 'none' } });
+  // معلومات
+  const info = [d.studentName, d.supervisor, d.year].filter(Boolean).join('   ·   ');
+  if (info) slide.addText(info, { x: MX, y: H*0.68, w: W-MX*2, h: 0.50,
+    fontSize: 13, fontFace: S.af, color: S.textM, align: 'center', rtlMode: true, margin: 0 });
+  if (d.university) slide.addText(safe(d.university), { x: MX, y: H*0.74, w: W-MX*2, h: 0.40,
+    fontSize: 11, fontFace: S.af, italic: true, color: S.accent, align: 'center', rtlMode: true, margin: 0 });
+  return slide;
+}
+
 async function buildPresentation(data) {
   const styleKey = THEME_MAP[data.theme] || "noir";
   const S = STYLES[styleKey];
@@ -1024,45 +1112,73 @@ async function buildPresentation(data) {
     { title: "الخاتمة", sub: "Conclusion" },
   ].filter(Boolean);
 
-  // Build slides
-  await slide01_Cover(prs, S, data);
-  slide02_TOC(prs, S, chapters);
-  slide03_Problem(prs, S, data);
-  slide04_Objectives(prs, S, data);
+  // helpers
+  const cfg   = data.slides || {};
+  const show  = k => cfg[k] !== false;  // default ON
+  const fl    = k => (data[k] || []).filter(Boolean);
 
-  if (data.importance || data.reasons) {
+  // 1. الغلاف — دائماً
+  await slide01_Cover(prs, S, data);
+
+  // 2. المقدمة
+  if (show('intro') && (data.introOverview || data.introApproach)) {
+    slideIntro(prs, S, data);
+  }
+
+  // 3. خطة الدراسة
+  const chs = (data.chapters||[]).filter(c => c.title);
+  if (show('plan') && chs.length) {
+    slidePlan(prs, S, data, chs);
+  }
+
+  // 4. جدول المحتويات (Premium TOC)
+  slide02_TOC(prs, S, chapters);
+
+  // 5. الإشكالية
+  if (show('problem') && (data.mainProblem || data.mainQuestion || fl('subQuestions').length)) {
+    slide03_Problem(prs, S, data);
+  }
+
+  // 6. الأهداف والفرضيات
+  if (show('objectives') && (fl('objectives').length || fl('hypotheses').length)) {
+    slide04_Objectives(prs, S, data);
+  }
+
+  // 7. الأهمية
+  if (show('importance') && (fl('importance').length || data.reasons)) {
     slide05_Importance(prs, S, data);
   }
 
-  const concepts = (data.concepts || []).filter(c => c.name);
-  if (concepts.length) {
-    slide06_Theory(prs, S, { concepts });
+  // 8. المنهجية
+  if (show('methodology') && (data.methodology || data.sampleType || data.tool)) {
+    slide07_Methodology(prs, S, data);
   }
 
-  slide07_Methodology(prs, S, data);
-
+  // 9. KPI
   const stats = (data.stats || []).filter(s => s.value && s.label);
-  if (stats.length) {
+  if (show('kpi') && stats.length) {
     slide08_KPI(prs, S, { stats, insightAr: data.generalConclusion, generalConclusion: data.generalConclusion });
   }
 
-  if ((data.mainResults || []).filter(Boolean).length) {
+  // 10. النتائج
+  if (show('results') && fl('mainResults').length) {
     slide09_Results(prs, S, data);
   }
 
-  const lits = (data.literatures || []).filter(l => l.title || l.author);
-  if (lits.length) {
-    slide10_Literature(prs, S, {
-      literatures: lits,
-      findings: data.findings || [],
-    });
-  }
-
-  if ((data.recommendations || []).filter(Boolean).length) {
+  // 11. التوصيات
+  if (show('recommendations') && fl('recommendations').length) {
     slide11_Recommendations(prs, S, data);
   }
 
-  slide12_Conclusion(prs, S, data);
+  // 12. الخاتمة
+  if (show('conclusion') && data.generalConclusion) {
+    slide12_Conclusion(prs, S, data);
+  }
+
+  // 13. شريحة الشكر
+  if (show('thankyou')) {
+    slideThankYou(prs, S, data);
+  }
 
   // Write to stdout as base64
   const buf = await prs.write({ outputType: "nodebuffer" });

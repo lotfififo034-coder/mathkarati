@@ -27,7 +27,7 @@ body.ltr input,body.ltr textarea,body.ltr select{direction:ltr;text-align:left}
 .hdr-txt h1{font-size:22px;font-weight:900;color:#fff}
 .hdr-txt h1 em{color:var(--gold);font-style:normal}
 .hdr-txt p{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
-.hdr-pill{margin-top:5px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--gold-l)}
+.hdr-pill{margin-top:5px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:3px 10px;font-size:10px;color:var(--gold-l)}
 .hdr-pill span{width:5px;height:5px;background:var(--ok);border-radius:50%;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .hdr-right{margin-right:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -48,7 +48,7 @@ body.ltr input,body.ltr textarea,body.ltr select{direction:ltr;text-align:left}
 .sn{width:21px;height:21px;border-radius:50%;background:var(--bd);color:var(--muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:var(--t);flex-shrink:0}
 .sb.done .sn{background:var(--ok);color:#fff;font-size:0}.sb.done .sn::after{content:'✓';font-size:10px}
 .sb.active .sn{background:var(--gold);color:var(--navy)}
-.sl{font-size:13px;font-weight:700;color:var(--muted);transition:var(--t)}
+.sl{font-size:12px;font-weight:700;color:var(--muted);transition:var(--t)}
 .sb.active .sl{color:var(--navy)}
 .prog{height:2px;background:linear-gradient(90deg,var(--gold) var(--p,0%),transparent var(--p,0%))}
 
@@ -56,17 +56,17 @@ body.ltr input,body.ltr textarea,body.ltr select{direction:ltr;text-align:left}
 .main{max-width:1100px;margin:0 auto;padding:24px 22px 90px}
 .sec{display:none}.sec.active{display:block;animation:fu .2s ease}
 @keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.sh{margin-bottom:18px}
-.sh h2{font-size:20px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.stag{background:var(--gold);color:var(--navy);font-size:11px;font-weight:800;padding:3px 9px;border-radius:5px;flex-shrink:0}
-.sh p{font-size:13px;color:var(--muted);margin-top:3px}
+.sh{margin-bottom:16px}
+.sh h2{font-size:18px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stag{background:var(--gold);color:var(--navy);font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;flex-shrink:0}
+.sh p{font-size:11px;color:var(--muted);margin-top:2px}
 
 /* CARD */
 .card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r-lg);padding:18px;margin-bottom:13px;box-shadow:var(--sh)}
 .ch{display:flex;align-items:center;gap:9px;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
 .ci{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--navy),var(--navy-m));display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;flex-shrink:0}
-.ch h3{font-size:15px;font-weight:700;color:var(--navy)}
-.cbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--sf);color:var(--muted);border:1px solid var(--bd)}
+.ch h3{font-size:13px;font-weight:700;color:var(--navy)}
+.cbadge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:var(--sf);color:var(--muted);border:1px solid var(--bd)}
 
 /* SLIDE TOGGLE */
 .slide-toggle{margin-right:auto;display:flex;align-items:center;gap:8px}
@@ -76,10 +76,10 @@ body.ltr input,body.ltr textarea,body.ltr select{direction:ltr;text-align:left}
 .tog-dot{width:14px;height:14px;border-radius:50%;transition:all var(--t)}
 .tog-wrap.on .tog-dot{background:var(--ok)}
 .tog-wrap.off .tog-dot{background:var(--err)}
-.tog-lbl{font-size:12px;font-weight:700;transition:all var(--t)}
+.tog-lbl{font-size:10px;font-weight:700;transition:all var(--t)}
 .tog-wrap.on .tog-lbl{color:var(--ok)}
 .tog-wrap.off .tog-lbl{color:var(--err)}
-.tog-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.tog-hint{font-size:9px;color:var(--muted);margin-top:4px}
 .card.slide-disabled{opacity:.55;pointer-events:none}
 .card.slide-disabled .ch{opacity:.6}
 
@@ -91,18 +91,18 @@ body.ltr input,body.ltr textarea,body.ltr select{direction:ltr;text-align:left}
 
 /* FORM */
 .field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:12px;font-weight:700;color:var(--navy)}
+.field label{font-size:11px;font-weight:700;color:var(--navy)}
 .req{color:var(--err)}
 input[type=text],input[type=date],select,textarea{
-  width:100%;padding:9px 12px;border:1.5px solid var(--bd);border-radius:var(--r);
-  font-family:inherit;font-size:14px;color:var(--text);background:var(--wh);
+  width:100%;padding:8px 11px;border:1.5px solid var(--bd);border-radius:var(--r);
+  font-family:inherit;font-size:13px;color:var(--text);background:var(--wh);
   transition:border-color var(--t);direction:rtl;appearance:none}
 body.ltr input[type=text],body.ltr input[type=date],body.ltr select,body.ltr textarea{direction:ltr}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(198,160,60,.1)}
 input.ferr,select.ferr,textarea.ferr{border-color:var(--err)}
 textarea{resize:vertical;min-height:70px;line-height:1.6}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 10px center;padding-left:28px;cursor:pointer}
-.ferr-msg{font-size:12px;color:var(--err);display:none}
+.ferr-msg{font-size:10px;color:var(--err);display:none}
 .has-err .ferr-msg{display:block}
 
 /* CHAPTER TREE */
@@ -110,8 +110,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .cnode{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color var(--t)}
 .cnode:focus-within{border-color:var(--gold)}
 .cnode-hdr{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--wh);border-bottom:1px solid var(--bd)}
-.cnode-icon{width:22px;height:22px;border-radius:5px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.cnode-hdr input{flex:1;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:700;color:var(--navy);direction:inherit}
+.cnode-icon{width:20px;height:20px;border-radius:5px;background:var(--navy);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cnode-hdr input{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:var(--navy);direction:inherit}
 .cnode-hdr input:focus{outline:none}
 .cnode-del{width:22px;height:22px;border:none;background:#FEE2E2;color:var(--err);border-radius:5px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--t)}
 .cnode-del:hover{background:var(--err);color:#fff}
@@ -119,7 +119,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .snode{display:flex;align-items:center;gap:6px;padding:6px 9px;background:var(--wh);border:1px solid var(--bd);border-radius:7px;transition:border-color var(--t)}
 .snode:focus-within{border-color:var(--gold)}
 .snode-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
-.snode input{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--text);direction:inherit}
+.snode input{flex:1;border:none;background:transparent;font-family:inherit;font-size:12px;color:var(--text);direction:inherit}
 .snode input:focus{outline:none}
 .snode-del{width:18px;height:18px;border:none;background:#FEE2E2;color:var(--err);border-radius:4px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .snode-del:hover{background:var(--err);color:#fff}
@@ -132,16 +132,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ditem:focus-within{border-color:var(--gold)}
 .dn{width:21px;height:21px;border-radius:5px;background:var(--navy);color:#fff;font-size:10px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:3px}
 .df{flex:1;display:flex;gap:6px;flex-wrap:wrap}
-.df input,.df textarea{flex:1;min-width:120px;padding:7px 10px;border:1.5px solid var(--bd);border-radius:8px;font-family:inherit;font-size:13px;direction:inherit;background:var(--wh);color:var(--text);transition:border-color var(--t)}
+.df input,.df textarea{flex:1;min-width:120px;padding:7px 10px;border:1.5px solid var(--bd);border-radius:8px;font-family:inherit;font-size:12px;direction:inherit;background:var(--wh);color:var(--text);transition:border-color var(--t)}
 .df input:focus,.df textarea:focus{outline:none;border-color:var(--gold)}
 .df textarea{min-height:50px;resize:vertical}
 .brm{width:24px;height:24px;flex-shrink:0;border:none;background:#FEE2E2;color:var(--err);border-radius:6px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all var(--t);margin-top:2px}
 .brm:hover{background:var(--err);color:#fff}
-.badd{width:100%;padding:7px;border:2px dashed var(--bd);background:transparent;border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:4px}
+.badd{width:100%;padding:7px;border:2px dashed var(--bd);background:transparent;border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:4px}
 .badd:hover{border-color:var(--gold);color:var(--gold);background:rgba(198,160,60,.04)}
 
 /* TIP */
-.tip{background:rgba(198,160,60,.07);border:1px solid rgba(198,160,60,.2);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--navy);display:flex;align-items:flex-start;gap:6px;margin-bottom:11px}
+.tip{background:rgba(198,160,60,.07);border:1px solid rgba(198,160,60,.2);border-radius:8px;padding:9px 12px;font-size:11px;color:var(--navy);display:flex;align-items:flex-start;gap:6px;margin-bottom:11px}
 
 /* KPI */
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px}
@@ -149,24 +149,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .kcard:focus-within{border-color:var(--gold)}
 .kcard input{border:none;background:transparent;font-family:inherit;direction:inherit;width:100%;padding:0}
 .kcard input:focus{outline:none}
-.klbl{font-size:12px;font-weight:700;color:var(--muted)}
-.kval{font-size:22px;font-weight:900;color:var(--navy)}
+.klbl{font-size:10px;font-weight:700;color:var(--muted)}
+.kval{font-size:19px;font-weight:900;color:var(--navy)}
 .kdel{position:absolute;top:5px;left:5px;width:17px;height:17px;border-radius:4px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center}
 .kcard:hover .kdel{display:flex}
 
 /* MODEL PICKER */
-.mpick{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.mpick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
 .mopt input{display:none}
 .mcard{border:3px solid var(--bd);border-radius:13px;cursor:pointer;overflow:hidden;transition:all var(--t);position:relative}
 .mopt input:checked+.mcard{border-color:var(--gold);box-shadow:0 0 0 3px rgba(198,160,60,.18)}
 .mcard-top{padding:16px 16px 12px}
-.mcard-top h4{font-size:15px;font-weight:900;color:#fff}
-.mcard-top p{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px}
+.mcard-top h4{font-size:14px;font-weight:900;color:#fff}
+.mcard-top p{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px}
 .mcheck{position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center}
 .mopt input:checked~.mcard .mcheck{display:flex}
 .mcard-palettes{padding:10px 13px;display:flex;flex-wrap:wrap;gap:5px;background:#fff}
-.mcard-palettes span{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--sf);color:var(--muted);border:1px solid var(--bd)}
-.mcard-count{font-size:11px;color:var(--muted);padding:0 13px 10px;background:#fff}
+.mcard-palettes span{font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--sf);color:var(--muted);border:1px solid var(--bd)}
+.mcard-count{font-size:9px;color:var(--muted);padding:0 13px 10px;background:#fff}
 
 /* COLOR PICKER */
 .cpick{display:grid;gap:9px}
@@ -178,23 +178,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ccard-swatch{height:50px;display:flex;align-items:center;justify-content:center;position:relative}
 .ccard-chk{width:19px;height:19px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center}
 .copt input:checked~.ccard .ccard-chk{display:flex}
-.ccard-info{padding:8px 10px;background:#fff;border-top:1px solid var(--bd)}
-.ccard-name{font-size:12px;font-weight:800;color:var(--navy)}
-.ccard-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.ccard-info{padding:6px 8px;background:#fff;border-top:1px solid var(--bd)}
+.ccard-name{font-size:10px;font-weight:800;color:var(--navy)}
+.ccard-desc{font-size:9px;color:var(--muted);margin-top:1px}
 .color-preview{margin-top:9px;padding:9px 13px;border-radius:9px;font-size:11px;display:flex;align-items:center;gap:8px;min-height:40px}
 
 /* NAV */
 .nbar{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:16px;border-top:1px solid var(--bd)}
-.bprev{padding:9px 20px;border-radius:var(--r);border:1.5px solid var(--bd);background:var(--wh);color:var(--muted);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all var(--t)}
+.bprev{padding:9px 20px;border-radius:var(--r);border:1.5px solid var(--bd);background:var(--wh);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--t)}
 .bprev:hover{background:var(--bd)}
-.bnext{padding:9px 22px;border-radius:var(--r);background:linear-gradient(135deg,var(--navy),var(--navy-m));color:#fff;font-family:inherit;font-size:14px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(7,23,47,.2);transition:all var(--t)}
+.bnext{padding:9px 22px;border-radius:var(--r);background:linear-gradient(135deg,var(--navy),var(--navy-m));color:#fff;font-family:inherit;font-size:13px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(7,23,47,.2);transition:all var(--t)}
 .bnext:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(7,23,47,.28)}
 
 /* GENERATE */
 .garea{text-align:center;padding:20px 0 6px}
 .bgen{padding:13px 40px;border-radius:13px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);font-family:inherit;font-size:15px;font-weight:900;border:none;cursor:pointer;box-shadow:0 6px 22px rgba(198,160,60,.33);transition:all .22s;display:inline-flex;align-items:center;gap:7px}
 .bgen:hover{transform:translateY(-3px);box-shadow:0 11px 30px rgba(198,160,60,.42)}
-.ghint{font-size:12px;color:var(--muted);margin-top:7px}
+.ghint{font-size:10px;color:var(--muted);margin-top:6px}
 
 /* AUTOSAVE */
 .asbar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:600;padding:6px 14px;border-radius:99px;display:flex;align-items:center;gap:5px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 6px 22px rgba(7,23,47,.22)}
@@ -210,8 +210,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mspin{background:linear-gradient(135deg,var(--navy),var(--navy-m));animation:pr 1.5s ease-in-out infinite}
 .mok{background:linear-gradient(135deg,#10B981,#34D399)}
 @keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(7,23,47,.36)}50%{box-shadow:0 0 0 11px rgba(7,23,47,0)}}
-.mbox h3{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:5px}
-.mbox p{font-size:14px;color:var(--muted);margin-bottom:18px}
+.mbox h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.mbox p{font-size:12px;color:var(--muted);margin-bottom:18px}
 .ptrack{height:6px;background:var(--bd);border-radius:99px;overflow:hidden;margin-bottom:6px}
 .pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:99px;transition:width .4s ease;width:0}
 .plbl{font-size:11px;color:var(--muted)}
@@ -220,6 +220,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .bnew{display:block;margin:7px auto 0;padding:7px 18px;border-radius:var(--r);border:1.5px solid var(--bd);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
 .bnew:hover{border-color:var(--gold);color:var(--gold)}
 
+@media(max-width:900px){
+  .mpick{grid-template-columns:1fr 1fr}}
 @media(max-width:660px){
   .mpick,.cpick.classic-colors{grid-template-columns:1fr}
   .cpick.premium-colors{grid-template-columns:1fr}
@@ -362,20 +364,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button class="badd" onclick="addChapter()" data-i18n="add_chapter">＋ إضافة فصل</button>
   </div>
 
-  <!-- شرائح الفواصل بين الفصول -->
-  <div class="card" id="card-chapters_dividers">
-    <div class="ch">
-      <div class="ci">🔖</div>
-      <h3>شرائح فواصل الفصول</h3>
-      <div class="slide-toggle">
-        <div class="tog-wrap on" id="tog-chapters_dividers" onclick="toggleSlide('chapters_dividers')">
-          <div class="tog-dot"></div><span class="tog-lbl" data-i18n="toggle_on">مُفعَّل ✓</span>
-        </div>
-      </div>
-    </div>
-    <div class="tip">📌 <span>شريحة درامية فاصلة تُولَّد تلقائياً لكل فصل — تعرض رقم الفصل وعنوانه ومباحثه بتصميم مختلف حسب الموديل المختار</span></div>
-  </div>
-
   <div class="nbar">
     <button class="bprev" onclick="goTo(0)" data-i18n="prev">→ السابق</button>
     <button class="bnext" onclick="goTo(2)" data-i18n="next">التالي ←</button>
@@ -406,12 +394,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="g g2" style="margin-top:11px">
       <div>
-        <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px" data-i18n="sub_questions">التساؤلات الفرعية <span class="cbadge">حتى 5</span></div>
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px" data-i18n="sub_questions">التساؤلات الفرعية <span class="cbadge">حتى 5</span></div>
         <div class="dlist" id="dl-subQ"></div>
         <button class="badd" onclick="addS('dl-subQ','تساؤل')" data-i18n="add_question">＋ إضافة تساؤل</button>
       </div>
       <div>
-        <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px" data-i18n="hypotheses">الفرضيات <span class="cbadge">حتى 5</span></div>
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px" data-i18n="hypotheses">الفرضيات <span class="cbadge">حتى 5</span></div>
         <div class="dlist" id="dl-hyp"></div>
         <button class="badd" onclick="addS('dl-hyp','فرضية')" data-i18n="add_hypothesis">＋ إضافة فرضية</button>
       </div>
@@ -444,38 +432,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="dlist" id="dl-importance"></div>
     <button class="badd" onclick="addS('dl-importance','أهمية')" data-i18n="add_item">＋ إضافة نقطة</button>
-  </div>
-
-  <!-- الإطار النظري والمفاهيمي -->
-  <div class="card" id="card-theory">
-    <div class="ch">
-      <div class="ci">📖</div>
-      <h3>الإطار النظري والمفاهيمي</h3>
-      <div class="slide-toggle">
-        <div class="tog-wrap off" id="tog-theory" onclick="toggleSlide('theory')">
-          <div class="tog-dot"></div><span class="tog-lbl" data-i18n="toggle_off">معطَّل ✗</span>
-        </div>
-      </div>
-    </div>
-    <div class="tip">💡 <span>أضف المفاهيم والتعريفات الأساسية — تُعرض في بطاقات منظمة (حتى 6 مفاهيم)</span></div>
-    <div class="dlist" id="dl-concepts"></div>
-    <button class="badd" onclick="addConcept()">＋ إضافة مفهوم</button>
-  </div>
-
-  <!-- الدراسات السابقة والأدبيات -->
-  <div class="card" id="card-literature">
-    <div class="ch">
-      <div class="ci">🔬</div>
-      <h3>مراجعة الأدبيات والدراسات السابقة</h3>
-      <div class="slide-toggle">
-        <div class="tog-wrap off" id="tog-literature" onclick="toggleSlide('literature')">
-          <div class="tog-dot"></div><span class="tog-lbl" data-i18n="toggle_off">معطَّل ✗</span>
-        </div>
-      </div>
-    </div>
-    <div class="tip">💡 <span>أضف الدراسات السابقة — تُعرض في جدول منظم (حتى 5 دراسات)</span></div>
-    <div class="dlist" id="dl-literature"></div>
-    <button class="badd" onclick="addLitEntry()">＋ إضافة دراسة سابقة</button>
   </div>
 
   <div class="nbar">
@@ -512,7 +468,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- محاور الأداة -->
     <div style="margin-top:13px">
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px" data-i18n="tool_axes">محاور الأداة (الاستمارة)</div>
+      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px" data-i18n="tool_axes">محاور الأداة (الاستمارة)</div>
       <div class="dlist" id="dl-axes"></div>
       <button class="badd" onclick="addS('dl-axes','محور')" data-i18n="add_axis">＋ إضافة محور</button>
     </div>
@@ -526,7 +482,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- الاختبارات -->
     <div style="margin-top:13px">
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px" data-i18n="statistical_tests">الاختبارات الإحصائية</div>
+      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px" data-i18n="statistical_tests">الاختبارات الإحصائية</div>
       <div class="dlist" id="dl-tests"></div>
       <button class="badd" onclick="addS('dl-tests','اختبار')" data-i18n="add_test">＋ إضافة اختبار</button>
     </div>
@@ -660,28 +616,33 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <div class="card">
     <div class="ch"><div class="ci">📐</div><h3 data-i18n="model_step_a">الخطوة أ — اختر الموديل</h3></div>
-    <div class="mpick">
+    <div class="mpick" style="grid-template-columns:1fr 1fr 1fr">
+
+      <!-- CANVA — الافتراضي الجديد -->
       <label class="mopt">
-        <input type="radio" name="engine" value="classic" checked onchange="onEngineChange()">
-        <div class="mcard">
+        <input type="radio" name="engine" value="canva" checked onchange="onEngineChange()">
+        <div class="mcard" style="position:relative">
           <div class="mcheck">✓</div>
-          <div class="mcard-top" style="background:linear-gradient(135deg,#07172F,#0E274D)">
-            <h4 data-i18n="classic_name">Classic Academic</h4>
-            <p data-i18n="classic_desc">3 هياكل بصرية × 8 خيارات لونية</p>
+          <div style="position:absolute;top:10px;right:10px;background:#C6A03C;color:#07172F;font-size:9px;font-weight:900;padding:2px 8px;border-radius:99px;z-index:2">✨ جديد</div>
+          <div class="mcard-top" style="background:linear-gradient(135deg,#07172F 0%,#1A3A6E 60%,#C6A03C 100%)">
+            <h4 style="color:#fff;font-size:15px">Canva Level</h4>
+            <p style="color:rgba(255,255,255,.75)">سينمائي · 3 عائلات × 8 ألوان · مستوى Canva Pro</p>
           </div>
           <div class="mcard-palettes">
-            <span style="background:#07172F;color:#C6A03C;border-color:#07172F">أزرق ذهبي</span>
-            <span style="background:#061A28;color:#00D4AA;border-color:#061A28">تيل</span>
-            <span style="background:#3A0018;color:#F0B8CC;border-color:#3A0018">بورغندي</span>
-            <span style="background:#0F2D1E;color:#86BB56;border-color:#0F2D1E">غابي</span>
-            <span style="background:#12052E;color:#C07AFF;border-color:#12052E">بنفسجي</span>
-            <span style="background:#1A1A2E;color:#FF6B35;border-color:#1A1A2E">برتقالي</span>
-            <span style="background:#0A254A;color:#4AB3FF;border-color:#0A254A">ثلجي</span>
-            <span style="background:#2C1A0E;color:#E8B964;border-color:#2C1A0E">ذهبي رملي</span>
+            <span style="background:#07172F;color:#C6A03C;border-color:#07172F">NOIR ذهبي</span>
+            <span style="background:#061A28;color:#00C9A7;border-color:#061A28">VIVID تيل</span>
+            <span style="background:#3A0018;color:#E84393;border-color:#3A0018">VIVID بورغندي</span>
+            <span style="background:#0F2D1E;color:#86BB56;border-color:#0F2D1E">NOIR غابي</span>
+            <span style="background:#12052E;color:#C07AFF;border-color:#12052E">NOIR بنفسجي</span>
+            <span style="background:#1A1A2E;color:#FF6B35;border-color:#1A1A2E">VIVID برتقالي</span>
+            <span style="background:#0A254A;color:#4AB3FF;border-color:#0A254A">MINIMAL ثلجي</span>
+            <span style="background:#2C1A0E;color:#C8861F;border-color:#2C1A0E">NOIR رملي</span>
           </div>
-          <div class="mcard-count" data-i18n="classic_engine">⚙️ python-pptx · 3 تخطيطات</div>
+          <div class="mcard-count">⚙️ python-pptx · زوايا دائرية · ظلال · 3 عائلات NOIR/VIVID/MINIMAL</div>
         </div>
       </label>
+
+      <!-- PREMIUM — Node.js PptxGenJS -->
       <label class="mopt">
         <input type="radio" name="engine" value="premium" onchange="onEngineChange()">
         <div class="mcard">
@@ -691,19 +652,44 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <p data-i18n="premium_desc">تصاميم عالمية · 3 أنماط فاخرة</p>
           </div>
           <div class="mcard-palettes">
-            <span style="background:#0A0C12;color:#C9A84C;border-color:#0A0C12">Noir</span>
-            <span style="background:#040D1E;color:#00D4FF;border-color:#040D1E">Atlas</span>
-            <span style="background:#1C0E2B;color:#FF5C5C;border-color:#1C0E2B">Sakura</span>
+            <span style="background:#0A0C12;color:#C9A84C;border-color:#0A0C12">Noir Académique</span>
+            <span style="background:#040D1E;color:#00D4FF;border-color:#040D1E">Atlas Corporate</span>
+            <span style="background:#1C0E2B;color:#FF5C5C;border-color:#1C0E2B">Sakura Créative</span>
           </div>
-          <div class="mcard-count" data-i18n="premium_engine">⚙️ PptxGenJS · معماريات متميزة</div>
+          <div class="mcard-count" data-i18n="premium_engine">⚙️ PptxGenJS · معماريات سينمائية</div>
         </div>
       </label>
+
+      <!-- CLASSIC — المحرك الأصلي -->
+      <label class="mopt">
+        <input type="radio" name="engine" value="classic" onchange="onEngineChange()">
+        <div class="mcard">
+          <div class="mcheck">✓</div>
+          <div class="mcard-top" style="background:linear-gradient(135deg,#1A2540,#2D3E6B)">
+            <h4 style="color:#fff">Classic Academic</h4>
+            <p style="color:rgba(255,255,255,.6)">تقليدي · 3 هياكل × 8 ألوان</p>
+          </div>
+          <div class="mcard-palettes">
+            <span style="background:#07172F;color:#C6A03C;border-color:#07172F">أزرق ذهبي</span>
+            <span style="background:#061A28;color:#00D4AA;border-color:#061A28">تيل</span>
+            <span style="background:#3A0018;color:#F0B8CC;border-color:#3A0018">بورغندي</span>
+            <span style="background:#0F2D1E;color:#86BB56;border-color:#0F2D1E">غابي</span>
+            <span style="background:#12052E;color:#C07AFF;border-color:#12052E">بنفسجي</span>
+            <span>برتقالي</span><span>ثلجي</span><span>رملي</span>
+          </div>
+          <div class="mcard-count" data-i18n="classic_engine">⚙️ python-pptx · 3 هياكل Classic/Bold/Minimal</div>
+        </div>
+      </label>
+
     </div>
   </div>
 
   <div class="card">
     <div class="ch"><div class="ci">🎨</div><h3 data-i18n="model_step_b">الخطوة ب — اختر اللون</h3></div>
-    <div id="classic-colors-wrap">
+    <div id="canva-colors-wrap">
+      <div class="cpick classic-colors" id="cpick-canva"></div>
+    </div>
+    <div id="classic-colors-wrap" style="display:none">
       <div class="cpick classic-colors" id="cpick-classic"></div>
     </div>
     <div id="premium-colors-wrap" style="display:none">
@@ -1149,8 +1135,7 @@ function setLang(lang) {
 // ═══════════════════════════════════════════════════════
 const slideStates = {
   intro:true, plan:true, problem:true, objectives:true, importance:true,
-  theory:false, literature:false,
-  methodology:true, chapters_dividers:true, kpi:true, results:true, conclusion:true,
+  methodology:true, kpi:true, results:true, conclusion:true,
   recommendations:true, future:false, references:false, thankyou:true
 };
 
@@ -1186,54 +1171,61 @@ const PREMIUM_PALETTES = [
   {id:'sakura',name:'Sakura Créative',desc:'إبداعي — مرجاني · توكيو ستوديو',    bg1:'#1C0E2B',bg2:'#2D1B45',ac:'#FF5C5C',bars:['#FF5C5C','#8B5CF6','#FFAAAA','#4C1D80']},
 ];
 
+// Canva palettes = same as Classic palettes (same 8 colors, new engine)
+const CANVA_PALETTES = CLASSIC_PALETTES;
+
 (function buildPickers(){
-  const gc=document.getElementById('cpick-classic');
-  gc.innerHTML=CLASSIC_PALETTES.map((p,i)=>`
-    <label class="copt">
-      <input type="radio" name="palette" value="${p.id}" ${i===0?'checked':''} onchange="onPaletteChange()">
-      <div class="ccard">
-        <div class="ccard-swatch" style="background:linear-gradient(135deg,${p.bg1},${p.bg2})">
-          <div style="display:flex;gap:3px;align-items:flex-end">${p.bars.map((c,j)=>`<div style="width:9px;height:${[15,10,12,8][j]}px;background:${c};border-radius:2px"></div>`).join('')}</div>
-          <div class="ccard-chk">✓</div>
+  function renderPalettes(containerId, palettes, checked0=false) {
+    const g = document.getElementById(containerId);
+    if (!g) return;
+    g.innerHTML = palettes.map((p,i) => `
+      <label class="copt">
+        <input type="radio" name="palette" value="${p.id}" ${(i===0&&checked0)?'checked':''} onchange="onPaletteChange()">
+        <div class="ccard">
+          <div class="ccard-swatch" style="background:linear-gradient(135deg,${p.bg1},${p.bg2});height:${palettes.length<=3?'65':'50'}px">
+            <div style="display:flex;gap:3px;align-items:flex-end">${p.bars.map((c,j)=>`<div style="width:${palettes.length<=3?13:9}px;height:${[15,10,12,8][j]}px;background:${c};border-radius:2px"></div>`).join('')}</div>
+            <div class="ccard-chk">✓</div>
+          </div>
+          <div class="ccard-info"><div class="ccard-name" style="color:${p.ac}">${p.name}</div><div class="ccard-desc">${p.desc}</div></div>
         </div>
-        <div class="ccard-info"><div class="ccard-name">${p.name}</div><div class="ccard-desc">${p.desc}</div></div>
-      </div>
-    </label>`).join('');
-  const gp=document.getElementById('cpick-premium');
-  gp.innerHTML=PREMIUM_PALETTES.map((p,i)=>`
-    <label class="copt">
-      <input type="radio" name="palette" value="${p.id}" onchange="onPaletteChange()">
-      <div class="ccard">
-        <div class="ccard-swatch" style="background:linear-gradient(135deg,${p.bg1},${p.bg2});height:65px">
-          <div style="display:flex;gap:4px;align-items:flex-end">${p.bars.map((c,j)=>`<div style="width:13px;height:${[19,13,16,10][j]}px;background:${c};border-radius:2px"></div>`).join('')}</div>
-          <div class="ccard-chk">✓</div>
-        </div>
-        <div class="ccard-info"><div class="ccard-name">${p.name}</div><div class="ccard-desc">${p.desc}</div></div>
-      </div>
-    </label>`).join('');
+      </label>`).join('');
+  }
+  renderPalettes('cpick-canva',   CANVA_PALETTES,   true);
+  renderPalettes('cpick-classic', CLASSIC_PALETTES, false);
+  renderPalettes('cpick-premium', PREMIUM_PALETTES, false);
   onPaletteChange();
 })();
 
 function onEngineChange(){
   const eng=document.querySelector('input[name="engine"]:checked').value;
-  document.getElementById('classic-colors-wrap').style.display=eng==='classic'?'':'none';
-  document.getElementById('premium-colors-wrap').style.display=eng==='premium'?'':'none';
-  const first=document.querySelector(`#cpick-${eng} input[type=radio]`);
-  if(first){first.checked=true;}
+  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
+  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
+  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
+  // Select first palette of chosen engine
+  const map = {canva:'cpick-canva', classic:'cpick-classic', premium:'cpick-premium'};
+  const first = document.querySelector(`#${map[eng]||'cpick-canva'} input[type=radio]`);
+  if (first) first.checked = true;
   onPaletteChange();
 }
 
 function onPaletteChange(){
-  const eng=document.querySelector('input[name="engine"]:checked')?.value||'classic';
-  const all=eng==='classic'?CLASSIC_PALETTES:PREMIUM_PALETTES;
-  const sel=document.querySelector('input[name="palette"]:checked')?.value;
-  const p=all.find(x=>x.id===sel)||all[0];
-  if(!p)return;
-  const prev=document.getElementById('color-preview');
+  const eng=document.querySelector('input[name="engine"]:checked')?.value||'canva';
+  const palMap = {canva:CANVA_PALETTES, classic:CLASSIC_PALETTES, premium:PREMIUM_PALETTES};
+  const all = palMap[eng] || CANVA_PALETTES;
+  const sel = document.querySelector('input[name="palette"]:checked')?.value;
+  const p   = all.find(x=>x.id===sel) || all[0];
+  if(!p) return;
+  const prev = document.getElementById('color-preview');
   prev.style.background=`linear-gradient(135deg,${p.bg1},${p.bg2})`;
-  prev.innerHTML=`<div style="display:flex;gap:3px;align-items:flex-end">${p.bars.map((c,j)=>`<div style="width:13px;height:${[20,13,16,10][j]}px;background:${c};border-radius:2px"></div>`).join('')}</div>
-  <div style="color:#fff;font-size:13px;font-weight:800;margin-right:10px;text-shadow:0 1px 3px rgba(0,0,0,.4)">${p.name}</div>
-  <div style="color:rgba(255,255,255,.85);font-size:11px;text-shadow:0 1px 2px rgba(0,0,0,.3)">${p.desc}</div>`;
+  const fam = eng==='canva' ? (
+    ['navy_gold','forest','midnight_purple','sand_gold'].includes(p.id) ? 'NOIR' :
+    ['dark_teal','charcoal_orange','burgundy'].includes(p.id) ? 'VIVID' : 'MINIMAL'
+  ) : '';
+  const famBadge = fam ? `<span style="background:rgba(255,255,255,.15);padding:1px 6px;border-radius:99px;font-size:9px;font-weight:700">${fam}</span>` : '';
+  prev.innerHTML=`<div style="display:flex;gap:3px;align-items:flex-end">${p.bars.map((c,j)=>`<div style="width:11px;height:${[17,11,14,9][j]}px;background:${c};border-radius:2px"></div>`).join('')}</div>
+  <div style="color:#fff;font-size:11px;font-weight:700;margin-right:8px">${p.name}</div>
+  ${famBadge}
+  <div style="color:rgba(255,255,255,.6);font-size:9px;margin-right:auto">${p.desc}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1327,63 +1319,12 @@ function addKPI(){
 }
 function getKPIs(){return Array.from(document.querySelectorAll('#kgrid .kcard')).map(c=>{const[l,v]=c.querySelectorAll('input');return{label:l?.value.trim()||'',value:v?.value.trim()||''};}).filter(k=>k.label&&k.value);}
 
-// ── CONCEPTS (theory) ────────────────────────────────────────────────
-function addConcept(name='', def='') {
-  const list = document.getElementById('dl-concepts');
-  const n = list.querySelectorAll('.ditem').length + 1;
-  const item = document.createElement('div'); item.className = 'ditem';
-  item.innerHTML = `
-    <div class="dn">${n}</div>
-    <div class="df" style="flex-direction:column;gap:4px">
-      <input type="text" placeholder="اسم المفهوم / المصطلح" value="${name}" style="font-weight:700">
-      <textarea rows="2" placeholder="التعريف أو الشرح المختصر">${def}</textarea>
-    </div>
-    <button class="brm" onclick="this.closest('.ditem').remove()">×</button>`;
-  list.appendChild(item);
-}
-
-function getConcepts() {
-  return Array.from(document.querySelectorAll('#dl-concepts .ditem')).map(el => {
-    const inp = el.querySelectorAll('input,textarea');
-    return { name: inp[0]?.value.trim()||'', def: inp[1]?.value.trim()||'' };
-  }).filter(c => c.name);
-}
-
-// ── LITERATURE ───────────────────────────────────────────────────────
-function addLitEntry(author='', year='', title='', findings='') {
-  const list = document.getElementById('dl-literature');
-  const n = list.querySelectorAll('.ditem').length + 1;
-  const item = document.createElement('div'); item.className = 'ditem';
-  item.innerHTML = `
-    <div class="dn">${n}</div>
-    <div class="df" style="flex-wrap:wrap;gap:5px">
-      <input type="text" placeholder="الباحث / المؤلف" value="${author}" style="flex:1;min-width:120px">
-      <input type="text" placeholder="السنة" value="${year}" style="flex:0 0 70px">
-      <input type="text" placeholder="عنوان الدراسة" value="${title}" style="flex:2;min-width:180px">
-      <input type="text" placeholder="أبرز النتائج" value="${findings}" style="flex:2;min-width:180px">
-    </div>
-    <button class="brm" onclick="this.closest('.ditem').remove()">×</button>`;
-  list.appendChild(item);
-}
-
-function getLiterature() {
-  return Array.from(document.querySelectorAll('#dl-literature .ditem')).map(el => {
-    const inp = el.querySelectorAll('input');
-    return {
-      author: inp[0]?.value.trim()||'',
-      year:   inp[1]?.value.trim()||'',
-      title:  inp[2]?.value.trim()||'',
-      findings: inp[3]?.value.trim()||''
-    };
-  }).filter(l => l.author || l.title);
-}
-
 // ═══════════════════════════════════════════════════════
 // COLLECT
 // ═══════════════════════════════════════════════════════
 function collect(){
   const v=id=>document.getElementById(id)?.value.trim()||'';
-  const eng=document.querySelector('input[name="engine"]:checked')?.value||'classic';
+  const eng=document.querySelector('input[name="engine"]:checked')?.value||'canva';
   const theme=document.querySelector('input[name="palette"]:checked')?.value||(eng==='classic'?'navy_gold':'noir');
   return{
     studentName:v('studentName'),studentId:v('studentId'),major:v('major'),
@@ -1402,7 +1343,6 @@ function collect(){
     mainProblem:v('mainProblem'), mainQuestion:v('mainQuestion'),
     subQuestions:getL('dl-subQ'), hypotheses:getL('dl-hyp'),
     objectives:getL('dl-obj'), importance:getL('dl-importance'),
-    concepts:getConcepts(), literature:getLiterature(),
     // Step 3
     methodology:v('methodology'), dataSource:v('dataSource'),
     sampleType:v('sampleType'), sampleSize:v('sampleSize'),
@@ -1527,7 +1467,7 @@ function loadDraft(){
     ].forEach(id=>sv(id,d[id]));
     if(d.level){const sel=document.getElementById('level');if(sel)sel.value=d.level;}
     if(d.theme){const r=document.querySelector(`input[name="palette"][value="${d.theme}"]`);if(r){r.checked=true;}}
-    if(d.engine){const r=document.querySelector(`input[name="engine"][value="${d.engine}"]`);if(r){r.checked=true;onEngineChange();}}
+    if(d.engine){const r=document.querySelector(`input[name="engine"][value="${d.engine}"]`);if(r){r.checked=true;}onEngineChange();}
     if(d.slideStates)Object.assign(slideStates,d.slideStates);
     // Re-apply toggle states
     Object.keys(slideStates).forEach(k=>{
@@ -1541,10 +1481,6 @@ function loadDraft(){
     rL('dl-importance',d.importance); rL('dl-tests',d.statisticalTests);
     rL('dl-axes',d.toolAxes); rL('dl-results',d.mainResults);
     rL('dl-recs',d.recommendations); rL('dl-future',d.futureWork); rL('dl-refs',d.references);
-    // Concepts
-    if(d.concepts?.length){document.getElementById('dl-concepts').innerHTML='';d.concepts.forEach(c=>addConcept(c.name||'',c.def||''));}
-    // Literature
-    if(d.literature?.length){document.getElementById('dl-literature').innerHTML='';d.literature.forEach(l=>addLitEntry(l.author||'',l.year||'',l.title||'',l.findings||''));}
     // Chapters
     if(d.chapters?.length){
       document.getElementById('ctree').innerHTML='';
@@ -1557,63 +1493,22 @@ function loadDraft(){
 }
 
 // ═══════════════════════════════════════════════════════
-// API BASE — works on Render, localhost, or any domain
-// ═══════════════════════════════════════════════════════
-const API_BASE = (()=>{
-  // If opened as file:// there's no server — warn clearly
-  if(location.protocol === 'file:') return null;
-  // Otherwise use same origin (works on Render + localhost)
-  return '';
-})();
-
-// ═══════════════════════════════════════════════════════
 // GENERATE
 // ═══════════════════════════════════════════════════════
 async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
-
-  // Guard: if opened as a local file, show clear error immediately
-  if(API_BASE === null){
-    alert('⚠️ لا يمكن توليد العرض عند فتح الملف مباشرة.\nيرجى تشغيل الخادم (python app.py) ثم فتح http://localhost:5000');
-    return;
-  }
-
   openM();
-
-  // Start progress animation AND the actual fetch in parallel
-  const progressDone = (async()=>{
-    const steps=[[10,''],[25,t('modal_sub')],[45,''],[65,''],[82,''],[94,'']];
-    for(const[p,m] of steps){await sl(300);setP(p,m);}
-  })();
-
+  const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
+  for(const[p,m] of steps){await sl(380);setP(p,m);}
   try{
-    const r=await fetch(API_BASE+'/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(d)
-    });
-    if(!r.ok){
-      let errMsg='Server error '+r.status;
-      try{const e=await r.json();errMsg=e.error||errMsg;}catch{}
-      throw new Error(errMsg);
-    }
-    const blob=await r.blob();
-    if(blob.size<500) throw new Error('الملف المُولَّد فارغ — تحقق من الخادم');
-    const url=URL.createObjectURL(blob);
-    await progressDone; // wait for animation to finish
-    setP(100,t('modal_ok'));await sl(250);
+    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
+    const blob=await r.blob(),url=URL.createObjectURL(blob);
+    setP(100,t('modal_ok'));await sl(300);
     showOk(url,d.studentName);
     localStorage.removeItem('mp_v4');
-  }catch(e){
-    closeM();
-    // Show a user-friendly Arabic error
-    const msg = e.message||'حدث خطأ غير متوقع';
-    const isNet = msg.includes('Failed to fetch')||msg.includes('NetworkError')||msg.includes('Load failed');
-    alert(isNet
-      ? '❌ تعذّر الاتصال بالخادم.\nتأكد أن الخادم يعمل على http://localhost:5000 أو تحقق من رابط النشر.'
-      : '❌ خطأ في توليد العرض:\n'+msg);
-  }
+  }catch(e){closeM();alert(e.message);}
 }
 
 function openM(){
@@ -1622,7 +1517,7 @@ function openM(){
   document.getElementById('mtitle').textContent=t('modal_title');
   document.getElementById('msub').textContent=t('modal_sub');
   document.getElementById('ptrack').style.display='';document.getElementById('plbl').style.display='';
-  setP(3, t('modal_sub'));
+  setP(0,'');
 }
 function closeM(){document.getElementById('ov').classList.remove('open');}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
