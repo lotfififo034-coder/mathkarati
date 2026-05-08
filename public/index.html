@@ -147,10 +147,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px}
 .kcard{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:10px;position:relative}
 .kcard:focus-within{border-color:var(--gold)}
+.kcard.kpi-warn{border-color:#F59E0B!important}
 .kcard input{border:none;background:transparent;font-family:inherit;direction:inherit;width:100%;padding:0}
 .kcard input:focus{outline:none}
 .klbl{font-size:10px;font-weight:700;color:var(--muted)}
 .kval{font-size:19px;font-weight:900;color:var(--navy)}
+.kval-hint{font-size:9px;color:#9CA3AF;margin-top:2px;display:none}
+.kcard.kpi-warn .kval-hint{display:block;color:#F59E0B}
 .kdel{position:absolute;top:5px;left:5px;width:17px;height:17px;border-radius:4px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center}
 .kcard:hover .kdel{display:flex}
 
@@ -219,6 +222,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .bdl:hover{transform:translateY(-2px)}
 .bnew{display:block;margin:7px auto 0;padding:7px 18px;border-radius:var(--r);border:1.5px solid var(--bd);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
 .bnew:hover{border-color:var(--gold);color:var(--gold)}
+.fallback-note{margin:10px 0 2px;padding:8px 12px;background:rgba(255,180,0,.12);border:1px solid rgba(255,180,0,.3);border-radius:7px;font-size:11px;color:#e8c060;text-align:center}
 
 @media(max-width:900px){
   .mpick{grid-template-columns:1fr 1fr}}
@@ -695,6 +699,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="premium-colors-wrap" style="display:none">
       <div class="cpick premium-colors" id="cpick-premium"></div>
     </div>
+    <div id="premium-warn" style="display:none;margin:8px 0;padding:9px 13px;background:rgba(255,180,0,.13);border:1px solid rgba(255,180,0,.35);border-radius:8px;font-size:12px;color:#f0c060">
+      ⚠️ <span data-i18n="premium_warn">محرك Premium يتطلب Node.js — قد يتحوّل تلقائياً لمحرك Canva إذا لم يكن متاحاً على الخادم</span>
+    </div>
     <div class="color-preview" id="color-preview"></div>
   </div>
 
@@ -803,6 +810,7 @@ const I18N = {
     premium_desc: "تصاميم عالمية · 3 أنماط فاخرة",
     classic_engine: "⚙️ المحرك: python-pptx · 3 تخطيطات",
     premium_engine: "⚙️ المحرك: PptxGenJS · معماريات متميزة",
+    premium_warn: "⚙️ محرك Premium يتطلب Node.js — قد يتحوّل تلقائياً لمحرك Canva إذا لم يكن متاحاً",
     generate_btn: "🚀 إنشاء العرض الاحترافي",
     generating_hint: "⚡ يستغرق التوليد 10–40 ثانية",
 
@@ -934,6 +942,7 @@ const I18N = {
     premium_desc: "Designs mondiaux · 3 styles exclusifs",
     classic_engine: "⚙️ Moteur: python-pptx · 3 mises en page",
     premium_engine: "⚙️ Moteur: PptxGenJS · architectures distinctes",
+    premium_warn: "⚙️ Premium nécessite Node.js — bascule automatique vers Canva si indisponible",
     generate_btn: "🚀 Générer la présentation",
     generating_hint: "⚡ La génération prend 10–40 secondes",
     toggle_on: "Activé ✓", toggle_off: "Désactivé",
@@ -1042,6 +1051,7 @@ const I18N = {
     premium_desc: "World-class designs · 3 exclusive styles",
     classic_engine: "⚙️ Engine: python-pptx · 3 layouts",
     premium_engine: "⚙️ Engine: PptxGenJS · distinct architectures",
+    premium_warn: "⚙️ Premium requires Node.js — auto-fallback to Canva if unavailable",
     generate_btn: "🚀 Generate Professional Presentation",
     generating_hint: "⚡ Generation takes 10–40 seconds",
     toggle_on: "Enabled ✓", toggle_off: "Disabled",
@@ -1196,17 +1206,7 @@ const CANVA_PALETTES = CLASSIC_PALETTES;
   onPaletteChange();
 })();
 
-function onEngineChange(){
-  const eng=document.querySelector('input[name="engine"]:checked').value;
-  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
-  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
-  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
-  // Select first palette of chosen engine
-  const map = {canva:'cpick-canva', classic:'cpick-classic', premium:'cpick-premium'};
-  const first = document.querySelector(`#${map[eng]||'cpick-canva'} input[type=radio]`);
-  if (first) first.checked = true;
-  onPaletteChange();
-}
+// onEngineChange is defined below (async version with Node.js check)
 
 function onPaletteChange(){
   const eng=document.querySelector('input[name="engine"]:checked')?.value||'canva';
@@ -1314,7 +1314,18 @@ function getL(lid){return Array.from(document.querySelectorAll(`#${lid} .df inpu
 function addKPI(){
   const g=document.getElementById('kgrid');
   const c=document.createElement('div'); c.className='kcard';
-  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="${t('ph_kpi_label')}"><input class="kval" type="text" placeholder="${t('ph_kpi_value')}">`;
+  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="${t('ph_kpi_label')}"><input class="kval" type="text" placeholder="${t('ph_kpi_value')}" inputmode="decimal"><div class="kval-hint">⚠️ القيمة يجب أن تكون رقماً أو نصاً مختصراً مثل: 87% أو 0.94 أو 1200</div>`;
+  // تحقق حي: تحذير إذا حقل القيمة فارغ أو غير منطقي
+  const valInput=c.querySelector('.kval');
+  const lblInput=c.querySelector('.klbl');
+  function kpiValidate(){
+    const v=valInput.value.trim(), l=lblInput.value.trim();
+    const filled = v.length>0 && l.length>0;
+    const suspicious = v.length>30; // قيمة طويلة جداً — ربما خطأ
+    c.classList.toggle('kpi-warn', filled && suspicious);
+  }
+  valInput.addEventListener('input', kpiValidate);
+  lblInput.addEventListener('input', kpiValidate);
   g.appendChild(c);
 }
 function getKPIs(){return Array.from(document.querySelectorAll('#kgrid .kcard')).map(c=>{const[l,v]=c.querySelectorAll('input');return{label:l?.value.trim()||'',value:v?.value.trim()||''};}).filter(k=>k.label&&k.value);}
@@ -1495,18 +1506,69 @@ function loadDraft(){
 // ═══════════════════════════════════════════════════════
 // GENERATE
 // ═══════════════════════════════════════════════════════
+// ── فحص حالة الخادم وإشعار Premium fallback ──────────────────────
+let _nodeAvailable = null; // null = لم يُفحص بعد
+async function checkNodeAvailability(){
+  if(_nodeAvailable !== null) return _nodeAvailable;
+  try{
+    const r = await fetch('/health', {signal: AbortSignal.timeout(4000)});
+    if(r.ok){ const j=await r.json(); _nodeAvailable=j.node_available===true; }
+    else { _nodeAvailable=false; }
+  }catch{ _nodeAvailable=false; }
+  return _nodeAvailable;
+}
+
+// عند اختيار محرك Premium — تحذير فوري إذا Node غير متاح
+async function onEngineChange(){
+  const eng=document.querySelector('input[name="engine"]:checked')?.value;
+  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
+  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
+  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
+  // Select first palette of chosen engine
+  const first=document.querySelector(`#cpick-${eng} input[type="radio"]`);
+  if(first) first.checked=true;
+  // تحذير Premium
+  if(eng==='premium'){
+    const nodeOk = await checkNodeAvailability();
+    const warn = document.getElementById('premium-warn');
+    if(warn) warn.style.display = nodeOk ? 'none' : '';
+  } else {
+    const warn = document.getElementById('premium-warn');
+    if(warn) warn.style.display = 'none';
+  }
+  onPaletteChange();
+}
+
 async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
+
+  // فحص Node.js قبل إرسال طلب Premium
+  if(d.engine==='premium'){
+    const nodeOk = await checkNodeAvailability();
+    if(!nodeOk){
+      const msg = {
+        ar: '⚠️ محرك Premium غير متاح حالياً (Node.js غير مثبت على الخادم).\nسيتم التحويل تلقائياً لمحرك Canva Level.\n\nهل تريد المتابعة؟',
+        fr: '⚠️ Le moteur Premium est indisponible (Node.js absent du serveur).\nBasculement automatique vers le moteur Canva Level.\n\nVoulez-vous continuer?',
+        en: '⚠️ Premium engine unavailable (Node.js not on server).\nWill automatically use Canva Level engine instead.\n\nContinue anyway?',
+      };
+      if(!confirm(msg[currentLang]||msg.ar)) return;
+    }
+  }
+
   openM();
   const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
   for(const[p,m] of steps){await sl(380);setP(p,m);}
   try{
     const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
     if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
-    const blob=await r.blob(),url=URL.createObjectURL(blob);
+    const blob=await r.blob();
+    // كشف Fallback من اسم الملف في Content-Disposition
+    const cd=r.headers.get('Content-Disposition')||'';
+    const isFallback = cd.includes('canva-fallback') || cd.includes('node-error');
+    const url=URL.createObjectURL(blob);
     setP(100,t('modal_ok'));await sl(300);
-    showOk(url,d.studentName);
+    showOk(url,d.studentName,isFallback);
     localStorage.removeItem('mp_v4');
   }catch(e){closeM();alert(e.message);}
 }
@@ -1521,13 +1583,20 @@ function openM(){
 }
 function closeM(){document.getElementById('ov').classList.remove('open');}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
-function showOk(url,name){
+function showOk(url,name,isFallback){
   document.getElementById('mic').className='mic mok';document.getElementById('mic').textContent='✅';
   document.getElementById('mtitle').textContent=t('modal_ok');
   document.getElementById('msub').textContent=t('modal_ok_sub');
   document.getElementById('ptrack').style.display='none';document.getElementById('plbl').style.display='none';
   const mb=document.querySelector('.mbox');
-  mb.querySelectorAll('.bdl,.bnew').forEach(e=>e.remove());
+  mb.querySelectorAll('.bdl,.bnew,.fallback-note').forEach(e=>e.remove());
+  // تنبيه Fallback
+  if(isFallback){
+    const note=document.createElement('p');note.className='fallback-note';
+    const msgs={ar:'ℹ️ تم استخدام محرك Canva بدلاً من Premium (Node.js غير متاح على الخادم)',fr:'ℹ️ Moteur Canva utilisé à la place de Premium (Node.js absent)',en:'ℹ️ Canva engine used instead of Premium (Node.js unavailable)'};
+    note.textContent=msgs[currentLang]||msgs.ar;
+    mb.appendChild(note);
+  }
   const a=document.createElement('a');
   a.href=url;a.download=`عرض_${(name||'').replace(/\s+/g,'_')}.pptx`;
   a.className='bdl';a.textContent=t('download_btn');mb.appendChild(a);

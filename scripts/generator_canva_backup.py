@@ -760,79 +760,42 @@ def slide_header(slide, T, title_ar, sub_en="", dark=True):
 # INTRO SLIDE
 # ═══════════════════════════════════════════════════════════════════
 def make_intro(prs, data, T):
-    """
-    تخطيط جديد — انقسام عمودي 40/60:
-    يسار: لوحة accent ملوّنة مع أيقونة ضخمة + عنوان قصير
-    يمين: نص المقدمة والمقاربة مع تهوية
-    """
     slide = blank(prs)
-    bg(slide, T["D"])
+    cy0   = slide_header(slide, T, "المقدمة", "INTRODUCTION · INTRODUCTION", dark=True)
 
-    # ── شريط accent علوي رفيع ─────────────────────────
-    rect(slide, 0, 0, W, 0.08, T["A"])
-    rect(slide, 0, 0.08, W*0.30, 0.03, T["G2"])
+    # ديكور إضافي
+    deco_circles(slide, T, [(-3, H*0.60, 7, T["M"], 25)])
 
-    overview = safe(data.get("introOverview", ""))
-    approach = safe(data.get("introApproach", ""))
-
-    # ── العمود الأيسر — لوحة بصرية ───────────────────
-    LW = W * 0.36
-    bg_left = T["M"]
-    rect(slide, 0, 0, LW, H, bg_left)
-    # دائرة زخرفية ضخمة
-    deco_circles(slide, T, [
-        (LW * 0.50, H * 0.42, LW * 1.10, T["D"], 18),
-        (LW * 0.80, H * 0.85, LW * 0.60, T["A"], 10),
-    ])
-    # شريط accent رأسي يفصل العمودين
-    rect(slide, LW - 0.10, 0, 0.10, H, T["A"])
-    rect(slide, LW - 0.14, 0, 0.04, H, T["G2"])
-
-    # أيقونة كبيرة مركزية
-    txt(slide, "📖", LW*0.10, H*0.20, LW*0.80, H*0.38,
-        font="Segoe UI Emoji", size=54, align=PP_ALIGN.CENTER)
-    # عنوان "مقدمة" كبير
-    txt(slide, "مقدمة", LW*0.05, H*0.60, LW*0.90, H*0.24,
-        font=T["HF"], size=26, bold=True,
-        color=T["TL"], align=PP_ALIGN.CENTER)
-    # خط زخرفي
-    lh(slide, LW*0.20, H*0.86, LW*0.60, T["A"], 0.06)
-    txt(slide, "INTRODUCTION", LW*0.05, H*0.89, LW*0.90, H*0.10,
-        font="Calibri", size=9, bold=False, italic=True,
-        color=T["A"], align=PP_ALIGN.CENTER)
-
-    # ── العمود الأيمن — المحتوى ────────────────────────
-    RX = LW + 0.32
-    RW = W - RX - MX
+    overview = safe(data.get("introOverview",""))
+    approach = safe(data.get("introApproach",""))
+    has_ap   = bool(approach)
+    oh       = H - cy0 - (2.14 if has_ap else 0.38) - 0.24
 
     if overview:
-        # عنوان القسم — صغير وملوّن
-        s_lbl = rrect(slide, RX, 0.28, 2.60, 0.44, T["A"], r_pct=50)
-        txt(slide, "نظرة عامة", RX, 0.28, 2.60, 0.44,
-            font=T["BF"], size=11, bold=True,
-            color=T["D"], align=PP_ALIGN.CENTER)
-        # علامة اقتباس كبيرة
-        txt(slide, "\u201c", RX, 0.78, 0.80, 0.80,
-            font="Georgia", size=44, bold=True, color=T["A"],
-            align=PP_ALIGN.LEFT, rtl=False)
-        # نص المقدمة — مقتضب وبحجم مريح
-        oh = H*0.46 if approach else H - 1.20
-        txt(slide, overview, RX, 1.44, RW, oh,
-            font=T["BF"], size=14, color=T["TL"],
+        s = rrect(slide, MX, cy0+0.16, W-MX*2, oh, T["CD"], r_pct=8)
+        if s: shadow_xml(s, blur=14, dist=5, alpha=0.18)
+        # شريط جانبي
+        rect(slide, MX, cy0+0.16, 0.10, oh, T["A"])
+        # علامة اقتباس
+        txt(slide, "\u201c", MX+0.20, cy0+0.16, 1.40, 1.0,
+            font="Georgia", size=52, bold=True, color=T["A"],
+            align=PP_ALIGN.RIGHT)
+        txt(slide, overview, MX+0.20, cy0+1.0, W-MX*2-0.32, oh-1.12,
+            font=T["BF"], size=13, color=T["TL"],
             align=PP_ALIGN.RIGHT, rtl=True)
 
-    if approach:
-        # فاصل
-        lh(slide, RX, H*0.60, RW, T["BO"], 0.03)
-        # label المقاربة
-        s_lbl2 = rrect(slide, RX, H*0.63, 2.60, 0.44, T["M"], r_pct=50)
-        txt(slide, "المقاربة النظرية", RX, H*0.63, 2.60, 0.44,
-            font=T["BF"], size=11, bold=True,
-            color=T["A"], align=PP_ALIGN.CENTER)
-        txt(slide, approach, RX, H*0.63+0.54, RW, H*0.28,
-            font=T["BF"], size=13, italic=True,
-            color=T["TM"], align=PP_ALIGN.RIGHT, rtl=True)
-
+    if has_ap:
+        ay = H - 2.0
+        s2 = rrect(slide, MX, ay, W-MX*2, 1.84, T["A"], r_pct=7)
+        if s2: shadow_xml(s2, blur=8, dist=3, alpha=0.15)
+        rect(slide, MX, ay, 0.10, 1.84, T["D"])
+        txt(slide, "المقاربة النظرية", MX+0.22, ay+0.14, W-MX*2-0.34, 0.48,
+            font=T["BF"], size=13, bold=True,
+            color=T["D"], align=PP_ALIGN.RIGHT, rtl=True)
+        lh(slide, MX+0.22, ay+0.68, W-MX*2-0.34, T["D"], 0.025)
+        txt(slide, approach, MX+0.22, ay+0.76, W-MX*2-0.34, 0.98,
+            font=T["BF"], size=12, color=T["D"],
+            align=PP_ALIGN.RIGHT, rtl=True)
     return slide
 
 # ═══════════════════════════════════════════════════════════════════
@@ -974,115 +937,69 @@ def make_problem(prs, data, T):
 # OBJECTIVES SLIDE
 # ═══════════════════════════════════════════════════════════════════
 def make_objectives(prs, data, T):
-    """
-    تخطيط جديد — خط زمني أفقي للأهداف + لوحة جانبية للفرضيات:
-    - الأهداف: أرقام دائرية بارزة فوق كل بطاقة (timeline بصري)
-    - الفرضيات: لوحة داكنة يسار بتصميم مختلف كلياً عن بطاقات الأهداف
-    """
     slide = blank(prs)
     dark  = (T["FAM"] != "MINIMAL")
-    bg(slide, T["D"] if dark else hx("F8FAFF"))
-    rect(slide, 0, 0, W, 0.08, T["A"])
-    rect(slide, 0, 0.08, W*0.30, 0.03, T["G2"])
+    cy0   = slide_header(slide, T, "أهداف البحث والفرضيات",
+                         "OBJECTIVES & HYPOTHESES", dark=dark)
 
-    objs  = [o for o in data.get("objectives", []) if o][:4]
-    hypos = [h for h in data.get("hypotheses", []) if h][:3]
+    objs  = [o for o in data.get("objectives",[]) if o][:6]
+    hypos = [h for h in data.get("hypotheses",[]) if h][:6]
+    n     = max(len(objs), len(hypos), 1)
+    avail = H - cy0 - 0.40
+    rh    = max(1.06, (avail - 0.14*(n-1)) / n)
+    cw    = (W - MX*2 - 0.30) / 2
 
-    # ── عنوان الشريحة ─────────────────────────────────
-    overline(slide, "OBJECTIVES & HYPOTHESES", MX, 0.18, W-MX*2, T, align=PP_ALIGN.LEFT)
-    txt(slide, "أهداف البحث والفرضيات", MX, 0.44, W-MX*2, 0.90,
-        font=T["HF"], size=28, bold=True,
-        color=T["TL"] if dark else T["TD"], align=PP_ALIGN.RIGHT, rtl=True)
-    rect(slide, MX, 1.42, 2.0, 0.07, T["A"])
-    rect(slide, MX+2.0, 1.42, W-MX*2-2.0, 0.035, T["BO"])
+    # ── عمود الأهداف ──────────────────────────────────
+    lx = MX
+    s_hdr = rrect(slide, lx, cy0+0.18, cw, 0.58, T["A"], r_pct=8)
+    txt(slide, "🎯  الأهداف", lx, cy0+0.18, cw, 0.58,
+        font=T["BF"], size=13, bold=True,
+        color=T["D"], align=PP_ALIGN.CENTER)
 
-    cy0 = 1.60
-    BODY_H = H - cy0 - 0.24
+    for i, obj in enumerate(objs):
+        ry = cy0+0.88 + i*(rh+0.14)
+        sc = T["SC"][i % len(T["SC"])]
+        bg_c = T["CD"] if dark else T["CB"]
+        s = rrect(slide, lx, ry, cw, rh, bg_c, r_pct=7,
+                  line_color=None if dark else T["CE"])
+        if s: shadow_xml(s, blur=9, dist=3, alpha=0.14)
+        rect(slide, lx, ry, cw, 0.08, sc)
+        # رقم دائري
+        nb_y = ry + (rh-0.72)/2
+        oval(slide, lx+0.18, nb_y, 0.72, 0.72, sc)
+        txt(slide, "%02d"%(i+1), lx+0.18, nb_y, 0.72, 0.72,
+            font="Calibri", size=18, bold=True,
+            color=T["D"] if dark else T["CB"], align=PP_ALIGN.CENTER)
+        tc = T["TL"] if dark else T["TD"]
+        txt(slide, obj, lx+1.04, ry+0.12, cw-1.18, rh-0.24,
+            font=T["BF"], size=12, color=tc,
+            align=PP_ALIGN.RIGHT, rtl=True)
 
-    # ── منطقة الأهداف (يمين، عرض 62%) ────────────────
-    OW = W * 0.60
-    n  = len(objs)
-
-    if n:
-        # خط أفقي يربط الأهداف = timeline
-        line_y = cy0 + 0.52
-        rect(slide, MX, line_y, OW - MX, 0.05, T["M"])
-
-        card_w = (OW - MX - 0.14*(n-1)) / max(n, 1)
-        card_h = BODY_H - 0.82
-
-        for i, obj in enumerate(objs):
-            cx = MX + i*(card_w + 0.14)
-            sc = T["SC"][i % len(T["SC"])]
-
-            # دائرة الرقم فوق الخط الزمني
-            oval(slide, cx + card_w/2 - 0.44, line_y - 0.40, 0.88, 0.88, sc)
-            txt(slide, str(i+1),
-                cx + card_w/2 - 0.44, line_y - 0.40, 0.88, 0.88,
-                font="Calibri", size=20, bold=True,
-                color=T["D"] if dark else hx("FFFFFF"), align=PP_ALIGN.CENTER)
-
-            # خط رأسي يصل الدائرة بالبطاقة
-            lv(slide, cx + card_w/2 - 0.025, line_y + 0.46, 0.32, sc, 0.05)
-
-            # البطاقة
-            card_y = line_y + 0.78
-            bg_c = T["CD"] if dark else hx("FFFFFF")
-            s = rrect(slide, cx, card_y, card_w, card_h, bg_c, r_pct=9,
-                      line_color=None if dark else T["CE"], line_w=0.8)
-            if s: shadow_xml(s, blur=12, dist=4, alpha=0.16)
-            rect(slide, cx, card_y, card_w, 0.09, sc)
-
-            # أيقونة صغيرة
-            icons_obj = ["🎯", "📊", "🔍", "💡"]
-            txt(slide, icons_obj[i % 4],
-                cx + card_w/2 - 0.30, card_y + 0.14, 0.60, 0.52,
-                font="Segoe UI Emoji", size=18, align=PP_ALIGN.CENTER)
-
-            txt(slide, safe(obj),
-                cx + 0.10, card_y + 0.74, card_w - 0.20, card_h - 0.86,
-                font=T["BF"], size=11.5,
-                color=T["TL"] if dark else T["TD"],
-                align=PP_ALIGN.CENTER, rtl=True)
-
-    # ── منطقة الفرضيات (يسار، عرض 36%) ───────────────
-    HX_start = OW + 0.20
-    HW = W - HX_start - MX*0.5
-
-    # لوحة خلفية موحدة للفرضيات
-    hypo_panel = rrect(slide, HX_start, cy0 + 0.08, HW, BODY_H, T["M"], r_pct=9)
-    if hypo_panel: shadow_xml(hypo_panel, blur=14, dist=5, alpha=0.20)
-    rect(slide, HX_start, cy0+0.08, HW, 0.09, T["A"])
-
-    # عنوان لوحة الفرضيات
-    txt(slide, "💡", HX_start + HW/2 - 0.30, cy0 + 0.18, 0.60, 0.50,
-        font="Segoe UI Emoji", size=18, align=PP_ALIGN.CENTER)
-    txt(slide, "الفرضيات", HX_start + 0.10, cy0 + 0.20, HW - 0.20, 0.48,
-        font=T["BF"], size=14, bold=True,
+    # ── عمود الفرضيات ─────────────────────────────────
+    rx = MX + cw + 0.30
+    bg_hdr = T["M"] if dark else T["D"]
+    rrect(slide, rx, cy0+0.18, cw, 0.58, bg_hdr, r_pct=8)
+    txt(slide, "💡  الفرضيات", rx, cy0+0.18, cw, 0.58,
+        font=T["BF"], size=13, bold=True,
         color=T["A"], align=PP_ALIGN.CENTER)
-    lh(slide, HX_start + 0.20, cy0 + 0.74, HW - 0.40, T["A"], 0.04)
 
-    nh = len(hypos)
-    if nh:
-        item_h = (BODY_H - 0.90) / nh
-        for i, hy in enumerate(hypos):
-            iy = cy0 + 0.88 + i * item_h
-            sc = T["SC"][(i+2) % len(T["SC"])]
-            # رقم صغير
-            s2 = rrect(slide, HX_start + 0.18, iy + item_h*0.12,
-                       0.50, 0.36, sc, r_pct=50)
-            txt(slide, "H%d" % (i+1),
-                HX_start + 0.18, iy + item_h*0.12, 0.50, 0.36,
-                font="Calibri", size=11, bold=True,
-                color=T["D"], align=PP_ALIGN.CENTER)
-            txt(slide, safe(hy),
-                HX_start + 0.12, iy + item_h*0.12 + 0.40,
-                HW - 0.24, item_h - 0.56,
-                font=T["BF"], size=11,
-                color=T["TL"], align=PP_ALIGN.RIGHT, rtl=True)
-            if i < nh - 1:
-                lh(slide, HX_start+0.20, iy+item_h-0.08, HW-0.40, T["BO"], 0.02)
-
+    for i, hy in enumerate(hypos):
+        ry = cy0+0.88 + i*(rh+0.14)
+        sc = T["SC"][(i+3) % len(T["SC"])]
+        bg_c = T["CD"] if dark else T["CB"]
+        s = rrect(slide, rx, ry, cw, rh, bg_c, r_pct=7,
+                  line_color=None if dark else T["CE"])
+        if s: shadow_xml(s, blur=9, dist=3, alpha=0.14)
+        rect(slide, rx, ry, cw, 0.08, sc)
+        # badge H#
+        s2 = rrect(slide, rx+cw-1.0, ry+0.12, 0.80, 0.36, sc, r_pct=50)
+        txt(slide, "H%d"%(i+1), rx+cw-1.0, ry+0.12, 0.80, 0.36,
+            font="Calibri", size=11, bold=True,
+            color=T["D"] if dark else T["CB"], align=PP_ALIGN.CENTER)
+        tc = T["TL"] if dark else T["TD"]
+        txt(slide, hy, rx+0.18, ry+0.12, cw-1.26, rh-0.24,
+            font=T["BF"], size=12, color=tc,
+            align=PP_ALIGN.RIGHT, rtl=True)
     return slide
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1252,297 +1169,152 @@ def make_stats(prs, data, T):
 # RESULTS SLIDE
 # ═══════════════════════════════════════════════════════════════════
 def make_results(prs, data, T):
-    """
-    تخطيط جديد — رقم ضخم يسار كـ accent، النص يمين مع مساحة تنفس.
-    الشرائط أفقية كاملة العرض، متناوبة بين لونين.
-    """
-    slide = blank(prs)
-    dark  = (T["FAM"] != "MINIMAL")
-    bg(slide, T["D"] if dark else hx("F8FAFF"))
-    rect(slide, 0, 0, W, 0.08, T["A"])
-    rect(slide, 0, 0.08, W*0.30, 0.03, T["G2"])
+    slide  = blank(prs)
+    dark   = (T["FAM"] != "MINIMAL")
+    cy0    = slide_header(slide, T, "أهم نتائج البحث",
+                          "RESEARCH FINDINGS", dark=dark)
 
-    results = [r for r in data.get("mainResults", []) if r][:6]
+    results = [r for r in data.get("mainResults",[]) if r][:7]
     if not results: return slide
+    n   = len(results)
+    avail = H - cy0 - 0.38
+    rh  = max(0.94, (avail - 0.14*(n-1)) / n)
 
-    overline(slide, "RESEARCH FINDINGS", MX, 0.18, W-MX*2, T, align=PP_ALIGN.LEFT)
-    txt(slide, "أهم نتائج البحث", MX, 0.44, W-MX*2, 0.90,
-        font=T["HF"], size=28, bold=True,
-        color=T["TL"] if dark else T["TD"], align=PP_ALIGN.RIGHT, rtl=True)
-    rect(slide, MX, 1.42, 2.0, 0.07, T["A"])
-    rect(slide, MX+2.0, 1.42, W-MX*2-2.0, 0.035, T["BO"])
-
-    cy0   = 1.60
-    n     = len(results)
-    avail = H - cy0 - 0.20
-    rh    = max(0.80, (avail - 0.10*(n-1)) / n)
-    # عرض عمود الرقم الضخم
-    NW = 1.60
-
-    for i, res in enumerate(results):
-        ry  = cy0 + i*(rh+0.10)
-        sc  = T["SC"][i % len(T["SC"])]
-        alt = (i % 2 == 0)
-        bg_c = (T["CD"] if alt else T["M"]) if dark else (hx("FFFFFF") if alt else hx("EEF4FF"))
-
-        # شريط كامل
-        s = rrect(slide, MX, ry, W-MX*2, rh, bg_c, r_pct=6,
-                  line_color=None if dark else T["CE"], line_w=0.6)
-        if s: shadow_xml(s, blur=5, dist=2, alpha=0.10)
-
-        # عمود الرقم الضخم — خلفية accent
-        rect(slide, MX, ry, NW, rh, sc)
-        # الرقم بخط ضخم
-        num_sz = clamp(42 - max(0, n-4)*4, 28, 42)
-        txt(slide, str(i+1), MX, ry, NW, rh,
-            font="Calibri", size=num_sz, bold=True,
-            color=T["D"], align=PP_ALIGN.CENTER)
-
-        # فاصل رأسي خفيف
-        lv(slide, MX+NW, ry+0.10, rh-0.20, T["BO"], 0.025)
-
-        # النص مع تهوية (padding)
+    for i,res in enumerate(results):
+        ry  = cy0+0.20 + i*(rh+0.14)
+        sc  = T["SC"][i%len(T["SC"])]
+        alt = i%2==0
+        bg_c = (T["CD"] if alt else T["M"]) if dark else (T["CB"] if alt else hx("F4F7FF"))
+        s   = rrect(slide, MX,ry, W-MX*2,rh, bg_c, r_pct=6,
+                    line_color=None if dark else T["CE"])
+        if s: shadow_xml(s, blur=6, dist=2, alpha=0.10)
+        rect(slide, MX,ry, W-MX*2, 0.08, sc)
+        rect(slide, MX,ry, 0.10, rh, sc)
+        # رقم دائري
+        oval(slide, MX+0.18, ry+(rh-0.64)/2, 0.64, 0.64, sc)
+        txt(slide, "%02d"%(i+1), MX+0.18, ry+(rh-0.64)/2, 0.64, 0.64,
+            font="Calibri", size=15, bold=True,
+            color=T["D"] if dark else T["CB"], align=PP_ALIGN.CENTER)
         tc = T["TL"] if dark else T["TD"]
-        txt(slide, safe(res),
-            MX+NW+0.22, ry+0.12, W-MX*2-NW-0.34, rh-0.24,
+        txt(slide, safe(res), MX+0.96, ry+0.10, W-MX*2-1.10, rh-0.20,
             font=T["BF"], size=13, color=tc,
             align=PP_ALIGN.RIGHT, rtl=True)
-
     return slide
 
 # ═══════════════════════════════════════════════════════════════════
 # CONCLUSION SLIDE
 # ═══════════════════════════════════════════════════════════════════
 def make_conclusion(prs, data, T):
-    """
-    تخطيط جديد — اقتباس ضخم يملأ الشريحة مع خلفية درامية.
-    شريط سفلي يحتوي مؤشرات صغيرة (إن وُجدت).
-    """
-    slide = blank(prs)
-    bg(slide, T["D"])
+    slide  = blank(prs)
+    cy0    = slide_header(slide, T, "الخاتمة والاستنتاجات",
+                          "CONCLUSION & SYNTHESIS", dark=True)
+    deco_circles(slide, T, [(W*0.78,-1,6,T["M"],22)])
 
-    # دوائر زخرفية خلفية ضخمة
-    deco_circles(slide, T, [
-        (W*0.85, -2.0, 8.0,  T["M"], 20),
-        (-3.0,   H*0.7, 7.0, T["M"], 15),
-        (W*0.45, H*0.5, 3.5, T["A"], 8),
-    ])
-    decorative_grid(slide, W*0.62, H*0.05, W*0.35, H*0.55, T["M"], 4, 5)
+    conclusion = safe(data.get("generalConclusion",""))
+    recs = [r for r in data.get("recommendations",[]) if r][:4]
 
-    # شريط accent علوي
-    rect(slide, 0, 0, W, 0.08, T["A"])
-    rect(slide, 0, 0.08, W*0.25, 0.03, T["G2"])
-
-    # label "الخاتمة"
-    s_pill = rrect(slide, MX, 0.24, 2.80, 0.50, T["A"], r_pct=50)
-    txt(slide, "✦  الخاتمة والاستنتاجات  ✦", MX, 0.24, 2.80, 0.50,
-        font=T["BF"], size=11, bold=True,
-        color=T["D"], align=PP_ALIGN.CENTER)
-
-    conclusion = safe(data.get("generalConclusion", ""))
-
-    # اقتباس ضخم مركزي
-    txt(slide, "\u201c", MX, 0.92, 1.20, 1.10,
-        font="Georgia", size=72, bold=True, color=T["A"],
-        align=PP_ALIGN.LEFT, rtl=False)
-
-    # لوحة شفافة خلف النص
-    txt_y = 1.50
-    txt_h = H - txt_y - 1.20
-    s_bg = rrect(slide, MX+0.10, txt_y, W-MX*2-0.10, txt_h, T["M"], r_pct=10)
-    if s_bg:
-        try:
-            sp = s_bg._element
-            spPr = sp.find(qn('p:spPr'))
-            fld = spPr.find('.//' + qn('a:solidFill'))
-            if fld is not None:
-                srgb = fld.find(qn('a:srgbClr'))
-                if srgb is not None:
-                    alp = etree.SubElement(srgb, qn('a:alpha'))
-                    alp.set('val', '5000')
-        except: pass
-    rect(slide, MX+0.10, txt_y, 0.12, txt_h, T["A"])
-
-    txt(slide, conclusion, MX+0.34, txt_y+0.18, W-MX*2-0.46, txt_h-0.36,
-        font=T["BF"], size=15, color=T["TL"],
+    qh = H - cy0 - (2.40 if recs else 0.38) - 0.26
+    s  = rrect(slide, MX, cy0+0.18, W-MX*2, qh, T["CD"], r_pct=9)
+    if s: shadow_xml(s, blur=14, dist=5, alpha=0.20)
+    rect(slide, MX, cy0+0.18, W-MX*2, 0.09, T["A"])
+    rect(slide, MX, cy0+0.18, 0.12, qh, T["A"])
+    txt(slide, "\u201c", MX+0.22, cy0+0.20, 1.50, 1.0,
+        font="Georgia", size=58, bold=True, color=T["A"])
+    txt(slide, conclusion, MX+0.22, cy0+1.06, W-MX*2-0.34, qh-1.18,
+        font=T["BF"], size=14, color=T["TL"],
         align=PP_ALIGN.RIGHT, rtl=True)
-
-    txt(slide, "\u201d", W-1.40, txt_y+txt_h-0.70, 1.20, 0.90,
-        font="Georgia", size=72, bold=True, color=T["A"],
+    txt(slide, "\u201d", W-1.60, cy0+qh-0.92, 1.40, 0.90,
+        font="Georgia", size=58, bold=True, color=T["A"],
         align=PP_ALIGN.LEFT, rtl=False)
 
-    # ── شريط سفلي أفقي ────────────────────────────────
-    bar_y = H - 0.92
-    rect(slide, 0, bar_y, W, 0.92, T["A"])
-    rect(slide, 0, bar_y, W, 0.05, T["G2"])
-
-    student = safe(data.get("studentName", ""))
-    sup     = safe(data.get("supervisor", ""))
-    yr      = safe(data.get("year", ""))
-
-    info = "  ·  ".join(filter(None, [
-        "إعداد: " + student if student else "",
-        "إشراف: " + sup if sup else "",
-        yr
-    ]))
-    txt(slide, info, MX, bar_y+0.12, W-MX*2, 0.66,
-        font=T["BF"], size=12, bold=True,
-        color=T["D"], align=PP_ALIGN.CENTER)
+    if recs:
+        ry  = H - 2.16
+        lh(slide, MX, ry, W-MX*2, T["A"], 0.05)
+        rh  = 1.90
+        rw  = (W-MX*2 - 0.22*(len(recs)-1)) / len(recs)
+        for i,rec in enumerate(recs):
+            rx = MX + i*(rw+0.22)
+            sc = T["SC"][i%len(T["SC"])]
+            s2 = rrect(slide, rx, ry+0.14, rw, rh, T["D"], r_pct=8)
+            if s2: shadow_xml(s2, blur=8, dist=3, alpha=0.15)
+            rect(slide, rx, ry+0.14, rw, 0.09, sc)
+            txt(slide, "%02d"%(i+1), rx+0.14, ry+0.26, rw-0.28, 0.52,
+                font="Calibri", size=18, bold=True,
+                color=sc, align=PP_ALIGN.RIGHT, rtl=False)
+            txt(slide, safe(rec), rx+0.14, ry+0.82, rw-0.28, rh-0.96,
+                font=T["BF"], size=11, color=T["TL"],
+                align=PP_ALIGN.RIGHT, rtl=True)
     return slide
 
 # ═══════════════════════════════════════════════════════════════════
 # RECOMMENDATIONS SLIDE
 # ═══════════════════════════════════════════════════════════════════
 def make_recommendations(prs, data, T):
-    """
-    تخطيط جديد — خريطة طريق (roadmap):
-    أرقام ضخمة متسلسلة مع أسهم اتجاه بين البطاقات.
-    صفان: الصف الأول يمين، الثاني يسار (مسار متعرّج بصري).
-    """
-    slide = blank(prs)
-    dark  = (T["FAM"] != "MINIMAL")
-    bg(slide, T["D"] if dark else hx("F8FAFF"))
-    rect(slide, 0, 0, W, 0.08, T["A"])
-    rect(slide, 0, 0.08, W*0.30, 0.03, T["G2"])
+    slide  = blank(prs)
+    dark   = (T["FAM"] != "MINIMAL")
+    cy0    = slide_header(slide, T, "توصيات البحث",
+                          "RECOMMENDATIONS", dark=dark)
 
-    recs = [r for r in data.get("recommendations", []) if r][:6]
+    recs = [r for r in data.get("recommendations",[]) if r][:6]
     if not recs: return slide
-
-    overline(slide, "RECOMMENDATIONS", MX, 0.18, W-MX*2, T, align=PP_ALIGN.LEFT)
-    txt(slide, "توصيات البحث", MX, 0.44, W-MX*2, 0.90,
-        font=T["HF"], size=28, bold=True,
-        color=T["TL"] if dark else T["TD"], align=PP_ALIGN.RIGHT, rtl=True)
-    rect(slide, MX, 1.42, 2.0, 0.07, T["A"])
-    rect(slide, MX+2.0, 1.42, W-MX*2-2.0, 0.035, T["BO"])
-
-    cy0  = 1.62
     n    = len(recs)
-    cols = min(n, 3)
-    rows = math.ceil(n / cols)
-    gx, gy = 0.20, 0.20
-    cw = (W - MX*2 - gx*(cols-1)) / cols
-    ch = (H - cy0 - 0.18 - gy*(rows-1)) / rows
+    cols = 2 if n > 3 else 1
+    rows = math.ceil(n/cols)
+    gx,gy = 0.28, 0.22
+    cw  = (W-MX*2 - gx*(cols-1)) / cols
+    ch  = (H-cy0-0.40 - gy*(rows-1)) / rows
 
-    ICONS_REC = ["💡", "📌", "🔧", "🌐", "📈", "🤝"]
-
-    for i, rec in enumerate(recs):
-        col = i % cols
-        row = i // cols
-        cx  = MX + col*(cw+gx)
-        cy  = cy0 + row*(ch+gy)
-        sc  = T["SC"][i % len(T["SC"])]
-        bg_c = T["CD"] if dark else hx("FFFFFF")
-
-        s = rrect(slide, cx, cy, cw, ch, bg_c, r_pct=10,
-                  line_color=None if dark else T["CE"], line_w=0.8)
-        if s: shadow_xml(s, blur=12, dist=4, alpha=0.18)
-
-        # شريط علوي ملوّن
-        rect(slide, cx, cy, cw, 0.10, sc)
-
-        # الرقم الضخم — ركن يسار علوي
-        num_bg = rrect(slide, cx+0.14, cy+0.18, 0.80, 0.72, sc, r_pct=8)
-        txt(slide, str(i+1), cx+0.14, cy+0.18, 0.80, 0.72,
-            font="Calibri", size=22, bold=True,
-            color=T["D"], align=PP_ALIGN.CENTER)
-
-        # أيقونة
-        txt(slide, ICONS_REC[i % len(ICONS_REC)],
-            cx+cw-0.82, cy+0.18, 0.64, 0.60,
-            font="Segoe UI Emoji", size=20, align=PP_ALIGN.CENTER)
-
-        # فاصل
-        lh(slide, cx+0.14, cy+0.98, cw-0.28, sc, 0.03)
-
-        # النص — مع تهوية جيدة وحجم مريح
+    for i,rec in enumerate(recs):
+        col=i%cols; row=i//cols
+        cx = MX+col*(cw+gx); cy = cy0+0.20+row*(ch+gy)
+        sc = T["SC"][i%len(T["SC"])]
+        bg_c = T["CD"] if dark else T["CB"]
+        s = rrect(slide, cx,cy,cw,ch, bg_c, r_pct=9,
+                  line_color=None if dark else T["CE"])
+        if s: shadow_xml(s, blur=10, dist=3.5, alpha=0.16)
+        rect(slide, cx,cy,0.12,ch, sc)
+        rect(slide, cx,cy,cw,0.09, sc)
+        # رقم دائري
+        oval(slide, cx+0.22, cy+(ch-0.76)/2, 0.76, 0.76, sc)
+        txt(slide, "%02d"%(i+1), cx+0.22, cy+(ch-0.76)/2, 0.76, 0.76,
+            font="Calibri", size=19, bold=True,
+            color=T["D"] if dark else T["CB"], align=PP_ALIGN.CENTER)
+        lv(slide, cx+1.12, cy+0.16, ch-0.32, T["BO"] if dark else T["CE"], 0.03)
         tc = T["TL"] if dark else T["TD"]
-        txt(slide, safe(rec),
-            cx+0.14, cy+1.08, cw-0.28, ch-1.22,
-            font=T["BF"], size=12, color=tc,
+        txt(slide, safe(rec), cx+1.26, cy+0.14, cw-1.38, ch-0.28,
+            font=T["BF"], size=12.5, color=tc,
             align=PP_ALIGN.RIGHT, rtl=True)
-
-        # سهم بين البطاقات في نفس الصف
-        if col < cols-1 and i < n-1:
-            ax = cx + cw + gx*0.15
-            ay = cy + ch/2 - 0.20
-            txt(slide, "←", ax, ay, gx*0.70, 0.40,
-                font="Calibri", size=14, bold=True,
-                color=T["A"], align=PP_ALIGN.CENTER)
-
     return slide
 
 # ═══════════════════════════════════════════════════════════════════
 # FUTURE SLIDE
 # ═══════════════════════════════════════════════════════════════════
 def make_future(prs, data, T):
-    """
-    تخطيط جديد — انقسام قطري:
-    النصف العلوي: خلفية داكنة مع عنوان ضخم وأيقونة صاروخ
-    النصف السفلي: بطاقات أفقية مضغوطة بألوان متدرجة
-    """
-    slide = blank(prs)
-    bg(slide, T["D"])
-
-    items = [f for f in data.get("futureWork", []) if f][:4]
+    slide  = blank(prs)
+    cy0    = slide_header(slide, T, "آفاق البحث المستقبلية",
+                          "FUTURE PERSPECTIVES", dark=True)
+    items  = [f for f in data.get("futureWork",[]) if f][:5]
     if not items: return slide
+    n      = len(items)
+    avail  = H - cy0 - 0.40
+    rh     = max(0.96, (avail - 0.16*(n-1)) / n)
 
-    # ── النصف العلوي — لوحة بصرية ──────────────────────
-    HEADER_H = H * 0.36
-
-    # مثلث/قطري ديكوري
-    deco_circles(slide, T, [
-        (W*0.80, HEADER_H*0.5, HEADER_H*1.4, T["M"], 18),
-        (W*0.95, HEADER_H*1.2, HEADER_H*0.9, T["A"],  8),
-    ])
-    rect(slide, 0, 0, W, 0.08, T["A"])
-    rect(slide, 0, 0.08, W*0.30, 0.03, T["G2"])
-
-    # أيقونة + عنوان
-    txt(slide, "🔭", MX, HEADER_H*0.12, 1.40, HEADER_H*0.76,
-        font="Segoe UI Emoji", size=46, align=PP_ALIGN.CENTER)
-    overline(slide, "FUTURE RESEARCH PERSPECTIVES", MX+1.50, 0.18, W-MX*2-1.50, T, align=PP_ALIGN.LEFT)
-    txt(slide, "آفاق البحث المستقبلية",
-        MX+1.50, 0.46, W-MX*2-1.50, HEADER_H-0.58,
-        font=T["HF"], size=28, bold=True,
-        color=T["TL"], align=PP_ALIGN.RIGHT, rtl=True)
-
-    # فاصل مائل بسيط
-    lh(slide, 0, HEADER_H, W, T["A"], 0.07)
-    lh(slide, 0, HEADER_H+0.07, W*0.40, T["G2"], 0.03)
-
-    # ── البطاقات السفلية ──────────────────────────────
-    cy0  = HEADER_H + 0.18
-    n    = len(items)
-    avail = H - cy0 - 0.18
-    rh   = max(0.76, (avail - 0.12*(n-1)) / n)
-    ICONS_F = ["🚀", "🌐", "💻", "🔬"]
-
-    for i, fut in enumerate(items):
-        ry  = cy0 + i*(rh+0.12)
-        sc  = T["SC"][i % len(T["SC"])]
-        alt = (i % 2 == 0)
-        bg_c = T["CD"] if alt else T["M"]
-
-        s = rrect(slide, MX, ry, W-MX*2, rh, bg_c, r_pct=7)
-        if s: shadow_xml(s, blur=6, dist=2.5, alpha=0.12)
-        rect(slide, MX, ry, W-MX*2, 0.07, sc)
-        rect(slide, MX, ry, 0.10, rh, sc)
-
-        # أيقونة
-        txt(slide, ICONS_F[i % 4], MX+0.18, ry+(rh-0.54)/2, 0.54, 0.54,
-            font="Segoe UI Emoji", size=18, align=PP_ALIGN.CENTER)
-
-        # رقم badge
-        s2 = rrect(slide, W-MX-0.84, ry+(rh-0.36)/2, 0.70, 0.36, sc, r_pct=50)
-        txt(slide, "0%d" % (i+1), W-MX-0.84, ry+(rh-0.36)/2, 0.70, 0.36,
-            font="Calibri", size=11, bold=True,
+    for i,fut in enumerate(items):
+        ry = cy0+0.22 + i*(rh+0.16)
+        sc = T["SC"][i%len(T["SC"])]
+        s  = rrect(slide, MX,ry, W-MX*2,rh, T["CD"], r_pct=7)
+        if s: shadow_xml(s, blur=7, dist=2.5, alpha=0.13)
+        rect(slide, MX,ry,0.12,rh, sc)
+        rect(slide, MX,ry,W-MX*2,0.08, sc)
+        txt(slide, "🚀", MX+0.22, ry+(rh-0.56)/2, 0.56, 0.56,
+            font="Segoe UI Emoji", size=20, align=PP_ALIGN.CENTER)
+        oval(slide, W-MX-0.78, ry+(rh-0.58)/2, 0.58, 0.58, sc)
+        txt(slide, str(i+1), W-MX-0.78, ry+(rh-0.58)/2, 0.58, 0.58,
+            font="Calibri", size=14, bold=True,
             color=T["D"], align=PP_ALIGN.CENTER)
-
-        txt(slide, safe(fut),
-            MX+0.84, ry+0.10, W-MX*2-1.76, rh-0.20,
-            font=T["BF"], size=12.5, color=T["TL"],
+        txt(slide, safe(fut), MX+0.90, ry+0.12, W-MX*2-1.74, rh-0.24,
+            font=T["BF"], size=13, color=T["TL"],
             align=PP_ALIGN.RIGHT, rtl=True)
-
     return slide
 
 # ═══════════════════════════════════════════════════════════════════

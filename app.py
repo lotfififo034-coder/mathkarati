@@ -1,8 +1,11 @@
 """
-مذكرتي Pro v7 — Canva Level
+مذكرتي Pro v8 ULTRA
 3 محركات: Classic · Canva · Premium(Node)
+- فحص Node.js عند الإقلاع مع Fallback تلقائي
+- رسائل خطأ واضحة بالعربية
+- تنظيف ملفات مؤقتة مضمون
 """
-import os, sys, json, subprocess, tempfile, logging, io
+import os, sys, json, subprocess, shutil, tempfile, logging, io, importlib
 from flask import Flask, request, send_file, jsonify, send_from_directory, make_response
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
@@ -17,6 +20,22 @@ NODE_MODULES = os.path.join(os.path.dirname(__file__), "node_scripts", "node_mod
 CLASSIC_THEMES = {'navy_gold','dark_teal','burgundy','forest','midnight_purple','charcoal_orange','ice_blue','sand_gold'}
 PREMIUM_THEMES = {'noir','atlas','sakura'}
 
+# ── فحص Node.js مرة واحدة عند الإقلاع ──────────────────────────────
+def _check_node() -> bool:
+    if shutil.which("node") is None:
+        log.warning("Node.js غير موجود — سيتم الفول-باك تلقائياً على محرك Canva")
+        return False
+    if not os.path.exists(NODE_SCRIPT):
+        log.warning("generator_api.js غير موجود — سيتم الفول-باك تلقائياً على محرك Canva")
+        return False
+    if not os.path.isdir(NODE_MODULES):
+        log.warning("node_modules غير مثبتة — شغل: cd node_scripts && npm install")
+        return False
+    return True
+
+NODE_AVAILABLE = _check_node()
+
+# ── CORS ─────────────────────────────────────────────────────────────
 @app.after_request
 def cors(r):
     r.headers["Access-Control-Allow-Origin"]  = "*"
@@ -33,96 +52,147 @@ def preflight():
         r.headers["Access-Control-Allow-Headers"] = "Content-Type"
         return r
 
+# ── مسارات ───────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return send_from_directory("public", "index.html")
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "version": "7.0", "engines": ["canva", "classic", "premium"]}), 200
+    # فحص خط Cairo
+    try:
+        from generator_canva import _CAIRO_OK
+        cairo_ok = _CAIRO_OK
+    except Exception:
+        cairo_ok = None
+    return jsonify({
+        "status":         "ok",
+        "version":        "8.0",
+        "engines":        ["canva", "classic", "premium"],
+        "node_available": NODE_AVAILABLE,
+        "cairo_font":     cairo_ok,
+    }), 200
 
+# ── التوليد الرئيسي ──────────────────────────────────────────────────
 @app.route("/generate", methods=["POST"])
 def generate():
     try:
         data = request.get_json(force=True, silent=True)
         if not data:
-            return jsonify({"error": "بيانات غير صالحة"}), 400
-        if not data.get("studentName") or not data.get("titleAr"):
-            return jsonify({"error": "اسم الطالب وعنوان المذكرة مطلوبان"}), 400
+            return jsonify({"error": "بيانات غير صالحة — تأكد من إرسال JSON صحيح"}), 400
+        if not data.get("studentName"):
+            return jsonify({"error": "اسم الطالب مطلوب"}), 400
+        if not data.get("titleAr"):
+            return jsonify({"error": "عنوان المذكرة مطلوب"}), 400
 
         engine = data.get("engine", "canva")
         theme  = data.get("theme", "navy_gold")
-        log.info(f"[{engine}] theme={theme} student={data.get('studentName','?')[:20]}")
+        log.info(f"[{engine}] theme={theme} student={data.get('studentName','?')[:30]}")
 
         if engine == "premium" or theme in PREMIUM_THEMES:
-            return _gen_premium(data)
+            if NODE_AVAILABLE:
+                return _gen_premium(data)
+            else:
+                log.warning("Node.js غير متاح — تحويل تلقائي إلى محرك Canva")
+                data["_fallback"] = "premium→canva"
+                return _gen_python(data, "generator_canva")
         elif engine == "classic":
             return _gen_python(data, "generator_classic")
-        else:  # canva (default)
+        else:
             return _gen_python(data, "generator_canva")
 
     except Exception as e:
         log.error(f"Unexpected: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"خطأ غير متوقع: {str(e)[:300]}"}), 500
 
 
-def _gen_python(data, module_name):
+def _gen_python(data: dict, module_name: str):
+    """يولد PPTX عبر Python (canva أو classic)."""
+    path = None
     try:
-        mod = __import__(module_name)
-        # reload to pick up any changes
-        import importlib
         mod = importlib.import_module(module_name)
+        importlib.reload(mod)
 
         with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
             path = f.name
+
         mod.generate_presentation(data, path)
+
+        if not os.path.exists(path) or os.path.getsize(path) < 500:
+            return jsonify({"error": "فشل إنتاج الملف — الملف فارغ أو تالف"}), 500
+
         with open(path, "rb") as f:
             pptx_bytes = f.read()
-        os.unlink(path)
 
-        name = data.get("studentName","مذكرة").replace(" ","_")
+        name = data.get("studentName", "مذكرة").replace(" ", "_")
+        suffix = "_canva-fallback" if data.get("_fallback") else ""
         return send_file(
             io.BytesIO(pptx_bytes),
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
             as_attachment=True,
-            download_name=f"عرض_{name}.pptx",
+            download_name=f"عرض_{name}{suffix}.pptx",
         )
+    except ImportError as e:
+        log.error(f"Import error [{module_name}]: {e}")
+        return jsonify({"error": f"خطأ في تحميل المحرك '{module_name}': {e}"}), 500
     except Exception as e:
         log.error(f"{module_name} error: {e}", exc_info=True)
         return jsonify({"error": f"خطأ في المحرك: {str(e)[:300]}"}), 500
+    finally:
+        # تنظيف الملف المؤقت دائماً حتى عند الأخطاء
+        if path and os.path.exists(path):
+            try:
+                os.unlink(path)
+            except Exception:
+                pass
 
 
-def _gen_premium(data):
+def _gen_premium(data: dict):
+    """يولد PPTX عبر Node.js/pptxgenjs مع fallback تلقائي."""
     try:
         env = os.environ.copy()
         env["NODE_PATH"] = NODE_MODULES
+
         result = subprocess.run(
             ["node", NODE_SCRIPT],
             input=json.dumps(data, ensure_ascii=False).encode("utf-8"),
-            capture_output=True, timeout=90,
+            capture_output=True,
+            timeout=90,
             cwd=os.path.join(os.path.dirname(__file__), "node_scripts"),
             env=env,
         )
+
         if result.returncode != 0:
-            err = result.stderr.decode("utf-8", errors="replace")
-            return jsonify({"error": f"خطأ في المحرك: {err[:300]}"}), 500
+            stderr = result.stderr.decode("utf-8", errors="replace").strip()
+            log.error(f"Node.js exit {result.returncode}: {stderr[:500]}")
+            log.warning("فشل Node.js — تحويل تلقائي إلى محرك Canva")
+            data["_fallback"] = "node-error→canva"
+            return _gen_python(data, "generator_canva")
+
         pptx_bytes = result.stdout
         if len(pptx_bytes) < 1000:
-            return jsonify({"error": "ملف فارغ من المحرك"}), 500
-        name = data.get("studentName","مذكرة").replace(" ","_")
+            stderr = result.stderr.decode("utf-8", errors="replace").strip()
+            log.error(f"Node.js output فارغ. stderr: {stderr[:300]}")
+            return jsonify({"error": "المحرك Premium أنتج ملفاً فارغاً"}), 500
+
+        name = data.get("studentName", "مذكرة").replace(" ", "_")
         return send_file(
             io.BytesIO(pptx_bytes),
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
             as_attachment=True,
             download_name=f"عرض_{name}.pptx",
         )
+
     except subprocess.TimeoutExpired:
-        return jsonify({"error": "انتهت مهلة التوليد"}), 504
+        log.error("Node.js timeout بعد 90 ثانية")
+        return jsonify({"error": "انتهت مهلة التوليد (90 ثانية) — حاول تقليل عدد الشرائح"}), 504
     except FileNotFoundError:
+        log.error("node غير موجود في PATH")
         return jsonify({"error": "Node.js غير مثبت على الخادم"}), 500
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port,
-            debug=os.environ.get("FLASK_ENV") == "development")
+    port  = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_ENV") == "development"
+    log.info(f"مذكرتي Pro v8 ULTRA — port={port} debug={debug} node={NODE_AVAILABLE}")
+    app.run(host="0.0.0.0", port=port, debug=debug)
