@@ -9,7 +9,8 @@
 - 3 عائلات بصرية مختلفة جذرياً: NOIR · VIVID · MINIMAL
 """
 
-import sys, json, math, datetime
+import sys, json, math, datetime, logging, traceback
+log = logging.getLogger(__name__)
 from pptx import Presentation
 from pptx.util import Cm, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -27,7 +28,7 @@ _GUARANTEED = {"Arial", "Calibri", "Tahoma", "Times New Roman", "Courier New"}
 _FONT_FALLBACK = {
     "Palatino Linotype": "Georgia",
     "Trebuchet MS":      "Arial",
-    "Segoe UI Emoji":    "Arial",
+    "Arial":    "Arial",
     "Segoe UI":          "Arial",
 }
 
@@ -790,7 +791,7 @@ def make_intro(prs, data, T):
 
     # أيقونة كبيرة مركزية
     txt(slide, "📖", LW*0.10, H*0.20, LW*0.80, H*0.38,
-        font="Segoe UI Emoji", size=54, align=PP_ALIGN.CENTER)
+        font="Arial", size=54, align=PP_ALIGN.CENTER)
     # عنوان "مقدمة" كبير
     txt(slide, "مقدمة", LW*0.05, H*0.60, LW*0.90, H*0.24,
         font=T["HF"], size=26, bold=True,
@@ -1037,7 +1038,7 @@ def make_objectives(prs, data, T):
             icons_obj = ["🎯", "📊", "🔍", "💡"]
             txt(slide, icons_obj[i % 4],
                 cx + card_w/2 - 0.30, card_y + 0.14, 0.60, 0.52,
-                font="Segoe UI Emoji", size=18, align=PP_ALIGN.CENTER)
+                font="Arial", size=18, align=PP_ALIGN.CENTER)
 
             txt(slide, safe(obj),
                 cx + 0.10, card_y + 0.74, card_w - 0.20, card_h - 0.86,
@@ -1056,7 +1057,7 @@ def make_objectives(prs, data, T):
 
     # عنوان لوحة الفرضيات
     txt(slide, "💡", HX_start + HW/2 - 0.30, cy0 + 0.18, 0.60, 0.50,
-        font="Segoe UI Emoji", size=18, align=PP_ALIGN.CENTER)
+        font="Arial", size=18, align=PP_ALIGN.CENTER)
     txt(slide, "الفرضيات", HX_start + 0.10, cy0 + 0.20, HW - 0.20, 0.48,
         font=T["BF"], size=14, bold=True,
         color=T["A"], align=PP_ALIGN.CENTER)
@@ -1126,7 +1127,7 @@ def make_importance(prs, data, T):
         # أيقونة كبيرة
         txt(slide, icons[i%len(icons)],
             cx+0.20, cy+0.14, 0.80, 0.72,
-            font="Segoe UI Emoji", size=24, align=PP_ALIGN.CENTER)
+            font="Arial", size=24, align=PP_ALIGN.CENTER)
         # رقم دائري
         oval(slide, cx+cw-0.90, cy+0.14, 0.68, 0.68, sc)
         txt(slide, "%02d"%(i+1), cx+cw-0.90, cy+0.14, 0.68, 0.68,
@@ -1197,7 +1198,7 @@ def make_methodology(prs, data, T):
         rect(slide, bx,by,bw,0.09, sc)
         rect(slide, bx,by,0.10,bh, sc)
         txt(slide, icon, bx+0.18, by+0.12, 0.72, 0.58,
-            font="Segoe UI Emoji", size=20, align=PP_ALIGN.CENTER)
+            font="Arial", size=20, align=PP_ALIGN.CENTER)
         tc = T["TL"] if dark else T["TD"]
         txt(slide, lbl, bx+0.96, by+0.14, bw-1.10, 0.50,
             font=T["BF"], size=13, bold=True, color=sc,
@@ -1449,7 +1450,7 @@ def make_recommendations(prs, data, T):
         # أيقونة
         txt(slide, ICONS_REC[i % len(ICONS_REC)],
             cx+cw-0.82, cy+0.18, 0.64, 0.60,
-            font="Segoe UI Emoji", size=20, align=PP_ALIGN.CENTER)
+            font="Arial", size=20, align=PP_ALIGN.CENTER)
 
         # فاصل
         lh(slide, cx+0.14, cy+0.98, cw-0.28, sc, 0.03)
@@ -1499,7 +1500,7 @@ def make_future(prs, data, T):
 
     # أيقونة + عنوان
     txt(slide, "🔭", MX, HEADER_H*0.12, 1.40, HEADER_H*0.76,
-        font="Segoe UI Emoji", size=46, align=PP_ALIGN.CENTER)
+        font="Arial", size=46, align=PP_ALIGN.CENTER)
     overline(slide, "FUTURE RESEARCH PERSPECTIVES", MX+1.50, 0.18, W-MX*2-1.50, T, align=PP_ALIGN.LEFT)
     txt(slide, "آفاق البحث المستقبلية",
         MX+1.50, 0.46, W-MX*2-1.50, HEADER_H-0.58,
@@ -1530,7 +1531,7 @@ def make_future(prs, data, T):
 
         # أيقونة
         txt(slide, ICONS_F[i % 4], MX+0.18, ry+(rh-0.54)/2, 0.54, 0.54,
-            font="Segoe UI Emoji", size=18, align=PP_ALIGN.CENTER)
+            font="Arial", size=18, align=PP_ALIGN.CENTER)
 
         # رقم badge
         s2 = rrect(slide, W-MX-0.84, ry+(rh-0.36)/2, 0.70, 0.36, sc, r_pct=50)
@@ -1649,62 +1650,82 @@ def make_final(prs, data, T):
 def generate_presentation(data: dict, output_path: str) -> None:
     key = data.get("theme","navy_gold")
     T   = PALETTES.get(key, PALETTES["navy_gold"])
+    log.info(f"[canva] generate_presentation شروع | theme={key} | FAM={T['FAM']}")
 
-    prs = Presentation()
-    prs.slide_width  = Cm(W)
-    prs.slide_height = Cm(H)
+    try:
+        prs = Presentation()
+        prs.slide_width  = Cm(W)
+        prs.slide_height = Cm(H)
 
-    cfg   = data.get("slides",{})
-    def show(k): return cfg.get(k,True)
-    def fl(k):   return [x for x in data.get(k,[]) if x]
+        cfg   = data.get("slides",{})
+        def show(k): return cfg.get(k,True)
+        def fl(k):   return [x for x in data.get(k,[]) if x]
 
-    make_cover(prs,data,T)
+        log.info("[canva] make_cover...")
+        make_cover(prs,data,T)
 
-    if show("intro") and (data.get("introOverview") or data.get("introApproach")):
-        make_intro(prs,data,T)
+        if show("intro") and (data.get("introOverview") or data.get("introApproach")):
+            log.info("[canva] make_intro...")
+            make_intro(prs,data,T)
 
-    chs=[c for c in data.get("chapters",[]) if c.get("title")]
-    if show("plan") and chs:
-        make_plan(prs,data,T,chs)
+        chs=[c for c in data.get("chapters",[]) if c.get("title")]
+        if show("plan") and chs:
+            log.info(f"[canva] make_plan ({len(chs)} chapters)...")
+            make_plan(prs,data,T,chs)
 
-    if show("problem") and (data.get("mainProblem") or data.get("mainQuestion") or fl("subQuestions")):
-        make_problem(prs,data,T)
+        if show("problem") and (data.get("mainProblem") or data.get("mainQuestion") or fl("subQuestions")):
+            log.info("[canva] make_problem...")
+            make_problem(prs,data,T)
 
-    if show("objectives") and (fl("objectives") or fl("hypotheses")):
-        make_objectives(prs,data,T)
+        if show("objectives") and (fl("objectives") or fl("hypotheses")):
+            log.info("[canva] make_objectives...")
+            make_objectives(prs,data,T)
 
-    if show("importance") and (fl("importance") or data.get("reasons")):
-        make_importance(prs,data,T)
+        if show("importance") and (fl("importance") or data.get("reasons")):
+            log.info("[canva] make_importance...")
+            make_importance(prs,data,T)
 
-    if show("methodology") and (data.get("methodology") or data.get("sampleType") or data.get("tool")):
-        make_methodology(prs,data,T)
+        if show("methodology") and (data.get("methodology") or data.get("sampleType") or data.get("tool")):
+            log.info("[canva] make_methodology...")
+            make_methodology(prs,data,T)
 
-    stats=[s for s in data.get("stats",[]) if s.get("label") and s.get("value")]
-    if show("kpi") and stats:
-        make_stats(prs,data,T)
+        stats=[s for s in data.get("stats",[]) if s.get("label") and s.get("value")]
+        if show("kpi") and stats:
+            log.info(f"[canva] make_stats ({len(stats)} KPIs)...")
+            make_stats(prs,data,T)
 
-    if show("results") and fl("mainResults"):
-        make_results(prs,data,T)
+        if show("results") and fl("mainResults"):
+            log.info("[canva] make_results...")
+            make_results(prs,data,T)
 
-    if show("conclusion") and data.get("generalConclusion"):
-        make_conclusion(prs,data,T)
+        if show("conclusion") and data.get("generalConclusion"):
+            log.info("[canva] make_conclusion...")
+            make_conclusion(prs,data,T)
 
-    if show("recommendations") and fl("recommendations"):
-        make_recommendations(prs,data,T)
+        if show("recommendations") and fl("recommendations"):
+            log.info("[canva] make_recommendations...")
+            make_recommendations(prs,data,T)
 
-    if show("future") and fl("futureWork"):
-        make_future(prs,data,T)
+        if show("future") and fl("futureWork"):
+            log.info("[canva] make_future...")
+            make_future(prs,data,T)
 
-    if show("references") and fl("references"):
-        make_references(prs,data,T)
+        if show("references") and fl("references"):
+            log.info("[canva] make_references...")
+            make_references(prs,data,T)
 
-    if show("thankyou"):
-        make_final(prs,data,T)
+        if show("thankyou"):
+            log.info("[canva] make_final...")
+            make_final(prs,data,T)
 
-    prs.save(output_path)
-    n=len(prs.slides._sldIdLst)
-    print("✅  %d slides [ultra·%s·%s] → %s"%(n,T["FAM"],key,output_path),
-          file=sys.stderr)
+        prs.save(output_path)
+        n=len(prs.slides._sldIdLst)
+        log.info(f"✅ [canva] {n} slides [{T['FAM']}·{key}] → {output_path}")
+        print(f"✅  {n} slides [ultra·{T['FAM']}·{key}] → {output_path}", file=sys.stderr)
+
+    except Exception as e:
+        log.error(f"[canva] خطأ في generate_presentation: {e}\n{traceback.format_exc()}")
+        raise
 
 
 if __name__=="__main__":
