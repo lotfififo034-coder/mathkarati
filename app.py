@@ -13,7 +13,7 @@ from flask import Flask, request, send_file, jsonify, send_from_directory, make_
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
 
-app = Flask(__name__, static_folder="public", static_url_path="")
+app = Flask(__name__, static_folder=None)
 
 # ── Logging مُحسَّن ───────────────────────────────────────────────────
 logging.basicConfig(
@@ -64,13 +64,14 @@ def preflight():
         return r
 
 # ── مسارات ───────────────────────────────────────────────────────────
+PUBLIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
+
 @app.route("/")
 def index():
-    return send_from_directory("public", "index.html")
+    return send_from_directory(PUBLIC, "index.html")
 
 @app.route("/favicon.ico")
 def favicon():
-    # منع خطأ 404 للـ favicon
     return make_response("", 204)
 
 @app.route("/health")
@@ -92,6 +93,13 @@ def health():
     }), 200
 
 # ── التوليد الرئيسي ──────────────────────────────────────────────────
+@app.route("/static_pub/<path:filename>")
+def static_files(filename):
+    try:
+        return send_from_directory(PUBLIC, filename)
+    except Exception:
+        return send_from_directory(PUBLIC, "index.html")
+
 @app.route("/generate", methods=["POST"])
 def generate():
     try:

@@ -1,40 +1,42 @@
 #!/bin/bash
+set -e
 
-echo "==> مذكرتي Pro — Build Script v9.1 ✦"
+echo "==> مذكرتي Pro — Build Script v9 ✦"
+echo "==> Installing system fonts (Noto + Cairo Arabic)..."
 
-# ── تثبيت مكتبات Python أولاً (الأهم) ──────────────────────────────
+# تثبيت الخطوط عبر apt (الطريقة الأموثق لدى Render)
+apt-get update -qq 2>/dev/null || true
+apt-get install -y -qq fonts-noto fonts-noto-core fonts-noto-extra 2>/dev/null || true
+
+# تحميل خط Cairo مباشرة من Google Fonts
+FONT_DIR="/usr/local/share/fonts/cairo"
+if ! fc-list 2>/dev/null | grep -qi "cairo"; then
+  mkdir -p "$FONT_DIR"
+  echo "==> Downloading Cairo font..."
+  curl -fsSL "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf" \
+       -o "$FONT_DIR/Cairo.ttf" 2>/dev/null \
+  || curl -fsSL "https://fonts.gstatic.com/s/cairo/v28/SLXgc1nY6HkvalIvTp0zQg.woff2" \
+       -o "$FONT_DIR/Cairo.woff2" 2>/dev/null || true
+  fc-cache -fv "$FONT_DIR" 2>/dev/null || true
+  echo "==> Cairo font status: $(fc-list 2>/dev/null | grep -i cairo | head -1 || echo 'not found — will fallback to Arial')"
+else
+  echo "==> Cairo font already available."
+fi
+
 echo "==> Installing Python dependencies..."
 pip install -r requirements.txt
 
-# ── تثبيت خط Cairo في مجلد المشروع (لا يحتاج صلاحيات root) ──────────
-echo "==> Installing Cairo font (user directory)..."
-FONT_DIR="$HOME/.fonts/cairo"
-mkdir -p "$FONT_DIR"
-
-if ! fc-list 2>/dev/null | grep -qi "cairo"; then
-    echo "==> Downloading Cairo font..."
-    curl -fsSL "https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf" \
-         -o "$FONT_DIR/Cairo.ttf" 2>/dev/null && \
-    fc-cache -f "$FONT_DIR" 2>/dev/null && \
-    echo "==> Cairo font installed ✓" || \
-    echo "==> Cairo font download failed — will use Arial fallback"
-else
-    echo "==> Cairo font already available ✓"
-fi
-
-# ── تثبيت Node.js dependencies ──────────────────────────────────────
 echo "==> Installing Node.js dependencies..."
 cd node_scripts
-npm install --production --silent && \
-    echo "==> node_modules installed: $(ls node_modules 2>/dev/null | wc -l) packages ✓" || \
-    echo "==> WARNING: npm install failed — Premium engine will fallback to Canva"
+npm install --production --silent
+echo "==> node_modules installed: $(ls node_modules | wc -l) packages"
 cd ..
 
-# ── التحقق من Node.js ───────────────────────────────────────────────
-if node --version 2>/dev/null; then
-    echo "==> Node.js OK ✓"
+echo "==> Verifying Node.js..."
+if node --version; then
+  echo "==> Node.js OK ✓"
 else
-    echo "==> WARNING: Node.js not found — Premium engine will use Canva fallback"
+  echo "==> WARNING: Node.js not found — Premium engine will fallback to Canva"
 fi
 
 echo "==> Build complete ✓"
