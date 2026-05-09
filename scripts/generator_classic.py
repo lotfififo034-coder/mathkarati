@@ -4,8 +4,7 @@ import math
 Radical Design System · 3 Structural Layouts × 8 Palettes
 Every layout is architecturally different — not just colours.
 """
-import json, sys, datetime, math, logging, traceback
-log = logging.getLogger(__name__)
+import json, sys, datetime, math
 from pptx import Presentation
 from pptx.util import Pt, Cm
 from pptx.dml.color import RGBColor
@@ -18,7 +17,7 @@ _FONT_FALLBACK = {
     "Palatino Linotype": "Georgia",
     "Trebuchet MS":      "Arial",
     "Cambria":           "Georgia",
-    "Arial":    "Arial",
+    "Segoe UI Emoji":    "Arial",
     "Segoe UI":          "Arial",
 }
 _GUARANTEED = {"Arial", "Calibri", "Tahoma", "Georgia", "Times New Roman", "Courier New"}
@@ -665,7 +664,7 @@ def make_importance_v2(prs, data, T):
         # أيقونة + رقم
         icon = icons[i % len(icons)]
         txt(slide, icon, cx+0.36, cy+0.08, 0.80, 0.70,
-            font="Arial", size=22, align=PP_ALIGN.CENTER)
+            font="Segoe UI Emoji", size=22, align=PP_ALIGN.CENTER)
         oval(slide, cx+cw-0.72, cy+0.10, 0.58, 0.58, T["D"], 0.85)
         txt(slide, f"{i+1:02d}", cx+cw-0.72, cy+0.10, 0.58, 0.58,
             font="Calibri", size=14, bold=True, color=sc, align=PP_ALIGN.CENTER)

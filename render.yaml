@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: mathkarati-app
+    name: mathkarati-pro
     runtime: python
     buildCommand: bash build.sh
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 180
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --worker-class sync --max-requests 50 --max-requests-jitter 10
     envVars:
       - key: FLASK_ENV
         value: production
@@ -11,5 +11,4 @@ services:
         value: "3.11.0"
       - key: NODE_VERSION
         value: "20.11.0"
-      - key: WEB_CONCURRENCY
-        value: "2"
+    healthCheckPath: /health
