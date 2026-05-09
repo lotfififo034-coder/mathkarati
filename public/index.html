@@ -147,13 +147,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px}
 .kcard{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:10px;position:relative}
 .kcard:focus-within{border-color:var(--gold)}
-.kcard.kpi-warn{border-color:#F59E0B!important}
 .kcard input{border:none;background:transparent;font-family:inherit;direction:inherit;width:100%;padding:0}
 .kcard input:focus{outline:none}
 .klbl{font-size:10px;font-weight:700;color:var(--muted)}
 .kval{font-size:19px;font-weight:900;color:var(--navy)}
-.kval-hint{font-size:9px;color:#9CA3AF;margin-top:2px;display:none}
-.kcard.kpi-warn .kval-hint{display:block;color:#F59E0B}
 .kdel{position:absolute;top:5px;left:5px;width:17px;height:17px;border-radius:4px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center}
 .kcard:hover .kdel{display:flex}
 
@@ -222,7 +219,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .bdl:hover{transform:translateY(-2px)}
 .bnew{display:block;margin:7px auto 0;padding:7px 18px;border-radius:var(--r);border:1.5px solid var(--bd);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
 .bnew:hover{border-color:var(--gold);color:var(--gold)}
-.fallback-note{margin:10px 0 2px;padding:8px 12px;background:rgba(255,180,0,.12);border:1px solid rgba(255,180,0,.3);border-radius:7px;font-size:11px;color:#e8c060;text-align:center}
 
 @media(max-width:900px){
   .mpick{grid-template-columns:1fr 1fr}}
@@ -699,9 +695,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="premium-colors-wrap" style="display:none">
       <div class="cpick premium-colors" id="cpick-premium"></div>
     </div>
-    <div id="premium-warn" style="display:none;margin:8px 0;padding:9px 13px;background:rgba(255,180,0,.13);border:1px solid rgba(255,180,0,.35);border-radius:8px;font-size:12px;color:#f0c060">
-      ⚠️ <span data-i18n="premium_warn">محرك Premium يتطلب Node.js — قد يتحوّل تلقائياً لمحرك Canva إذا لم يكن متاحاً على الخادم</span>
-    </div>
     <div class="color-preview" id="color-preview"></div>
   </div>
 
@@ -723,7 +716,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p id="msub" data-i18n="modal_sub">المحرك يبني الشرائح</p>
     <div class="ptrack"><div class="pfill" id="pfill"></div></div>
     <div class="plbl" id="plbl">0%</div>
-    <button id="bcancel" onclick="cancelGen()" style="margin-top:14px;background:none;border:1px solid #ccc;border-radius:8px;padding:6px 20px;font-size:12px;color:#888;cursor:pointer;">✕ إلغاء</button>
   </div>
 </div>
 
@@ -811,7 +803,6 @@ const I18N = {
     premium_desc: "تصاميم عالمية · 3 أنماط فاخرة",
     classic_engine: "⚙️ المحرك: python-pptx · 3 تخطيطات",
     premium_engine: "⚙️ المحرك: PptxGenJS · معماريات متميزة",
-    premium_warn: "⚙️ محرك Premium يتطلب Node.js — قد يتحوّل تلقائياً لمحرك Canva إذا لم يكن متاحاً",
     generate_btn: "🚀 إنشاء العرض الاحترافي",
     generating_hint: "⚡ يستغرق التوليد 10–40 ثانية",
 
@@ -943,7 +934,6 @@ const I18N = {
     premium_desc: "Designs mondiaux · 3 styles exclusifs",
     classic_engine: "⚙️ Moteur: python-pptx · 3 mises en page",
     premium_engine: "⚙️ Moteur: PptxGenJS · architectures distinctes",
-    premium_warn: "⚙️ Premium nécessite Node.js — bascule automatique vers Canva si indisponible",
     generate_btn: "🚀 Générer la présentation",
     generating_hint: "⚡ La génération prend 10–40 secondes",
     toggle_on: "Activé ✓", toggle_off: "Désactivé",
@@ -1052,7 +1042,6 @@ const I18N = {
     premium_desc: "World-class designs · 3 exclusive styles",
     classic_engine: "⚙️ Engine: python-pptx · 3 layouts",
     premium_engine: "⚙️ Engine: PptxGenJS · distinct architectures",
-    premium_warn: "⚙️ Premium requires Node.js — auto-fallback to Canva if unavailable",
     generate_btn: "🚀 Generate Professional Presentation",
     generating_hint: "⚡ Generation takes 10–40 seconds",
     toggle_on: "Enabled ✓", toggle_off: "Disabled",
@@ -1207,7 +1196,17 @@ const CANVA_PALETTES = CLASSIC_PALETTES;
   onPaletteChange();
 })();
 
-// onEngineChange is defined below (async version with Node.js check)
+function onEngineChange(){
+  const eng=document.querySelector('input[name="engine"]:checked').value;
+  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
+  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
+  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
+  // Select first palette of chosen engine
+  const map = {canva:'cpick-canva', classic:'cpick-classic', premium:'cpick-premium'};
+  const first = document.querySelector(`#${map[eng]||'cpick-canva'} input[type=radio]`);
+  if (first) first.checked = true;
+  onPaletteChange();
+}
 
 function onPaletteChange(){
   const eng=document.querySelector('input[name="engine"]:checked')?.value||'canva';
@@ -1315,18 +1314,7 @@ function getL(lid){return Array.from(document.querySelectorAll(`#${lid} .df inpu
 function addKPI(){
   const g=document.getElementById('kgrid');
   const c=document.createElement('div'); c.className='kcard';
-  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="${t('ph_kpi_label')}"><input class="kval" type="text" placeholder="${t('ph_kpi_value')}" inputmode="decimal"><div class="kval-hint">⚠️ القيمة يجب أن تكون رقماً أو نصاً مختصراً مثل: 87% أو 0.94 أو 1200</div>`;
-  // تحقق حي: تحذير إذا حقل القيمة فارغ أو غير منطقي
-  const valInput=c.querySelector('.kval');
-  const lblInput=c.querySelector('.klbl');
-  function kpiValidate(){
-    const v=valInput.value.trim(), l=lblInput.value.trim();
-    const filled = v.length>0 && l.length>0;
-    const suspicious = v.length>30; // قيمة طويلة جداً — ربما خطأ
-    c.classList.toggle('kpi-warn', filled && suspicious);
-  }
-  valInput.addEventListener('input', kpiValidate);
-  lblInput.addEventListener('input', kpiValidate);
+  c.innerHTML=`<button class="kdel" onclick="this.closest('.kcard').remove()">×</button><input class="klbl" type="text" placeholder="${t('ph_kpi_label')}"><input class="kval" type="text" placeholder="${t('ph_kpi_value')}">`;
   g.appendChild(c);
 }
 function getKPIs(){return Array.from(document.querySelectorAll('#kgrid .kcard')).map(c=>{const[l,v]=c.querySelectorAll('input');return{label:l?.value.trim()||'',value:v?.value.trim()||''};}).filter(k=>k.label&&k.value);}
@@ -1507,174 +1495,20 @@ function loadDraft(){
 // ═══════════════════════════════════════════════════════
 // GENERATE
 // ═══════════════════════════════════════════════════════
-// ── فحص حالة الخادم وإشعار Premium fallback ──────────────────────
-let _nodeAvailable = null; // null = لم يُفحص بعد
-async function checkNodeAvailability(){
-  if(_nodeAvailable !== null) return _nodeAvailable;
-  try{
-    const r = await fetch('/health', {signal: AbortSignal.timeout(4000)});
-    if(r.ok){ const j=await r.json(); _nodeAvailable=j.node_available===true; }
-    else { _nodeAvailable=false; }
-  }catch{ _nodeAvailable=false; }
-  return _nodeAvailable;
-}
-
-// عند اختيار محرك Premium — تحذير فوري إذا Node غير متاح
-async function onEngineChange(){
-  const eng=document.querySelector('input[name="engine"]:checked')?.value;
-  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
-  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
-  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
-  // Select first palette of chosen engine
-  const first=document.querySelector(`#cpick-${eng} input[type="radio"]`);
-  if(first) first.checked=true;
-  // تحذير Premium
-  if(eng==='premium'){
-    const nodeOk = await checkNodeAvailability();
-    const warn = document.getElementById('premium-warn');
-    if(warn) warn.style.display = nodeOk ? 'none' : '';
-  } else {
-    const warn = document.getElementById('premium-warn');
-    if(warn) warn.style.display = 'none';
-  }
-  onPaletteChange();
-}
-
-// ── AbortController للإلغاء ──────────────────────────────────────
-let _genAbort = null;
-
 async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
-
-  // ── Warmup check: polling حتى modules جاهزة فعلاً ──
-  // كل 2 ثانية، timeout 90 ثانية
   openM();
-  setP(5, currentLang==='fr'?'Préparation du moteur...':currentLang==='en'?'Warming up engine...':'تجهيز المحرك...');
-  try {
-    const POLL_MAX = 90000, POLL_IV = 2000;
-    let elapsed = 0;
-    let modulesReady = false;
-    while(elapsed < POLL_MAX){
-      try {
-        const wr = await fetch('/warmup', {signal: AbortSignal.timeout(5000)});
-        const wd = await wr.json().catch(()=>({}));
-        if(wd.modules_ready){ modulesReady = true; break; }
-      } catch(e){ /* تجاهل timeout/network */ }
-      await sl(POLL_IV);
-      elapsed += POLL_IV;
-      // تحديث progress أثناء الانتظار
-      if(elapsed <= 30000) setP(Math.min(15, 5 + Math.floor(elapsed/3000)*2),
-        currentLang==='fr'?'Chargement du moteur...':currentLang==='en'?'Loading engine...':'تحميل المحرك...');
-    }
-    if(!modulesReady){
-      // استمر على أي حال — قد يعمل (lazy load عند generate)
-      log.info?.('Warmup timeout — proceeding anyway');
-    }
-  } catch(warmErr) { /* تجاهل */ }
-  closeM(); // أغلق الـ modal مؤقتاً لإعادة فتحه نظيفاً
-
-  // فحص Node.js قبل إرسال طلب Premium
-  if(d.engine==='premium'){
-    const nodeOk = await checkNodeAvailability();
-    if(!nodeOk){
-      const msg = {
-        ar: '⚠️ محرك Premium غير متاح حالياً (Node.js غير مثبت على الخادم).\nسيتم التحويل تلقائياً لمحرك Canva Level.\n\nهل تريد المتابعة؟',
-        fr: '⚠️ Le moteur Premium est indisponible (Node.js absent du serveur).\nBasculement automatique vers le moteur Canva Level.\n\nVoulez-vous continuer?',
-        en: '⚠️ Premium engine unavailable (Node.js not on server).\nWill automatically use Canva Level engine instead.\n\nContinue anyway?',
-      };
-      if(!confirm(msg[currentLang]||msg.ar)) return;
-    }
-  }
-
-  openM();
-
-  // ── Animation تقدمية مستمرة أثناء انتظار الخادم ──
-  let _progStop = false;
-  let _currentP = 0;
-  (async function liveProgress(){
-    // مراحل سريعة أولاً (0→40% خلال 2 ثانية)
-    const fast=[[5,300],[15,300],[25,300],[35,300],[40,400]];
-    for(const[p,ms] of fast){
-      if(_progStop) return;
-      await sl(ms); if(_progStop) return;
-      setP(p, t('modal_sub')); _currentP=p;
-    }
-    // ثم تقدم بطيء مستمر (40→92%) كل 2 ثانية
-    const msgs_ar=['جاري معالجة البيانات...','بناء الشرائح...','تطبيق التصميم...','إضافة المحتوى...','اللمسات الأخيرة...','تجهيز الملف...'];
-    const msgs_fr=['Traitement des données...','Construction des slides...','Application du design...','Ajout du contenu...','Touches finales...','Préparation du fichier...'];
-    const msgs_en=['Processing data...','Building slides...','Applying design...','Adding content...','Final touches...','Preparing file...'];
-    const msgs={'ar':msgs_ar,'fr':msgs_fr,'en':msgs_en};
-    let i=0;
-    while(_currentP < 92){
-      if(_progStop) return;
-      await sl(2000); if(_progStop) return;
-      _currentP = Math.min(92, _currentP + Math.random()*4+2);
-      const mlist = msgs[currentLang]||msgs_ar;
-      setP(Math.round(_currentP), mlist[i%mlist.length]); i++;
-    }
-  })();
-
-  // ── Fetch مع retry تلقائي (max 2 محاولات) ──
-  _genAbort = new AbortController();
-  const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 240000);
-
-  let r = null;
-  let lastErr = null;
-  for(let attempt=1; attempt<=3; attempt++){
-    try{
-      if(attempt > 1){
-        setP(20, attempt===2 ? (currentLang==='fr'?'Nouvelle tentative...':currentLang==='en'?'Retrying...':'إعادة المحاولة...') : '');
-        await sl(3000);
-      }
-      r = await fetch('/generate',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(d),
-        signal:_genAbort.signal
-      });
-      lastErr = null;
-      break; // نجح — نخرج من loop
-    }catch(fetchErr){
-      lastErr = fetchErr;
-      if(fetchErr.name==='AbortError') break; // timeout أو إلغاء — لا retry
-      // network error → retry
-    }
-  }
+  const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
+  for(const[p,m] of steps){await sl(380);setP(p,m);}
   try{
-    if(lastErr) throw lastErr; // كل المحاولات فشلت
-    clearTimeout(_timeoutId);
-    _progStop=true;
-
-    if(!r.ok){
-      const e=await r.json().catch(()=>({error:r.statusText}));
-      throw new Error(e.error||'Server error');
-    }
-    const blob=await r.blob();
-    const cd=r.headers.get('Content-Disposition')||'';
-    const isFallback = cd.includes('canva-fallback') || cd.includes('node-error');
-    const url=URL.createObjectURL(blob);
+    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
+    const blob=await r.blob(),url=URL.createObjectURL(blob);
     setP(100,t('modal_ok'));await sl(300);
-    showOk(url,d.studentName,isFallback);
+    showOk(url,d.studentName);
     localStorage.removeItem('mp_v4');
-  }catch(e){
-    clearTimeout(_timeoutId);
-    _progStop=true;
-    closeM();
-    if(e.name==='AbortError' || e.message==='timeout' || e.message==='user'){
-      if(e.message==='user') return; // إلغاء بواسطة المستخدم — لا رسالة
-      const msg={
-        ar:'⏱️ انتهت مهلة الاتصال بالخادم.\n\nالخادم قد يكون في وضع السكون (cold start).\n\nانتظر 30 ثانية ثم حاول مجدداً.',
-        fr:'⏱️ Délai de connexion dépassé.\n\nLe serveur est peut-être en veille (cold start).\n\nAttendez 30 secondes et réessayez.',
-        en:'⏱️ Connection timed out.\n\nServer may be in sleep mode (cold start).\n\nWait 30 seconds and try again.'
-      };
-      alert(msg[currentLang]||msg.ar);
-    } else {
-      alert(e.message);
-    }
-  } finally {
-    _genAbort=null;
-  }
+  }catch(e){closeM();alert(e.message);}
 }
 
 function openM(){
@@ -1683,41 +1517,20 @@ function openM(){
   document.getElementById('mtitle').textContent=t('modal_title');
   document.getElementById('msub').textContent=t('modal_sub');
   document.getElementById('ptrack').style.display='';document.getElementById('plbl').style.display='';
-  document.getElementById('bcancel').style.display='';
   setP(0,'');
 }
-function closeM(){
-  document.getElementById('ov').classList.remove('open');
-  document.getElementById('bcancel').style.display='none';
-}
-function cancelGen(){
-  if(_genAbort){ _genAbort.abort('user'); }
-  closeM();
-}
+function closeM(){document.getElementById('ov').classList.remove('open');}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
-function showOk(url,name,isFallback){
+function showOk(url,name){
   document.getElementById('mic').className='mic mok';document.getElementById('mic').textContent='✅';
   document.getElementById('mtitle').textContent=t('modal_ok');
   document.getElementById('msub').textContent=t('modal_ok_sub');
   document.getElementById('ptrack').style.display='none';document.getElementById('plbl').style.display='none';
-  document.getElementById('bcancel').style.display='none';
   const mb=document.querySelector('.mbox');
-  mb.querySelectorAll('.bdl,.bnew,.fallback-note').forEach(e=>e.remove());
-  // تنبيه Fallback
-  if(isFallback){
-    const note=document.createElement('p');note.className='fallback-note';
-    const msgs={ar:'ℹ️ تم استخدام محرك Canva بدلاً من Premium (Node.js غير متاح على الخادم)',fr:'ℹ️ Moteur Canva utilisé à la place de Premium (Node.js absent)',en:'ℹ️ Canva engine used instead of Premium (Node.js unavailable)'};
-    note.textContent=msgs[currentLang]||msgs.ar;
-    mb.appendChild(note);
-  }
+  mb.querySelectorAll('.bdl,.bnew').forEach(e=>e.remove());
   const a=document.createElement('a');
-  // اسم الملف ASCII-safe لتجنب مشكلة Android/iOS
-  const safeName = (name||'presentation').replace(/[\s\u0600-\u06FF]/g,'_').replace(/__+/g,'_').replace(/^_|_$/g,'');
-  const dlName = `mathkarati_${safeName||'presentation'}.pptx`;
-  a.href=url;a.download=dlName;
+  a.href=url;a.download=`عرض_${(name||'').replace(/\s+/g,'_')}.pptx`;
   a.className='bdl';a.textContent=t('download_btn');mb.appendChild(a);
-  // تنظيف الـ blob URL بعد النقر لتجنب memory leak
-  a.addEventListener('click',()=>setTimeout(()=>URL.revokeObjectURL(url),60000),{once:true});
   const r=document.createElement('button');r.className='bnew';r.textContent=t('new_btn');
   r.onclick=()=>{localStorage.removeItem('mp_v4');location.reload();};mb.appendChild(r);
 }
@@ -1727,42 +1540,6 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init(){
-  // ══════════════════════════════════════════════════
-  // KEEP-ALIVE: ping كل 10 دقائق لمنع نوم Render Free
-  // ══════════════════════════════════════════════════
-  (function keepAlive(){
-    const INTERVAL = 10 * 60 * 1000; // 10 دقائق
-    function ping(){
-      fetch('/ping',{method:'GET',signal:AbortSignal.timeout(8000)})
-        .catch(()=>{}); // silent
-    }
-    ping(); // ping فوري عند التحميل لإيقاظ الخادم
-    setInterval(ping, INTERVAL);
-  })();
-
-  // WARMUP: استدعاء /warmup في الخلفية فور تحميل الصفحة
-  // هذا يضمن أن الـ modules محمّلة قبل أن يضغط المستخدم "إنشاء"
-  (function eagerWarmup(){
-    // polling كل 2 ثانية حتى modules جاهزة أو 90 ثانية
-    let elapsed = 0;
-    const MAX = 90000;
-    const INTERVAL = 2000;
-    function poll(){
-      fetch('/warmup', {signal: AbortSignal.timeout(5000)})
-        .then(r => r.json())
-        .then(d => {
-          if(d.modules_ready) return; // جاهز — نوقف
-          elapsed += INTERVAL;
-          if(elapsed < MAX) setTimeout(poll, INTERVAL);
-        })
-        .catch(() => {
-          elapsed += INTERVAL;
-          if(elapsed < MAX) setTimeout(poll, INTERVAL);
-        });
-    }
-    setTimeout(poll, 500); // نبدأ بعد 500ms لإعطاء الوقت للصفحة
-  })();
-
   // Init default list items
   addS('dl-subQ','تساؤل فرعي'); addS('dl-hyp','فرضية'); addS('dl-obj','هدف');
   addS('dl-importance','أهمية'); addS('dl-tests','اختبار');

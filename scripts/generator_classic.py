@@ -12,55 +12,6 @@ from pptx.enum.text import PP_ALIGN
 
 W, H = 33.867, 19.05   # cm – Widescreen 16:9
 
-# ── خطوط بديلة مضمونة ────────────────────────────────────────────────
-_FONT_FALLBACK = {
-    "Palatino Linotype": "Georgia",
-    "Trebuchet MS":      "Arial",
-    "Cambria":           "Georgia",
-    "Segoe UI Emoji":    "Arial",
-    "Segoe UI":          "Arial",
-}
-_GUARANTEED = {"Arial", "Calibri", "Tahoma", "Georgia", "Times New Roman", "Courier New"}
-
-def _cairo_available() -> bool:
-    import shutil, os
-    if shutil.which("fc-list"):
-        try:
-            import subprocess
-            out = subprocess.run(["fc-list", ":family=Cairo"],
-                                 capture_output=True, text=True, timeout=3)
-            if "cairo" in out.stdout.lower():
-                return True
-        except Exception:
-            pass
-    search_dirs = [
-        "/usr/share/fonts", "/usr/local/share/fonts",
-        os.path.expanduser("~/.fonts"),
-        "/tmp/fonts",
-        "C:/Windows/Fonts",
-        "/Library/Fonts", os.path.expanduser("~/Library/Fonts"),
-    ]
-    for d in search_dirs:
-        if os.path.isdir(d):
-            for root, _, files in os.walk(d):
-                for f in files:
-                    if "cairo" in f.lower() and f.lower().endswith((".ttf", ".otf")):
-                        return True
-    return False
-
-# محاولة استخدام font_helper إذا كان متاحاً
-try:
-    from font_helper import CAIRO_OK as _CAIRO_OK, ARABIC_FONT as _ARABIC_FONT
-except ImportError:
-    _CAIRO_OK = _cairo_available()
-    _ARABIC_FONT = "Cairo" if _CAIRO_OK else "Calibri"
-_FONT_FALLBACK["Cairo"] = "Cairo" if _CAIRO_OK else "Arial"
-
-def safe_font(name: str) -> str:
-    if name in _GUARANTEED:
-        return name
-    return _FONT_FALLBACK.get(name, "Arial")
-
 # ─────────────────────────────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────
@@ -102,7 +53,7 @@ def txt(slide, text, x, y, w, h,
     p = tf.paragraphs[0]; p.alignment = align
     run = p.add_run()
     run.text = str(text) if text is not None else ""
-    run.font.name = safe_font(font); run.font.size = Pt(size)
+    run.font.name = font; run.font.size = Pt(size)
     run.font.bold = bold; run.font.italic = italic
     if color: run.font.color.rgb = color
     return tb
@@ -631,6 +582,562 @@ def _quote(slide, T, x, y, w, h, text):
         font=T["BF"], size=13, color=T["TL"], align=PP_ALIGN.RIGHT)
 
 
+# ═════════════════════════════════════════════════════════════════════
+# SLIDE BUILDERS  (one function per slide type, layout-aware)
+# ═════════════════════════════════════════════════════════════════════
+
+def make_cover(prs, data, T):
+    slide = blank(prs)
+    get_layout(T).cover(slide, T, data)
+    return slide
+
+
+def make_toc(prs, data, T, chapters):
+    slide = blank(prs)
+    get_layout(T).toc(slide, T, chapters)
+    return slide
+
+
+# ── PROBLEM ──────────────────────────────────────────────────────────
+def make_problem(prs, data, T):
+    """
+    الإشكالية — تخطيط جديد: لوحتان متوازيتان
+    · يسار: لمحة الإشكالية + التساؤل الرئيسي (بارز)
+    · يمين: التساؤلات الفرعية في بطاقات مرقمة
+    """
+    slide = blank(prs)
+    bg(slide, T["D"])
+    oval(slide, W-11, -3, 14, 14, T["M"], 0.38)
+    oval(slide, -3, H-8, 10, 10, T["A"], 0.80)
+    L = get_layout(T)
+    cy0 = L.section_dark(slide, T, "إشكالية البحث والتساؤلات", "Research Problem & Questions")
+
+    problem  = safe(data.get("mainProblem",""))
+    main_q   = safe(data.get("mainQuestion",""))
+    subs     = [s for s in data.get("subQuestions",[]) if s][:5]
+    has_subs = bool(subs)
+
+    if has_subs:
+        # تخطيط ثنائي العمود
+        lw = W * 0.46 - 0.6   # عرض العمود الأيسر (الإشكالية)
+        rw = W - lw - 1.8     # عرض العمود الأيمن (التساؤلات)
+        lx, rx = 1.1, lw + 1.5
+
+        # ── لوحة الإشكالية ─────────────────────────────
+        _quote(slide, T, lx, cy0, lw, 3.20, problem)
+
+        # ── التساؤل الرئيسي (بارز) ─────────────────────
+        if main_q:
+            mq_y = cy0 + 3.36
+            rect(slide, lx, mq_y, lw, H - mq_y - 0.22, T["A"])
+            txt(slide, "؟", lx + 0.08, mq_y + 0.10, 0.72, H - mq_y - 0.42,
+                font="Georgia", size=52, bold=True, color=T["D"], align=PP_ALIGN.CENTER)
+            txt(slide, main_q, lx + 0.88, mq_y + 0.12, lw - 1.00, H - mq_y - 0.42,
+                font=T["BF"], size=13, bold=True, color=T["D"], align=PP_ALIGN.RIGHT)
+
+        # ── التساؤلات الفرعية ──────────────────────────
+        avail = H - cy0 - 0.20
+        rh = max(1.20, (avail - 0.14 * len(subs)) / len(subs))
+        for i, q in enumerate(subs):
+            ry = cy0 + i * (rh + 0.14)
+            sc = T["SC"][i % len(T["SC"])]
+            rect(slide, rx, ry, rw, rh, T["M"] if i%2==0 else T["D"])
+            rect(slide, rx, ry, 0.24, rh, sc)
+            # رقم دائري
+            cx = rx + 0.34; cy = ry + rh/2 - 0.36
+            oval(slide, cx, cy, 0.72, 0.72, T["A"], 0.85)
+            txt(slide, str(i+1), cx, cy, 0.72, 0.72,
+                font="Calibri", size=16, bold=True, color=T["D"], align=PP_ALIGN.CENTER)
+            txt(slide, q, rx + 1.22, ry + 0.12, rw - 1.36, rh - 0.24,
+                font=T["BF"], size=12, color=T["TL"], align=PP_ALIGN.RIGHT)
+    else:
+        # تخطيط أحادي — الإشكالية فقط
+        _quote(slide, T, 1.1, cy0, W-2.2, H-cy0-0.40, problem)
+        if main_q:
+            rect(slide, 1.1, H-2.10, W-2.2, 1.88, T["A"])
+            txt(slide, main_q, 1.28, H-2.05, W-2.56, 1.72,
+                font=T["BF"], size=14, bold=True, color=T["D"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ── OBJECTIVES ───────────────────────────────────────────────────────
+def make_objectives(prs, data, T):
+    slide = blank(prs)
+    if T.get("LAYOUT") in ("bold",):
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "أهداف البحث والفرضيات", "Objectives & Hypotheses")
+
+    objs  = [o for o in data.get("objectives",[])  if o]
+    hypos = [h for h in data.get("hypotheses",[])  if h]
+    n     = max(len(objs[:6]), len(hypos[:6]), 1)
+    cw    = (W-3.08)/2
+    avail = H - cy0 - 0.76
+    ch    = max(1.26, (avail - 0.16*n) / n)
+
+    # Objectives — left
+    rx_lbl = 1.1 if T.get("LAYOUT")!="bold" else 2.0
+    rect(slide, rx_lbl, cy0, cw, 0.74, T["D"])
+    txt(slide, "🎯  الأهداف", rx_lbl, cy0, cw, 0.74,
+        font=T["BF"], size=14, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+    for i, obj in enumerate(objs[:6]):
+        oy = cy0+0.76 + i*(ch+0.16)
+        sc = T["SC"][i%len(T["SC"])]
+        rect(slide, rx_lbl+0.08, oy+0.06, cw, ch, T["CE"])
+        rect(slide, rx_lbl,     oy,    cw, ch, T["CB"], line_color=T["CE"])
+        rect(slide, rx_lbl,     oy,    0.18, ch, sc)
+        nw = 1.70
+        rect(slide, rx_lbl, oy, nw, ch, T["D"])
+        txt(slide, str(i+1), rx_lbl, oy+ch/2-0.65, nw, 1.3,
+            font="Calibri", size=30, bold=True, color=sc, align=PP_ALIGN.CENTER)
+        txt(slide, obj, rx_lbl+nw+0.16, oy+0.10, cw-nw-0.28, ch-0.20,
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
+
+    # Hypotheses — right
+    rr = rx_lbl + cw + 0.76
+    rect(slide, rr, cy0, cw, 0.74, T["M"])
+    txt(slide, "💡  الفرضيات", rr, cy0, cw, 0.74,
+        font=T["BF"], size=14, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+    for i, hy in enumerate(hypos[:6]):
+        hy_y = cy0+0.76 + i*(ch+0.16)
+        sc   = T["SC"][i%len(T["SC"])]
+        rect(slide, rr+0.08, hy_y+0.06, cw, ch, T["CE"])
+        rect(slide, rr,     hy_y,    cw, ch, T["CB"], line_color=T["CE"])
+        rect(slide, rr,     hy_y,    0.18, ch, sc)
+        bw = 1.38
+        txt(slide, f"H{i+1}", rr+0.26, hy_y+ch*0.08, bw, ch*0.60,
+            font="Calibri", size=20, bold=True, color=sc, align=PP_ALIGN.RIGHT)
+        txt(slide, hy, rr+bw+0.32, hy_y+0.10, cw-bw-0.56, ch-0.20,
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ── IMPORTANCE ───────────────────────────────────────────────────────
+def make_importance(prs, data, T):
+    slide = blank(prs)
+    bg(slide, T["D"])
+    oval(slide, W-10, -2, 13, 13, T["M"], 0.50)
+    L   = get_layout(T)
+    cy0 = L.section_dark(slide, T, "أهمية البحث وأسباب اختياره",
+                          "Significance & Motivation")
+    pairs = [
+        ("importance","الأهمية العلمية والعملية","⭐"),
+        ("reasons",   "أسباب اختيار الموضوع",    "🔍"),
+    ]
+    ph = (H-cy0)/2 - 0.26
+    for i,(key,lbl,icon) in enumerate(pairs):
+        py = cy0 + i*(ph+0.38)
+        rect(slide, 1.1, py, W-2.2, ph, T["M"])
+        rect(slide, 1.1, py, 0.32, ph, T["A"])
+        txt(slide, f"{icon}  {lbl}", 1.56, py+0.15, W-3.28, 0.68,
+            font=T["BF"], size=16, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
+        ln(slide, 1.56, py+0.99, W-3.28, T["A"], 0.05)
+        txt(slide, safe(data.get(key)), 1.56, py+1.12, W-3.28, ph-1.26,
+            font=T["BF"], size=13, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ── THEORY ───────────────────────────────────────────────────────────
+def make_theory(prs, data, T, concepts):
+    slide = blank(prs)
+    if T.get("LAYOUT") == "bold":
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "الإطار النظري والمفاهيمي",
+                            "Theoretical & Conceptual Framework")
+
+    n = min(len(concepts), 6)
+    if not n: return slide
+    cols = 3 if n >= 3 else n
+    rows = math.ceil(n/cols)
+    gx, gy = 0.28, 0.24
+    x0 = 1.8 if T.get("LAYOUT")=="bold" else 1.0
+    aw = W - x0 - 0.8
+    cw = (aw - gx*(cols-1))/cols
+    avail = H - cy0 - gy*(rows-1)
+    ch = avail/rows
+    if rows == 1: ch = min(ch, 9.0); grid_y = cy0 + (H-cy0-ch)/2
+    else:         grid_y = cy0
+
+    for i, c in enumerate(concepts[:6]):
+        col = i%cols; row = i//cols
+        cx  = x0 + col*(cw+gx)
+        cy  = grid_y + row*(ch+gy)
+        sc  = T["SC"][i%len(T["SC"])]
+        rect(slide, cx+0.10, cy+0.10, cw, ch, T["CE"])
+        rect(slide, cx, cy, cw, ch, T["CB"], line_color=T["CE"])
+        rect(slide, cx, cy, cw, 0.78, sc)
+        rect(slide, cx, cy, 0.17, ch, T["A"])
+        txt(slide, safe(c.get("name")), cx+0.25, cy+0.08, cw-0.42, 0.62,
+            font=T["BF"], size=13, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        txt(slide, safe(c.get("def")), cx+0.25, cy+0.92, cw-0.42, ch-1.06,
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ── LITERATURE ───────────────────────────────────────────────────────
+def make_literature(prs, data, T, lits):
+    slide = blank(prs)
+    bg(slide, T["D"])
+    L   = get_layout(T)
+    cy0 = L.section_dark(slide, T, "مراجعة الأدبيات والدراسات السابقة",
+                          "Literature Review")
+
+    col_defs = [("الباحث / المؤلف",4.3),("السنة",1.9),
+                ("عنوان الدراسة",9.3),("أبرز النتائج",16.1)]
+    xs = [1.1]
+    for _,cw in col_defs[:-1]: xs.append(xs[-1]+cw+0.10)
+
+    hy,hh = cy0+0.08, 0.84
+    for j,((lbl,cw),x) in enumerate(zip(col_defs,xs)):
+        sc = T["SC"][j%len(T["SC"])]
+        rect(slide, x, hy, cw, hh, sc)
+        txt(slide, lbl, x+0.09, hy+0.04, cw-0.18, hh-0.08,
+            font=T["BF"], size=12, bold=True, color=T["D"], align=PP_ALIGN.RIGHT)
+
+    n  = min(len(lits), 5)
+    rh = max(1.44, (H-hy-hh-0.32)/max(n,1)-0.12)
+    for ri, lit in enumerate(lits[:5]):
+        ry  = hy+hh+0.10+ri*(rh+0.10)
+        bgc = T["M"] if ri%2==0 else T["D"]
+        vals = [safe(lit.get("author")), safe(lit.get("year")),
+                safe(lit.get("title")), safe(lit.get("findings"))]
+        for j,((_, cw),x,val) in enumerate(zip(col_defs,xs,vals)):
+            rect(slide, x, ry, cw, rh, bgc)
+            rect(slide, x, ry, 0.06, rh, T["SC"][j%len(T["SC"])])
+            txt(slide, val, x+0.12, ry+0.08, cw-0.20, rh-0.16,
+                font=T["BF"], size=11, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ── METHODOLOGY ──────────────────────────────────────────────────────
+def make_methodology(prs, data, T):
+    slide = blank(prs)
+    if T.get("LAYOUT") == "bold":
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "المنهجية والأدوات", "Methodology & Tools")
+    x0  = 1.8 if T.get("LAYOUT")=="bold" else 1.1
+
+    tests     = [t for t in data.get("statisticalTests",[]) if t]
+    has_tests = bool(tests)
+    bh = 3.25 if has_tests else (H-cy0)/2 - 0.24
+    bw = (W-x0-0.8-0.40)/2
+
+    boxes = [
+        ("🔧","المنهج المتبع",  safe(data.get("methodology"))),
+        ("📊","مصدر البيانات",  safe(data.get("dataSource"))),
+        ("📅","الفترة الزمنية", safe(data.get("timePeriod"))),
+        ("💻","برنامج التحليل", safe(data.get("software"))),
+    ]
+    for i,(icon,lbl,val) in enumerate(boxes):
+        bx = x0 + (i%2)*(bw+0.40)
+        by = cy0 + (i//2)*(bh+0.28)
+        sc = T["SC"][i%len(T["SC"])]
+        rect(slide, bx+0.09, by+0.09, bw, bh, T["CE"])
+        rect(slide, bx,     by,    bw, bh, T["CB"], line_color=T["CE"])
+        rect(slide, bx,     by,    bw, 0.78, sc)
+        txt(slide, f"{icon}  {lbl}", bx+0.13, by+0.08, bw-0.26, 0.62,
+            font=T["BF"], size=13, bold=True, color=T["TL"], align=PP_ALIGN.RIGHT)
+        txt(slide, val, bx+0.13, by+0.96, bw-0.26, bh-1.10,
+            font=T["BF"], size=13, bold=True, color=T["TD"], align=PP_ALIGN.RIGHT)
+
+    if has_tests:
+        ty    = cy0 + 2*(bh+0.28)
+        avail = H - ty - 0.05
+        txt(slide, "الاختبارات الإحصائية المستخدمة", x0, ty, W-x0-0.6, 0.66,
+            font=T["BF"], size=14, bold=True, color=T["TD"], align=PP_ALIGN.RIGHT)
+        n  = min(len(tests), 5)
+        tw = (W-x0-0.6-0.14*(n-1))/n
+        th = avail - 0.74
+        for i,t in enumerate(tests[:5]):
+            tx = x0 + i*(tw+0.14)
+            sc = T["SC"][i%len(T["SC"])]
+            rect(slide, tx, ty+0.72, tw, th, T["D"])
+            rect(slide, tx, ty+0.72, tw, 0.32, sc)
+            lines  = max(1, len(t)//15+1)
+            text_h = lines*0.56
+            text_y = ty+0.72+0.38+max(0,(th-0.38-text_h)/2)
+            txt(slide, t, tx+0.08, text_y, tw-0.16, text_h+0.26,
+                font=T["BF"], size=11, bold=True, color=T["TL"], align=PP_ALIGN.CENTER)
+    return slide
+
+
+# ── KPI DASHBOARD ────────────────────────────────────────────────────
+def make_stats(prs, data, T):
+    """لوحة KPI — تصميم داشبورد احترافي مع تأثيرات بصرية"""
+    slide = blank(prs)
+    bg(slide, T["D"])
+    # خلفية هندسية
+    oval(slide, W*0.62, -2, W*0.48, H*0.72, T["M"], 0.22)
+    rect(slide, 0, 0, W, 0.18, T["A"])
+
+    L   = get_layout(T)
+    cy0 = L.section_dark(slide, T, "المؤشرات الإحصائية الرئيسية",
+                          "Key Performance Indicators — KPI Dashboard")
+
+    stats = [s for s in data.get("stats",[]) if s.get("label") and s.get("value")]
+    if not stats: return slide
+
+    n    = min(len(stats), 8)
+    cols = min(n, 4)
+    rows = math.ceil(n/cols)
+    gx, gy = 0.26, 0.26
+    cw   = (W - 2.2 - gx*(cols-1)) / cols
+    raw_ch = (H - cy0 - gy*(rows-1) - 0.20) / rows
+    ch   = min(raw_ch, 3.80)
+    tot  = rows*ch + (rows-1)*gy
+    gy0  = cy0 + max(0, (H - cy0 - tot - 0.20)/2)
+
+    for i, s in enumerate(stats[:8]):
+        col = i % cols
+        row = i // cols
+        cx  = 1.1 + col*(cw+gx)
+        cy  = gy0 + row*(ch+gy)
+        sc  = T["SC"][i % len(T["SC"])]
+
+        # ظل البطاقة
+        rect(slide, cx+0.08, cy+0.08, cw, ch, T["M"])
+        # البطاقة الرئيسية
+        rect(slide, cx, cy, cw, ch, T["M"])
+        # شريط accent علوي
+        rect(slide, cx, cy, cw, 0.16, sc)
+        # شريط علوي داخلي
+        rect(slide, cx, cy+0.16, cw, 0.06, sc)
+        # مستطيل قيمة
+        val_h = ch * 0.55
+        txt(slide, safe(s["value"]), cx+0.10, cy+0.26, cw-0.20, val_h,
+            font="Calibri", size=max(28, min(56, 56 - max(0,len(str(s["value"]))-3)*7)),
+            bold=True, color=sc, align=PP_ALIGN.CENTER)
+        # خط فاصل
+        ln(slide, cx+0.20, cy+0.26+val_h, cw-0.40, sc, 0.030)
+        # تسمية
+        txt(slide, safe(s["label"]), cx+0.10, cy+0.30+val_h, cw-0.20, ch-0.44-val_h,
+            font=T["BF"], size=11, color=T["TM"], align=PP_ALIGN.CENTER)
+        # sub نص اختياري
+        if s.get("sub"):
+            txt(slide, safe(s["sub"]), cx+0.10, cy+ch-0.46, cw-0.20, 0.40,
+                font="Calibri", size=9, italic=True, color=T["TM"], align=PP_ALIGN.CENTER)
+
+    return slide
+
+
+# ── RESULTS ──────────────────────────────────────────────────────────
+def make_results(prs, data, T):
+    slide = blank(prs)
+    if T.get("LAYOUT") == "bold":
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    # ── شريط accent علوي ───────────────────────────────
+    rect(slide, 0, 0, W, 0.18, T["A"])
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "نتائج البحث التفصيلية", "Research Findings")
+    x0  = 1.8 if T.get("LAYOUT")=="bold" else 1.1
+
+    results = [r for r in data.get("mainResults",[]) if r]
+    n   = min(len(results), 7)
+    gap = 0.16
+    rh  = max(1.38, (H-cy0-gap*n)/max(n,1))
+
+    for i,res in enumerate(results[:7]):
+        ry = cy0 + i*(rh+gap)
+        L.result_row(slide, T, x0, ry, W-x0-0.7, rh, i, res)
+    return slide
+
+
+# ── RECOMMENDATIONS ──────────────────────────────────────────────────
+def make_recommendations(prs, data, T):
+    """التوصيات — بطاقات مرقمة مع accent ملون لكل توصية"""
+    recs = [r for r in data.get("recommendations",[]) if r][:6]
+    if not recs: return
+
+    slide = blank(prs)
+    if T.get("LAYOUT") == "bold":
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    rect(slide, 0, 0, W, 0.18, T["A"])
+
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "التوصيات", "Recommendations")
+    x0  = 1.8 if T.get("LAYOUT")=="bold" else 1.1
+
+    n    = len(recs)
+    cols = 2 if n > 3 else 1
+    rows = math.ceil(n/cols)
+    gx, gy = 0.30, 0.22
+    avail_w = W - x0 - 0.6
+    avail_h = H - cy0 - 0.22
+    cw = (avail_w - gx*(cols-1)) / cols
+    ch = (avail_h - gy*(rows-1)) / rows
+
+    for i, rec in enumerate(recs):
+        col = i % cols
+        row = i // cols
+        cx  = x0 + col*(cw+gx)
+        cy  = cy0 + row*(ch+gy)
+        sc  = T["SC"][i % len(T["SC"])]
+
+        # ظل
+        rect(slide, cx+0.07, cy+0.07, cw, ch, T["CE"])
+        # بطاقة
+        rect(slide, cx, cy, cw, ch, T["CB"], line_color=T["CE"])
+        # شريط accent يمين
+        rect(slide, cx, cy, 0.26, ch, sc)
+        # رقم ترتيبي
+        oval(slide, cx+0.36, cy+ch/2-0.44, 0.88, 0.88, sc, 0.90)
+        txt(slide, f"{i+1:02d}", cx+0.36, cy+ch/2-0.44, 0.88, 0.88,
+            font="Calibri", size=20, bold=True, color=T["TL"] if T.get("LAYOUT")!="minimal" else T["D"],
+            align=PP_ALIGN.CENTER)
+        # نص
+        txt(slide, safe(rec), cx+1.36, cy+0.12, cw-1.52, ch-0.24,
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
+        # تزيين: خط accent أسفل
+        ln(slide, cx+1.36, cy+ch-0.22, cw-1.52, sc, 0.030)
+    return slide
+
+
+def make_future(prs, data, T):
+    slide = blank(prs)
+    if T.get("LAYOUT") == "bold":
+        rect(slide, 0, 0, 1.8, H, T["D"])
+        rect(slide, 1.8, 0, W-1.8, H, T["L"])
+    else:
+        bg(slide, T["L"])
+    L   = get_layout(T)
+    cy0 = L.section_light(slide, T, "آفاق وامتدادات البحث",
+                            "Future Research Perspectives")
+    x0  = 1.8 if T.get("LAYOUT")=="bold" else 1.1
+
+    futures = [f for f in data.get("futureWork",[]) if f]
+    n = min(len(futures), 5)
+    if not n: return slide
+
+    tlx  = W - 3.08
+    rect(slide, tlx-0.06, cy0, 0.12, H-cy0-0.36, T["A"])
+    gap = 0.24
+    fh  = (H-cy0-0.36-gap*n)/n
+
+    for i,fw in enumerate(futures[:5]):
+        fy  = cy0 + i*(fh+gap)
+        ncy = fy + fh/2 - 0.43
+        sc  = T["SC"][i%len(T["SC"])]
+        oval(slide, tlx-0.45, ncy, 0.90, 0.90, T["D"])
+        oval(slide, tlx-0.35, ncy+0.10, 0.70, 0.70, sc)
+        txt(slide, str(i+1), tlx-0.35, ncy+0.10, 0.70, 0.70,
+            font="Calibri", size=12, bold=True, color=T["D"], align=PP_ALIGN.CENTER)
+        rect(slide, tlx-1.68, ncy+0.37, 1.26, 0.10, T["A"])
+        cw = tlx - x0 - 1.68
+        rect(slide, x0, fy+0.06, cw, fh, T["CB"], line_color=T["CE"])
+        rect(slide, x0, fy+0.06, 0.19, fh, sc)
+        txt(slide, f"آفق بحثي {i+1}", x0+0.28, fy+0.10, 4.4, 0.48,
+            font=T["BF"], size=10, bold=True, color=sc, align=PP_ALIGN.RIGHT)
+        txt(slide, fw, x0+0.28, fy+0.60, cw-0.50, fh-0.70,
+            font=T["BF"], size=12, color=T["TD"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+# ── CONCLUSION ───────────────────────────────────────────────────────
+def make_conclusion(prs, data, T):
+    """الخاتمة — تصميم سينمائي: خلفية داكنة مع اقتباس بارز"""
+    slide = blank(prs)
+    bg(slide, T["D"])
+    oval(slide, W*0.60, -2, W*0.50, H*0.75, T["M"], 0.30)
+    L   = get_layout(T)
+    cy0 = L.section_dark(slide, T, "الخاتمة والاستنتاجات", "Conclusion")
+
+    conclusion = safe(data.get("generalConclusion",""))
+    recs  = [r for r in data.get("recommendations",[]) if r][:4]
+
+    # لوحة الاقتباس الرئيسية
+    qh = 3.80 if recs else H - cy0 - 0.35
+    rect(slide, 1.1, cy0, W-2.2, qh, T["M"])
+    rect(slide, 1.1, cy0, 0.38, qh, T["A"])
+    txt(slide, "“", 1.6, cy0+0.08, 2.0, 1.20,
+        font="Georgia", size=72, bold=True, color=T["A"], align=PP_ALIGN.RIGHT)
+    txt(slide, conclusion, 1.58, cy0+1.10, W-2.9, qh-1.30,
+        font=T["BF"], size=14, color=T["TL"], align=PP_ALIGN.RIGHT)
+    txt(slide, "”", W-2.8, cy0+qh-1.0, 1.50, 1.0,
+        font="Georgia", size=72, bold=True, color=T["A"], align=PP_ALIGN.LEFT)
+
+    # أبرز التوصيات (اختصار)
+    if recs:
+        ry = cy0 + qh + 0.22
+        avail = H - ry - 0.18
+        rh = avail / len(recs)
+        rw = (W - 2.4 - 0.20*(len(recs)-1)) / len(recs)
+        for i, rec in enumerate(recs):
+            rx = 1.1 + i*(rw+0.20)
+            sc = T["SC"][i % len(T["SC"])]
+            rect(slide, rx, ry, rw, rh, T["M"])
+            rect(slide, rx, ry, rw, 0.055, sc)
+            rect(slide, rx, ry, 0.14, rh, sc)
+            txt(slide, f"{i+1:02d}", rx+0.22, ry+0.06, rw-0.34, 0.52,
+                font="Calibri", size=20, bold=True, color=sc, align=PP_ALIGN.RIGHT)
+            txt(slide, safe(rec), rx+0.22, ry+0.62, rw-0.34, rh-0.76,
+                font=T["BF"], size=11, color=T["TL"], align=PP_ALIGN.RIGHT)
+    return slide
+
+
+def make_final(prs, data, T):
+    """شريحة الشكر — تصميم سينمائي احترافي"""
+    slide = blank(prs)
+    bg(slide, T["D"])
+    # ── خلفية هندسية ─────────────────────────────────
+    oval(slide, W*0.55, -4, W*0.60, H*0.90, T["M"], 0.28)
+    oval(slide, -5, H*0.50, W*0.70, W*0.70, T["A"], 0.55)
+    rect(slide, 0, 0, W, 0.55, T["A"])
+    rect(slide, 0, H-0.55, W, 0.55, T["A"])
+
+    # ── نص الشكر الرئيسي ─────────────────────────────
+    txt(slide, "شكراً لحسن استماعكم", 1.0, H*0.24, W-2.0, 1.80,
+        font=T["HF"], size=48, bold=True, color=T["TL"], align=PP_ALIGN.CENTER)
+    txt(slide, "Merci pour votre attention", 1.0, H*0.24+1.90, W-2.0, 0.80,
+        font="Calibri", size=22, italic=True, color=T["A"], align=PP_ALIGN.CENTER)
+    txt(slide, "Thank you", 1.0, H*0.24+2.76, W-2.0, 0.60,
+        font="Calibri", size=16, italic=True, color=T["TM"], align=PP_ALIGN.CENTER)
+
+    # ── فاصل ─────────────────────────────────────────
+    ln(slide, W*0.25, H*0.73, W*0.50, T["A"], 0.06)
+
+    # ── معلومات الطالب ───────────────────────────────
+    student = safe(data.get("studentName",""))
+    supervisor = safe(data.get("supervisor",""))
+    year = safe(data.get("year",""))
+    info_parts = []
+    if student:    info_parts.append(f"إعداد: {student}")
+    if supervisor: info_parts.append(f"إشراف: {supervisor}")
+    if year:       info_parts.append(year)
+    info = "   ·   ".join(info_parts)
+    txt(slide, info, 1.0, H*0.77, W-2.0, 0.60,
+        font=T["BF"], size=13, bold=False, color=T["TM"], align=PP_ALIGN.CENTER)
+
+    # ── اللقب الأكاديمي ───────────────────────────────
+    major = safe(data.get("major",""))
+    univ  = safe(data.get("university",""))
+    if major or univ:
+        acad = " — ".join(filter(None, [major, univ]))
+        txt(slide, acad, 1.0, H*0.83, W-2.0, 0.48,
+            font=T["BF"], size=11, italic=True, color=T["A"], align=PP_ALIGN.CENTER)
+    return slide
+
+
+
+
+
+
 def make_importance_v2(prs, data, T):
     """أهمية الدراسة — بطاقات بصرية متدرجة مع أيقونات"""
     items_list = [x for x in data.get("importance",[]) if x]
@@ -978,15 +1485,7 @@ def make_stats(prs, data, T):
     cy0 = L.section_dark(slide, T, "النتائج الكمية والإحصائية",
                           "Key Statistical Results — KPI Dashboard")
 
-    stats = [
-        {
-            "label": str(s.get("label","")).strip()[:60],
-            "value": str(s.get("value","")).strip()[:40],
-            "sub":   str(s.get("sub","")).strip()[:50],
-        }
-        for s in data.get("stats", [])
-        if str(s.get("label","")).strip() and str(s.get("value","")).strip()
-    ]
+    stats = [s for s in data.get("stats",[]) if s.get("label") and s.get("value")]
     if not stats: return slide
 
     n    = min(len(stats), 8)
