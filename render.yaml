@@ -1,12 +1,12 @@
 services:
   - type: web
-    name: mathkarati-pro
+    name: mathkarati-app
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
+    buildCommand: bash build.sh
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --worker-class sync --graceful-timeout 60 --keep-alive 5 --max-requests 100 --max-requests-jitter 20
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
       - key: FLASK_ENV
         value: production
-    autoDeploy: true
+      - key: NODE_VERSION
+        value: 20.11.0
+    healthCheckPath: /ping

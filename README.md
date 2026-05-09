@@ -1,111 +1,116 @@
-# مذكرتي Pro 🎓
+# مذكرتي Pro v10 — Ultra Visual Engine 🎓
 
-**منشئ العروض الأكاديمية الاحترافية للجامعات الجزائرية**
-
-> يحوّل بيانات مذكرتك إلى عرض PowerPoint احترافي — نفس المحتوى، تجربة بصرية عالمية
-
----
-
-## 🚀 النشر على Render (الطريقة الموصى بها)
-
-### الخطوة 1 — رفع المشروع على GitHub
-
-```bash
-git init
-git add .
-git commit -m "initial commit"
-git remote add origin https://github.com/USERNAME/mathkarati-pro.git
-git push -u origin main
-```
-
-### الخطوة 2 — إنشاء Web Service على Render
-
-1. اذهب إلى [render.com](https://render.com) → **New** → **Web Service**
-2. اربط حسابك بـ GitHub واختر الـ Repository
-3. اضبط الإعدادات:
-
-| الحقل | القيمة |
-|---|---|
-| **Name** | `mathkarati-pro` |
-| **Runtime** | `Python 3` |
-| **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `gunicorn app:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT` |
-| **Instance Type** | `Free` (أو Starter للإنتاج) |
-
-4. اضغط **Create Web Service**
-5. انتظر 2-3 دقائق حتى ينتهي البناء
-6. الرابط سيكون: `https://mathkarati-pro.onrender.com`
+منشئ عروض PowerPoint أكاديمية احترافية للجامعات الجزائرية  
+**محرك v10 · 9 ألوان · 14 شريحة · 3 لغات · تدرجات لونية حقيقية**
 
 ---
 
-## 💻 التشغيل المحلي (للتطوير)
-
-```bash
-# تثبيت المتطلبات
-pip install -r requirements.txt
-
-# تشغيل السيرفر
-python app.py
-
-# افتح المتصفح على
-http://localhost:5000
-```
-
----
-
-## 📁 هيكل المشروع
+## 🏗️ هيكل المشروع
 
 ```
 mathkarati-pro/
-├── app.py              ← Flask server (نقطة الدخول)
-├── requirements.txt    ← Python dependencies
-├── Procfile            ← Render/Heroku start command
-├── render.yaml         ← Render configuration
-├── .gitignore
-├── public/
-│   └── index.html      ← واجهة المستخدم (6 خطوات)
-└── scripts/
-    └── generator.py    ← محرك توليد PPTX
+├── app.py                      ← Flask server (router للمحركات)
+├── requirements.txt            ← Python deps (flask, gunicorn, python-pptx, lxml)
+├── Procfile                    ← gunicorn start command
+├── render.yaml                 ← Render.com config
+├── build.sh                    ← Build script (تثبيت Cairo font + npm)
+├── scripts/
+│   ├── generator_canva.py      ← ✨ Ultra v10 engine (9 palettes × 3 families)
+│   └── generator_classic.py   ← Classic engine (fallback)
+├── node_scripts/
+│   ├── generator_api.js        ← Premium engine (Node.js / pptxgenjs)
+│   └── package.json            ← pptxgenjs dependency
+└── public/
+    └── index.html              ← واجهة 6 خطوات · 3 لغات · Toggle للشرائح
 ```
 
 ---
 
-## 🎨 القوالب المتاحة
+## 🚀 النشر على Render.com
 
-| الكود | الاسم | الألوان |
-|---|---|---|
-| `navy_gold` | كلاسيك أزرق ذهبي | أزرق داكن + ذهبي |
-| `dark_teal` | نيل أخضر داكن | رمادي داكن + أخضر فيروزي |
-| `burgundy` | بوردو فاخر | خمري + وردي |
-| `forest` | غابة ملكي | أخضر داكن + زيتوني |
+### الطريقة السريعة:
+1. ارفع المشروع على GitHub
+2. في Render: **New → Web Service** → اختر الـ repo
+3. الإعدادات:
+   - **Runtime:** Python 3
+   - **Build Command:** `bash build.sh`
+   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --worker-class sync --graceful-timeout 60 --keep-alive 5 --max-requests 100 --max-requests-jitter 20`
+4. Environment Variables:
+   - `FLASK_ENV` = `production`
+   - `NODE_VERSION` = `20.11.0`
 
----
-
-## ⚙️ المتطلبات
-
-- Python 3.10+
-- flask
-- gunicorn
-- python-pptx
+### أو استخدم render.yaml (تلقائي — موصى به):
+render.yaml موجود بالفعل في المشروع ويُطبَّق تلقائياً.
 
 ---
 
-## 📌 ملاحظات مهمة
+## ⚠️ ملاحظات مهمة للإنتاج
 
-- **Render Free Tier**: السيرفر "ينام" بعد 15 دقيقة من عدم الاستخدام — أول طلب بعد النوم يأخذ 30 ثانية
-- **Render Starter ($7/شهر)**: لا ينام — موصى به للاستخدام الجاد
-- **حجم الملفات**: كل PPTX بين 40-80 KB — لا مشكلة في الأداء
-- **لا قاعدة بيانات**: كل شيء يتم في الذاكرة — لا حاجة لـ PostgreSQL
+### خط Cairo:
+- `build.sh` يُحاول تنزيل خط Cairo تلقائياً
+- إذا فشل: يستخدم **Calibri** تلقائياً (fallback مضمون)
+- العرض يعمل بشكل طبيعي في كلتا الحالتين
+
+### المحركات:
+| المحرك | المتطلب | Fallback |
+|--------|---------|---------|
+| Canva (v10) | Python + lxml | — |
+| Classic | Python | — |
+| Premium | Node.js | → Canva تلقائياً |
+
+### الأداء على Render Free Tier:
+- توليد شريحة: ~5–15 ثانية
+- Timeout مضبوط على 120 ثانية (كافٍ)
+- `--max-requests 50` يمنع تراكم الذاكرة
 
 ---
 
-## 🔧 متغيرات البيئة (اختيارية)
+## 🎨 الألوان المدعومة (v10)
 
-| المتغير | القيمة الافتراضية | الوصف |
-|---|---|---|
-| `PORT` | `5000` | يُعيَّن تلقائياً من Render |
-| `FLASK_ENV` | `production` | وضع الإنتاج |
+| الاسم | العائلة | الطابع |
+|-------|---------|--------|
+| `navy_gold` | NOIR | أزرق ملكي ذهبي |
+| `midnight_purple` | NOIR | بنفسجي ليلي |
+| `forest` | NOIR | أخضر غابي |
+| `sand_gold` | NOIR | ذهبي رملي |
+| `dark_teal` | VIVID | تيل حيوي |
+| `charcoal_orange` | VIVID | فحمي برتقالي |
+| `burgundy` | VIVID | بورغندي |
+| `ice_blue` | MINIMAL | أزرق ثلجي |
+| `slate_crimson` | MINIMAL | فولاذي قرمزي |
 
 ---
 
-صُنع بـ 🇩🇿 للطلاب الجزائريين
+## 💻 التشغيل محلياً
+
+```bash
+git clone <repo-url>
+cd mathkarati-v2
+
+# تثبيت Python
+pip install -r requirements.txt
+
+# تثبيت Node (اختياري - للمحرك Premium)
+cd node_scripts && npm install && cd ..
+
+# تشغيل
+python app.py
+```
+
+ثم: http://localhost:5000
+
+---
+
+## 🔧 استكشاف الأخطاء
+
+| المشكلة | الحل |
+|---------|------|
+| `ImportError: lxml` | `pip install lxml==5.3.0` |
+| `ImportError: pptx` | `pip install python-pptx==1.0.2` |
+| الخط عربي لا يظهر | Cairo غير مثبت — شغّل `build.sh` أو ثبّت يدوياً |
+| `500 Internal Server Error` | راجع `/health` للتشخيص |
+| ملف PPTX فارغ | تأكد من إرسال `studentName` و`titleAr` |
+
+---
+
+*مذكرتي Pro v10 — Ultra Visual Engine · 2024–2025*
