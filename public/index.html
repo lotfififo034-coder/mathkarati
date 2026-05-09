@@ -1588,17 +1588,34 @@ async function generate(){
     }
   })();
 
-  // ── Fetch مع timeout 160 ثانية ──
+  // ── Fetch مع retry تلقائي (max 2 محاولات) ──
   _genAbort = new AbortController();
   const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 160000);
 
+  let r = null;
+  let lastErr = null;
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      if(attempt > 1){
+        setP(20, attempt===2 ? (currentLang==='fr'?'Nouvelle tentative...':currentLang==='en'?'Retrying...':'إعادة المحاولة...') : '');
+        await sl(3000);
+      }
+      r = await fetch('/generate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(d),
+        signal:_genAbort.signal
+      });
+      lastErr = null;
+      break; // نجح — نخرج من loop
+    }catch(fetchErr){
+      lastErr = fetchErr;
+      if(fetchErr.name==='AbortError') break; // timeout أو إلغاء — لا retry
+      // network error → retry
+    }
+  }
   try{
-    const r=await fetch('/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(d),
-      signal:_genAbort.signal
-    });
+    if(lastErr) throw lastErr; // كل المحاولات فشلت
     clearTimeout(_timeoutId);
     _progStop=true;
 
