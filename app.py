@@ -40,12 +40,12 @@ NODE_AVAILABLE = _check_node()
 # ══════════════════════════════════════════════════════════════════════
 _mod_lock   = threading.Lock()
 _mod_cache: dict = {}
+_preload_done = threading.Event()   # ← يُشار إليه عند انتهاء التحميل
 
 def _preload_modules():
     """
-    يُحمّل الـ modules مسبقاً عند بدء الـ worker (وليس عند أول طلب).
-    هذا يمنع timeout على أول request بعد إعادة التشغيل.
-    يعمل في thread منفصل لعدم تأخير بدء تشغيل الـ server.
+    يُحمّل الـ modules في background thread.
+    _preload_done.set() عند الانتهاء حتى يعلم /health و /warmup.
     """
     def _load():
         for name in ["generator_canva", "generator_classic"]:
@@ -53,6 +53,8 @@ def _preload_modules():
                 _get_module(name)
             except Exception as e:
                 log.warning(f"Pre-load failed for {name}: {e}")
+        _preload_done.set()
+        log.info("✅ All modules pre-loaded and ready")
     t = threading.Thread(target=_load, daemon=True, name="preloader")
     t.start()
     log.info("✅ Background module pre-loading started")
@@ -108,22 +110,37 @@ def ping():
 def health():
     """
     لا يُنفّذ أي import هنا — كل القراءات من الـ cache فقط.
-    آمن 100% مع Python 3.14.
+    يُضيف حقل modules_ready لمعرفة إذا انتهى الـ preload.
     """
     cairo_ok = None
-    m = _mod_cache.get("generator_canva")       # قراءة بدون import
+    m = _mod_cache.get("generator_canva")
     if m is not None:
         cairo_ok = getattr(m, "_CAIRO_OK", None)
 
     return jsonify({
         "status":         "ok",
-        "version":        "12.1",
+        "version":        "14.0",
         "python":         sys.version.split()[0],
         "engines":        ["canva", "classic", "premium"],
         "node_available": NODE_AVAILABLE,
         "cairo_font":     cairo_ok,
         "modules_loaded": list(_mod_cache.keys()),
+        "modules_ready":  _preload_done.is_set(),   # ← الجديد: هل الـ preload انتهى؟
     }), 200
+
+@app.route("/warmup")
+def warmup():
+    """
+    NON-BLOCKING: يرجع الحالة الحالية فوراً بدون انتظار.
+    الـ frontend يستدعيه كل ثانيتين حتى modules_ready=true.
+    هذا يمنع blocking الـ worker الوحيد على Render Free.
+    """
+    ready = _preload_done.is_set()
+    return jsonify({
+        "status":  "ready" if ready else "loading",
+        "modules": list(_mod_cache.keys()),
+        "modules_ready": ready,
+    }), 200 if ready else 202
 
 # ── التوليد ───────────────────────────────────────────────────────────
 @app.route("/generate", methods=["POST"])
@@ -178,13 +195,17 @@ def _gen_python(data: dict, module_name: str):
         with open(path, "rb") as f:
             pptx_bytes = f.read()
 
-        name   = data.get("studentName", "مذكرة").replace(" ", "_")
-        suffix = "_canva-fallback" if data.get("_fallback") else ""
+        import re as _re, time as _time
+        name   = data.get("studentName", "")
+        suffix = "_fallback" if data.get("_fallback") else ""
+        # اسم الملف: نأخذ الأحرف اللاتينية إن وجدت، وإلا timestamp
+        latin = _re.sub(r'[^\w]', '_', name, flags=_re.ASCII).strip('_')
+        safe_name = latin[:20] if latin else f"prs_{int(_time.time())}"
         resp   = send_file(
             io.BytesIO(pptx_bytes),
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
             as_attachment=True,
-            download_name=f"عرض_{name}{suffix}.pptx",
+            download_name=f"mathkarati_{safe_name}{suffix}.pptx",
         )
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         resp.headers["Pragma"]        = "no-cache"
@@ -221,12 +242,15 @@ def _gen_premium(data: dict):
         if len(pptx_bytes) < 1000:
             return jsonify({"error": "المحرك Premium أنتج ملفاً فارغاً"}), 500
 
-        name = data.get("studentName", "مذكرة").replace(" ", "_")
+        import re as _re, time as _time
+        name = data.get("studentName", "")
+        latin = _re.sub(r'[^\w]', '_', name, flags=_re.ASCII).strip('_')
+        safe_name = latin[:20] if latin else f"prs_{int(_time.time())}"
         return send_file(
             io.BytesIO(pptx_bytes),
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
             as_attachment=True,
-            download_name=f"عرض_{name}.pptx",
+            download_name=f"mathkarati_{safe_name}_premium.pptx",
         )
     except subprocess.TimeoutExpired:
         return jsonify({"error": "انتهت مهلة التوليد — قلّل عدد الشرائح"}), 504

@@ -1547,29 +1547,31 @@ async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
 
-  // ── Cold-start check: تأكد أن الخادم يستجيب قبل الإرسال ──
+  // ── Warmup check: polling حتى modules جاهزة فعلاً ──
+  // كل 2 ثانية، timeout 90 ثانية
   openM();
-  setP(5, currentLang==='fr'?'Vérification du serveur...':currentLang==='en'?'Checking server...':'التحقق من الخادم...');
+  setP(5, currentLang==='fr'?'Préparation du moteur...':currentLang==='en'?'Warming up engine...':'تجهيز المحرك...');
   try {
-    const healthR = await fetch('/health', {signal: AbortSignal.timeout(55000)});
-    if(!healthR.ok) throw new Error('server not ready');
-  } catch(coldErr) {
-    // إذا فشل health → الخادم نائم أو مشغول → أعد المحاولة مرة واحدة بعد 5 ثوانٍ
-    setP(10, currentLang==='fr'?'Réveil du serveur...':currentLang==='en'?'Waking server...':'جاري إيقاظ الخادم...');
-    await sl(5000);
-    try {
-      await fetch('/health', {signal: AbortSignal.timeout(30000)});
-    } catch(e2) {
-      closeM();
-      const msg = {
-        ar: '⚠️ الخادم غير متاح حالياً.\n\nانتظر 30 ثانية ثم حاول مجدداً.',
-        fr: '⚠️ Serveur indisponible.\n\nAttendez 30 secondes et réessayez.',
-        en: '⚠️ Server unavailable.\n\nWait 30 seconds and try again.'
-      };
-      alert(msg[currentLang]||msg.ar);
-      return;
+    const POLL_MAX = 90000, POLL_IV = 2000;
+    let elapsed = 0;
+    let modulesReady = false;
+    while(elapsed < POLL_MAX){
+      try {
+        const wr = await fetch('/warmup', {signal: AbortSignal.timeout(5000)});
+        const wd = await wr.json().catch(()=>({}));
+        if(wd.modules_ready){ modulesReady = true; break; }
+      } catch(e){ /* تجاهل timeout/network */ }
+      await sl(POLL_IV);
+      elapsed += POLL_IV;
+      // تحديث progress أثناء الانتظار
+      if(elapsed <= 30000) setP(Math.min(15, 5 + Math.floor(elapsed/3000)*2),
+        currentLang==='fr'?'Chargement du moteur...':currentLang==='en'?'Loading engine...':'تحميل المحرك...');
     }
-  }
+    if(!modulesReady){
+      // استمر على أي حال — قد يعمل (lazy load عند generate)
+      log.info?.('Warmup timeout — proceeding anyway');
+    }
+  } catch(warmErr) { /* تجاهل */ }
   closeM(); // أغلق الـ modal مؤقتاً لإعادة فتحه نظيفاً
 
   // فحص Node.js قبل إرسال طلب Premium
@@ -1709,8 +1711,13 @@ function showOk(url,name,isFallback){
     mb.appendChild(note);
   }
   const a=document.createElement('a');
-  a.href=url;a.download=`عرض_${(name||'').replace(/\s+/g,'_')}.pptx`;
+  // اسم الملف ASCII-safe لتجنب مشكلة Android/iOS
+  const safeName = (name||'presentation').replace(/[\s\u0600-\u06FF]/g,'_').replace(/__+/g,'_').replace(/^_|_$/g,'');
+  const dlName = `mathkarati_${safeName||'presentation'}.pptx`;
+  a.href=url;a.download=dlName;
   a.className='bdl';a.textContent=t('download_btn');mb.appendChild(a);
+  // تنظيف الـ blob URL بعد النقر لتجنب memory leak
+  a.addEventListener('click',()=>setTimeout(()=>URL.revokeObjectURL(url),60000),{once:true});
   const r=document.createElement('button');r.className='bnew';r.textContent=t('new_btn');
   r.onclick=()=>{localStorage.removeItem('mp_v4');location.reload();};mb.appendChild(r);
 }
@@ -1731,6 +1738,29 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
     }
     ping(); // ping فوري عند التحميل لإيقاظ الخادم
     setInterval(ping, INTERVAL);
+  })();
+
+  // WARMUP: استدعاء /warmup في الخلفية فور تحميل الصفحة
+  // هذا يضمن أن الـ modules محمّلة قبل أن يضغط المستخدم "إنشاء"
+  (function eagerWarmup(){
+    // polling كل 2 ثانية حتى modules جاهزة أو 90 ثانية
+    let elapsed = 0;
+    const MAX = 90000;
+    const INTERVAL = 2000;
+    function poll(){
+      fetch('/warmup', {signal: AbortSignal.timeout(5000)})
+        .then(r => r.json())
+        .then(d => {
+          if(d.modules_ready) return; // جاهز — نوقف
+          elapsed += INTERVAL;
+          if(elapsed < MAX) setTimeout(poll, INTERVAL);
+        })
+        .catch(() => {
+          elapsed += INTERVAL;
+          if(elapsed < MAX) setTimeout(poll, INTERVAL);
+        });
+    }
+    setTimeout(poll, 500); // نبدأ بعد 500ms لإعطاء الوقت للصفحة
   })();
 
   // Init default list items
