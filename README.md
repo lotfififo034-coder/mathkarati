@@ -1,7 +1,7 @@
-# مذكرتي Pro v10 — Ultra Visual Engine 🎓
+# مذكرتي Pro v7 — Canva Level 🎓
 
 منشئ عروض PowerPoint أكاديمية احترافية للجامعات الجزائرية  
-**محرك v10 · 9 ألوان · 14 شريحة · 3 لغات · تدرجات لونية حقيقية**
+**3 محركات · 11 لوناً · 14 شريحة · 3 لغات**
 
 ---
 
@@ -9,16 +9,16 @@
 
 ```
 mathkarati-pro/
-├── app.py                      ← Flask server (router للمحركات)
+├── app.py                      ← Flask server (3 engines router)
 ├── requirements.txt            ← Python deps (flask, gunicorn, python-pptx, lxml)
 ├── Procfile                    ← gunicorn start command
 ├── render.yaml                 ← Render.com config
-├── build.sh                    ← Build script (تثبيت Cairo font + npm)
+├── build.sh                    ← Build script
 ├── scripts/
-│   ├── generator_canva.py      ← ✨ Ultra v10 engine (9 palettes × 3 families)
-│   └── generator_classic.py   ← Classic engine (fallback)
+│   ├── generator_canva.py      ← ✨ Canva Level engine (8 palettes × 3 families)
+│   └── generator_classic.py   ← Classic engine (8 palettes × 3 layouts)
 ├── node_scripts/
-│   ├── generator_api.js        ← Premium engine (Node.js / pptxgenjs)
+│   ├── generator_api.js        ← Premium engine (3 styles: Noir/Atlas/Sakura)
 │   └── package.json            ← pptxgenjs dependency
 └── public/
     └── index.html              ← واجهة 6 خطوات · 3 لغات · Toggle للشرائح
@@ -26,74 +26,74 @@ mathkarati-pro/
 
 ---
 
-## 🚀 النشر على Render.com
+## 🚀 النشر على Render
 
-### الطريقة السريعة:
-1. ارفع المشروع على GitHub
-2. في Render: **New → Web Service** → اختر الـ repo
-3. الإعدادات:
-   - **Runtime:** Python 3
-   - **Build Command:** `bash build.sh`
-   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --worker-class sync --graceful-timeout 60 --keep-alive 5 --max-requests 100 --max-requests-jitter 20`
-4. Environment Variables:
-   - `FLASK_ENV` = `production`
-   - `NODE_VERSION` = `20.11.0`
+### Build Command:
+```
+pip install -r requirements.txt && cd node_scripts && npm install --production
+```
 
-### أو استخدم render.yaml (تلقائي — موصى به):
-render.yaml موجود بالفعل في المشروع ويُطبَّق تلقائياً.
+### Start Command:
+```
+gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+```
 
----
+### Runtime: **Python**
 
-## ⚠️ ملاحظات مهمة للإنتاج
-
-### خط Cairo:
-- `build.sh` يُحاول تنزيل خط Cairo تلقائياً
-- إذا فشل: يستخدم **Calibri** تلقائياً (fallback مضمون)
-- العرض يعمل بشكل طبيعي في كلتا الحالتين
-
-### المحركات:
-| المحرك | المتطلب | Fallback |
-|--------|---------|---------|
-| Canva (v10) | Python + lxml | — |
-| Classic | Python | — |
-| Premium | Node.js | → Canva تلقائياً |
-
-### الأداء على Render Free Tier:
-- توليد شريحة: ~5–15 ثانية
-- Timeout مضبوط على 120 ثانية (كافٍ)
-- `--max-requests 50` يمنع تراكم الذاكرة
+> ملاحظة: Render يثبّت Node.js تلقائياً مع Python services.
 
 ---
 
-## 🎨 الألوان المدعومة (v10)
+## 🎨 المحركات والألوان
 
-| الاسم | العائلة | الطابع |
+### ✨ Canva Level (الافتراضي) — python-pptx
+| اللون | العائلة | الطابع |
 |-------|---------|--------|
-| `navy_gold` | NOIR | أزرق ملكي ذهبي |
-| `midnight_purple` | NOIR | بنفسجي ليلي |
-| `forest` | NOIR | أخضر غابي |
-| `sand_gold` | NOIR | ذهبي رملي |
-| `dark_teal` | VIVID | تيل حيوي |
-| `charcoal_orange` | VIVID | فحمي برتقالي |
-| `burgundy` | VIVID | بورغندي |
-| `ice_blue` | MINIMAL | أزرق ثلجي |
-| `slate_crimson` | MINIMAL | فولاذي قرمزي |
+| navy_gold | NOIR | أزرق ملكي ذهبي |
+| midnight_purple | NOIR | بنفسجي ليلي |
+| forest | NOIR | أخضر غابي |
+| sand_gold | NOIR | ذهبي رملي |
+| dark_teal | VIVID | تيل حيوي |
+| charcoal_orange | VIVID | فحمي برتقالي |
+| burgundy | VIVID | بورغندي |
+| ice_blue | MINIMAL | أزرق ثلجي نظيف |
+
+### Classic — python-pptx
+نفس الألوان الـ 8 بتخطيطات Classic/Bold/Minimal
+
+### Premium — PptxGenJS (Node.js)
+| النمط | الطابع |
+|-------|--------|
+| Noir Académique | أكاديمي فاخر داكن |
+| Atlas Corporate | استشاري McKinsey |
+| Sakura Créative | إبداعي طوكيو |
+
+---
+
+## 📊 الشرائح (14 شريحة قابلة للتحكم)
+
+1. الغلاف (دائماً)
+2. المقدمة + المقاربة
+3. خطة الدراسة (الفصول والمباحث)
+4. الإشكالية + التساؤل الرئيسي + الفرعية
+5. الأهداف والفرضيات
+6. أهمية الدراسة
+7. المنهجية + العينة + المجالات
+8. لوحة KPI
+9. النتائج
+10. الخاتمة
+11. التوصيات
+12. الآفاق البحثية
+13. المراجع
+14. شريحة الشكر (ثلاث لغات)
 
 ---
 
 ## 💻 التشغيل محلياً
 
 ```bash
-git clone <repo-url>
-cd mathkarati-v2
-
-# تثبيت Python
 pip install -r requirements.txt
-
-# تثبيت Node (اختياري - للمحرك Premium)
 cd node_scripts && npm install && cd ..
-
-# تشغيل
 python app.py
 ```
 
@@ -101,16 +101,4 @@ python app.py
 
 ---
 
-## 🔧 استكشاف الأخطاء
-
-| المشكلة | الحل |
-|---------|------|
-| `ImportError: lxml` | `pip install lxml==5.3.0` |
-| `ImportError: pptx` | `pip install python-pptx==1.0.2` |
-| الخط عربي لا يظهر | Cairo غير مثبت — شغّل `build.sh` أو ثبّت يدوياً |
-| `500 Internal Server Error` | راجع `/health` للتشخيص |
-| ملف PPTX فارغ | تأكد من إرسال `studentName` و`titleAr` |
-
----
-
-*مذكرتي Pro v10 — Ultra Visual Engine · 2024–2025*
+*مذكرتي Pro v7 — Canva Level · 2024–2025*
