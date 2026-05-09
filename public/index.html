@@ -723,6 +723,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p id="msub" data-i18n="modal_sub">المحرك يبني الشرائح</p>
     <div class="ptrack"><div class="pfill" id="pfill"></div></div>
     <div class="plbl" id="plbl">0%</div>
+    <button id="bcancel" onclick="cancelGen()" style="margin-top:14px;background:none;border:1px solid #ccc;border-radius:8px;padding:6px 20px;font-size:12px;color:#888;cursor:pointer;">✕ إلغاء</button>
   </div>
 </div>
 
@@ -1539,6 +1540,9 @@ async function onEngineChange(){
   onPaletteChange();
 }
 
+// ── AbortController للإلغاء ──────────────────────────────────────
+let _genAbort = null;
+
 async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
@@ -1557,20 +1561,76 @@ async function generate(){
   }
 
   openM();
-  const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
-  for(const[p,m] of steps){await sl(380);setP(p,m);}
+
+  // ── Animation تقدمية مستمرة أثناء انتظار الخادم ──
+  let _progStop = false;
+  let _currentP = 0;
+  (async function liveProgress(){
+    // مراحل سريعة أولاً (0→40% خلال 2 ثانية)
+    const fast=[[5,300],[15,300],[25,300],[35,300],[40,400]];
+    for(const[p,ms] of fast){
+      if(_progStop) return;
+      await sl(ms); if(_progStop) return;
+      setP(p, t('modal_sub')); _currentP=p;
+    }
+    // ثم تقدم بطيء مستمر (40→92%) كل 2 ثانية
+    const msgs_ar=['جاري معالجة البيانات...','بناء الشرائح...','تطبيق التصميم...','إضافة المحتوى...','اللمسات الأخيرة...','تجهيز الملف...'];
+    const msgs_fr=['Traitement des données...','Construction des slides...','Application du design...','Ajout du contenu...','Touches finales...','Préparation du fichier...'];
+    const msgs_en=['Processing data...','Building slides...','Applying design...','Adding content...','Final touches...','Preparing file...'];
+    const msgs={'ar':msgs_ar,'fr':msgs_fr,'en':msgs_en};
+    let i=0;
+    while(_currentP < 92){
+      if(_progStop) return;
+      await sl(2000); if(_progStop) return;
+      _currentP = Math.min(92, _currentP + Math.random()*4+2);
+      const mlist = msgs[currentLang]||msgs_ar;
+      setP(Math.round(_currentP), mlist[i%mlist.length]); i++;
+    }
+  })();
+
+  // ── Fetch مع timeout 160 ثانية ──
+  _genAbort = new AbortController();
+  const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 160000);
+
   try{
-    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
-    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
+    const r=await fetch('/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(d),
+      signal:_genAbort.signal
+    });
+    clearTimeout(_timeoutId);
+    _progStop=true;
+
+    if(!r.ok){
+      const e=await r.json().catch(()=>({error:r.statusText}));
+      throw new Error(e.error||'Server error');
+    }
     const blob=await r.blob();
-    // كشف Fallback من اسم الملف في Content-Disposition
     const cd=r.headers.get('Content-Disposition')||'';
     const isFallback = cd.includes('canva-fallback') || cd.includes('node-error');
     const url=URL.createObjectURL(blob);
     setP(100,t('modal_ok'));await sl(300);
     showOk(url,d.studentName,isFallback);
     localStorage.removeItem('mp_v4');
-  }catch(e){closeM();alert(e.message);}
+  }catch(e){
+    clearTimeout(_timeoutId);
+    _progStop=true;
+    closeM();
+    if(e.name==='AbortError' || e.message==='timeout' || e.message==='user'){
+      if(e.message==='user') return; // إلغاء بواسطة المستخدم — لا رسالة
+      const msg={
+        ar:'⏱️ انتهت مهلة الاتصال بالخادم.\n\nالخادم قد يكون في وضع السكون (cold start).\n\nانتظر 30 ثانية ثم حاول مجدداً.',
+        fr:'⏱️ Délai de connexion dépassé.\n\nLe serveur est peut-être en veille (cold start).\n\nAttendez 30 secondes et réessayez.',
+        en:'⏱️ Connection timed out.\n\nServer may be in sleep mode (cold start).\n\nWait 30 seconds and try again.'
+      };
+      alert(msg[currentLang]||msg.ar);
+    } else {
+      alert(e.message);
+    }
+  } finally {
+    _genAbort=null;
+  }
 }
 
 function openM(){
@@ -1579,15 +1639,24 @@ function openM(){
   document.getElementById('mtitle').textContent=t('modal_title');
   document.getElementById('msub').textContent=t('modal_sub');
   document.getElementById('ptrack').style.display='';document.getElementById('plbl').style.display='';
+  document.getElementById('bcancel').style.display='';
   setP(0,'');
 }
-function closeM(){document.getElementById('ov').classList.remove('open');}
+function closeM(){
+  document.getElementById('ov').classList.remove('open');
+  document.getElementById('bcancel').style.display='none';
+}
+function cancelGen(){
+  if(_genAbort){ _genAbort.abort('user'); }
+  closeM();
+}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
 function showOk(url,name,isFallback){
   document.getElementById('mic').className='mic mok';document.getElementById('mic').textContent='✅';
   document.getElementById('mtitle').textContent=t('modal_ok');
   document.getElementById('msub').textContent=t('modal_ok_sub');
   document.getElementById('ptrack').style.display='none';document.getElementById('plbl').style.display='none';
+  document.getElementById('bcancel').style.display='none';
   const mb=document.querySelector('.mbox');
   mb.querySelectorAll('.bdl,.bnew,.fallback-note').forEach(e=>e.remove());
   // تنبيه Fallback
@@ -1609,6 +1678,12 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init(){
+  // ── Wake-up ping للخادم (Render free cold start) ──────────────
+  setTimeout(()=>{
+    fetch('/health',{method:'GET',signal:AbortSignal.timeout(8000)})
+      .catch(()=>{}); // silent — فقط لإيقاظ الخادم
+  }, 1000);
+
   // Init default list items
   addS('dl-subQ','تساؤل فرعي'); addS('dl-hyp','فرضية'); addS('dl-obj','هدف');
   addS('dl-importance','أهمية'); addS('dl-tests','اختبار');
