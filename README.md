@@ -1,104 +1,111 @@
-# مذكرتي Pro v7 — Canva Level 🎓
+# مذكرتي Pro 🎓
 
-منشئ عروض PowerPoint أكاديمية احترافية للجامعات الجزائرية  
-**3 محركات · 11 لوناً · 14 شريحة · 3 لغات**
+**منشئ العروض الأكاديمية الاحترافية للجامعات الجزائرية**
+
+> يحوّل بيانات مذكرتك إلى عرض PowerPoint احترافي — نفس المحتوى، تجربة بصرية عالمية
 
 ---
 
-## 🏗️ هيكل المشروع
+## 🚀 النشر على Render (الطريقة الموصى بها)
+
+### الخطوة 1 — رفع المشروع على GitHub
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+git remote add origin https://github.com/USERNAME/mathkarati-pro.git
+git push -u origin main
+```
+
+### الخطوة 2 — إنشاء Web Service على Render
+
+1. اذهب إلى [render.com](https://render.com) → **New** → **Web Service**
+2. اربط حسابك بـ GitHub واختر الـ Repository
+3. اضبط الإعدادات:
+
+| الحقل | القيمة |
+|---|---|
+| **Name** | `mathkarati-pro` |
+| **Runtime** | `Python 3` |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `gunicorn app:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT` |
+| **Instance Type** | `Free` (أو Starter للإنتاج) |
+
+4. اضغط **Create Web Service**
+5. انتظر 2-3 دقائق حتى ينتهي البناء
+6. الرابط سيكون: `https://mathkarati-pro.onrender.com`
+
+---
+
+## 💻 التشغيل المحلي (للتطوير)
+
+```bash
+# تثبيت المتطلبات
+pip install -r requirements.txt
+
+# تشغيل السيرفر
+python app.py
+
+# افتح المتصفح على
+http://localhost:5000
+```
+
+---
+
+## 📁 هيكل المشروع
 
 ```
 mathkarati-pro/
-├── app.py                      ← Flask server (3 engines router)
-├── requirements.txt            ← Python deps (flask, gunicorn, python-pptx, lxml)
-├── Procfile                    ← gunicorn start command
-├── render.yaml                 ← Render.com config
-├── build.sh                    ← Build script
-├── scripts/
-│   ├── generator_canva.py      ← ✨ Canva Level engine (8 palettes × 3 families)
-│   └── generator_classic.py   ← Classic engine (8 palettes × 3 layouts)
-├── node_scripts/
-│   ├── generator_api.js        ← Premium engine (3 styles: Noir/Atlas/Sakura)
-│   └── package.json            ← pptxgenjs dependency
-└── public/
-    └── index.html              ← واجهة 6 خطوات · 3 لغات · Toggle للشرائح
+├── app.py              ← Flask server (نقطة الدخول)
+├── requirements.txt    ← Python dependencies
+├── Procfile            ← Render/Heroku start command
+├── render.yaml         ← Render configuration
+├── .gitignore
+├── public/
+│   └── index.html      ← واجهة المستخدم (6 خطوات)
+└── scripts/
+    └── generator.py    ← محرك توليد PPTX
 ```
 
 ---
 
-## 🚀 النشر على Render
+## 🎨 القوالب المتاحة
 
-### Build Command:
-```
-pip install -r requirements.txt && cd node_scripts && npm install --production
-```
-
-### Start Command:
-```
-gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-```
-
-### Runtime: **Python**
-
-> ملاحظة: Render يثبّت Node.js تلقائياً مع Python services.
+| الكود | الاسم | الألوان |
+|---|---|---|
+| `navy_gold` | كلاسيك أزرق ذهبي | أزرق داكن + ذهبي |
+| `dark_teal` | نيل أخضر داكن | رمادي داكن + أخضر فيروزي |
+| `burgundy` | بوردو فاخر | خمري + وردي |
+| `forest` | غابة ملكي | أخضر داكن + زيتوني |
 
 ---
 
-## 🎨 المحركات والألوان
+## ⚙️ المتطلبات
 
-### ✨ Canva Level (الافتراضي) — python-pptx
-| اللون | العائلة | الطابع |
-|-------|---------|--------|
-| navy_gold | NOIR | أزرق ملكي ذهبي |
-| midnight_purple | NOIR | بنفسجي ليلي |
-| forest | NOIR | أخضر غابي |
-| sand_gold | NOIR | ذهبي رملي |
-| dark_teal | VIVID | تيل حيوي |
-| charcoal_orange | VIVID | فحمي برتقالي |
-| burgundy | VIVID | بورغندي |
-| ice_blue | MINIMAL | أزرق ثلجي نظيف |
-
-### Classic — python-pptx
-نفس الألوان الـ 8 بتخطيطات Classic/Bold/Minimal
-
-### Premium — PptxGenJS (Node.js)
-| النمط | الطابع |
-|-------|--------|
-| Noir Académique | أكاديمي فاخر داكن |
-| Atlas Corporate | استشاري McKinsey |
-| Sakura Créative | إبداعي طوكيو |
+- Python 3.10+
+- flask
+- gunicorn
+- python-pptx
 
 ---
 
-## 📊 الشرائح (14 شريحة قابلة للتحكم)
+## 📌 ملاحظات مهمة
 
-1. الغلاف (دائماً)
-2. المقدمة + المقاربة
-3. خطة الدراسة (الفصول والمباحث)
-4. الإشكالية + التساؤل الرئيسي + الفرعية
-5. الأهداف والفرضيات
-6. أهمية الدراسة
-7. المنهجية + العينة + المجالات
-8. لوحة KPI
-9. النتائج
-10. الخاتمة
-11. التوصيات
-12. الآفاق البحثية
-13. المراجع
-14. شريحة الشكر (ثلاث لغات)
+- **Render Free Tier**: السيرفر "ينام" بعد 15 دقيقة من عدم الاستخدام — أول طلب بعد النوم يأخذ 30 ثانية
+- **Render Starter ($7/شهر)**: لا ينام — موصى به للاستخدام الجاد
+- **حجم الملفات**: كل PPTX بين 40-80 KB — لا مشكلة في الأداء
+- **لا قاعدة بيانات**: كل شيء يتم في الذاكرة — لا حاجة لـ PostgreSQL
 
 ---
 
-## 💻 التشغيل محلياً
+## 🔧 متغيرات البيئة (اختيارية)
 
-```bash
-pip install -r requirements.txt
-cd node_scripts && npm install && cd ..
-python app.py
-```
-
-ثم: http://localhost:5000
+| المتغير | القيمة الافتراضية | الوصف |
+|---|---|---|
+| `PORT` | `5000` | يُعيَّن تلقائياً من Render |
+| `FLASK_ENV` | `production` | وضع الإنتاج |
 
 ---
 
-*مذكرتي Pro v7 — Canva Level · 2024–2025*
+صُنع بـ 🇩🇿 للطلاب الجزائريين

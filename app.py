@@ -1,37 +1,41 @@
 """
-مذكرتي Pro v7 — Canva Level
-3 محركات: Classic · Canva · Premium(Node)
+مذكرتي Pro — خادم Flask للإنتاج
+Production server — Render deployment ready
 """
-import os, sys, json, subprocess, tempfile, logging, io
+import os, sys, json, tempfile, logging, io
 from flask import Flask, request, send_file, jsonify, send_from_directory, make_response
 
+# Add scripts dir to path so we can import generator directly
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
+from generator import generate_presentation
 
+# ── App setup ──────────────────────────────────────────
 app = Flask(__name__, static_folder="public", static_url_path="")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 log = logging.getLogger(__name__)
 
-NODE_SCRIPT  = os.path.join(os.path.dirname(__file__), "node_scripts", "generator_api.js")
-NODE_MODULES = os.path.join(os.path.dirname(__file__), "node_scripts", "node_modules")
-
-CLASSIC_THEMES = {'navy_gold','dark_teal','burgundy','forest','midnight_purple','charcoal_orange','ice_blue','sand_gold'}
-PREMIUM_THEMES = {'noir','atlas','sakura'}
-
+# ── CORS middleware ─────────────────────────────────────
 @app.after_request
-def cors(r):
-    r.headers["Access-Control-Allow-Origin"]  = "*"
-    r.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    r.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    return r
+def add_cors(response):
+    response.headers["Access-Control-Allow-Origin"]  = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
 
 @app.before_request
-def preflight():
+def handle_options():
     if request.method == "OPTIONS":
-        r = make_response("", 204)
-        r.headers["Access-Control-Allow-Origin"]  = "*"
-        r.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-        r.headers["Access-Control-Allow-Headers"] = "Content-Type"
-        return r
+        resp = make_response("", 204)
+        resp.headers["Access-Control-Allow-Origin"]  = "*"
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return resp
+
+# ── Routes ─────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -39,7 +43,7 @@ def index():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "version": "7.0", "engines": ["canva", "classic", "premium"]}), 200
+    return jsonify({"status": "ok", "service": "مذكرتي Pro"}), 200
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -47,82 +51,41 @@ def generate():
         data = request.get_json(force=True, silent=True)
         if not data:
             return jsonify({"error": "بيانات غير صالحة"}), 400
+
+        # Validate required fields
         if not data.get("studentName") or not data.get("titleAr"):
             return jsonify({"error": "اسم الطالب وعنوان المذكرة مطلوبان"}), 400
 
-        engine = data.get("engine", "canva")
-        theme  = data.get("theme", "navy_gold")
-        log.info(f"[{engine}] theme={theme} student={data.get('studentName','?')[:20]}")
+        log.info(f"Generating for: {data.get('studentName','unknown')}")
 
-        if engine == "premium" or theme in PREMIUM_THEMES:
-            return _gen_premium(data)
-        elif engine == "classic":
-            return _gen_python(data, "generator_classic")
-        else:  # canva (default)
-            return _gen_python(data, "generator_canva")
+        # Generate in temp dir
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "presentation.pptx")
+            generate_presentation(data, out_path)
+
+            student = data.get("studentName", "مذكرة").replace(" ", "_")
+            filename = f"عرض_{student}.pptx"
+
+            # Read file before temp dir is deleted
+            with open(out_path, "rb") as f:
+                pptx_bytes = f.read()
+
+        # Write to BytesIO for send_file
+        return send_file(
+            io.BytesIO(pptx_bytes),
+            mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            as_attachment=True,
+            download_name=filename
+        )
 
     except Exception as e:
-        log.error(f"Unexpected: {e}", exc_info=True)
+        log.error(f"Generation error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
-def _gen_python(data, module_name):
-    try:
-        mod = __import__(module_name)
-        # reload to pick up any changes
-        import importlib
-        mod = importlib.import_module(module_name)
-
-        with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
-            path = f.name
-        mod.generate_presentation(data, path)
-        with open(path, "rb") as f:
-            pptx_bytes = f.read()
-        os.unlink(path)
-
-        name = data.get("studentName","مذكرة").replace(" ","_")
-        return send_file(
-            io.BytesIO(pptx_bytes),
-            mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            as_attachment=True,
-            download_name=f"عرض_{name}.pptx",
-        )
-    except Exception as e:
-        log.error(f"{module_name} error: {e}", exc_info=True)
-        return jsonify({"error": f"خطأ في المحرك: {str(e)[:300]}"}), 500
-
-
-def _gen_premium(data):
-    try:
-        env = os.environ.copy()
-        env["NODE_PATH"] = NODE_MODULES
-        result = subprocess.run(
-            ["node", NODE_SCRIPT],
-            input=json.dumps(data, ensure_ascii=False).encode("utf-8"),
-            capture_output=True, timeout=90,
-            cwd=os.path.join(os.path.dirname(__file__), "node_scripts"),
-            env=env,
-        )
-        if result.returncode != 0:
-            err = result.stderr.decode("utf-8", errors="replace")
-            return jsonify({"error": f"خطأ في المحرك: {err[:300]}"}), 500
-        pptx_bytes = result.stdout
-        if len(pptx_bytes) < 1000:
-            return jsonify({"error": "ملف فارغ من المحرك"}), 500
-        name = data.get("studentName","مذكرة").replace(" ","_")
-        return send_file(
-            io.BytesIO(pptx_bytes),
-            mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            as_attachment=True,
-            download_name=f"عرض_{name}.pptx",
-        )
-    except subprocess.TimeoutExpired:
-        return jsonify({"error": "انتهت مهلة التوليد"}), 504
-    except FileNotFoundError:
-        return jsonify({"error": "Node.js غير مثبت على الخادم"}), 500
-
-
+# ── Entry point ─────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port,
-            debug=os.environ.get("FLASK_ENV") == "development")
+    debug = os.environ.get("FLASK_ENV") == "development"
+    log.info(f"Starting مذكرتي Pro on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=debug)

@@ -2,10 +2,11 @@ services:
   - type: web
     name: mathkarati-pro
     runtime: python
-    buildCommand: pip install -r requirements.txt && cd node_scripts && npm install --production
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: PYTHON_VERSION
-        value: "3.11.0"
+    autoDeploy: true
