@@ -1,0 +1,12 @@
+{
+  "name": "mathkarati-engine",
+  "version": "3.0.0",
+  "description": "MathKarati PRO v3 — PPTX generation engine",
+  "main": "generator_api.js",
+  "dependencies": {
+    "pptxgenjs": "^3.12.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
