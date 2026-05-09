@@ -36,6 +36,7 @@ def _cairo_available() -> bool:
     search_dirs = [
         "/usr/share/fonts", "/usr/local/share/fonts",
         os.path.expanduser("~/.fonts"),
+        "/tmp/fonts",
         "C:/Windows/Fonts",
         "/Library/Fonts", os.path.expanduser("~/Library/Fonts"),
     ]
@@ -47,7 +48,12 @@ def _cairo_available() -> bool:
                         return True
     return False
 
-_CAIRO_OK = _cairo_available()
+# محاولة استخدام font_helper إذا كان متاحاً
+try:
+    from font_helper import CAIRO_OK as _CAIRO_OK, ARABIC_FONT as _ARABIC_FONT
+except ImportError:
+    _CAIRO_OK = _cairo_available()
+    _ARABIC_FONT = "Cairo" if _CAIRO_OK else "Calibri"
 _FONT_FALLBACK["Cairo"] = "Cairo" if _CAIRO_OK else "Arial"
 
 def safe_font(name: str) -> str:

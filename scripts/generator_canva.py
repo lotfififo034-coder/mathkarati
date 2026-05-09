@@ -22,27 +22,32 @@ import shutil, os, subprocess
 W, H   = 33.867, 19.05   # cm — 16:9 = 1920×1080 mapping
 MX, MY = 1.40, 0.88      # margins
 
-# ── Font availability check ─────────────────────────────────────
-def _font_available(name):
-    if shutil.which("fc-list"):
-        try:
-            out = subprocess.run(["fc-list", f":family={name}"],
-                                 capture_output=True, text=True, timeout=3)
-            if name.lower() in out.stdout.lower():
-                return True
-        except: pass
-    for d in ["/usr/share/fonts", "/usr/local/share/fonts",
-              os.path.expanduser("~/.fonts"), "C:/Windows/Fonts"]:
-        if os.path.isdir(d):
-            for root, _, files in os.walk(d):
-                for f in files:
-                    if name.lower() in f.lower() and f.lower().endswith((".ttf",".otf")):
-                        return True
-    return False
-
-_CAIRO_OK = _font_available("Cairo")
-HF = "Cairo" if _CAIRO_OK else "Calibri"   # heading font
-BF = "Cairo" if _CAIRO_OK else "Arial"     # body font
+# ── Font detection via font_helper ──────────────────────────────
+try:
+    from font_helper import CAIRO_OK as _CAIRO_OK, ARABIC_FONT as _ARABIC_FONT
+    HF = _ARABIC_FONT   # heading font  (Cairo أو Amiri أو Calibri)
+    BF = _ARABIC_FONT   # body font
+except ImportError:
+    # fallback مباشر إذا font_helper غير موجود
+    def _font_available(name):
+        if shutil.which("fc-list"):
+            try:
+                out = subprocess.run(["fc-list", f":family={name}"],
+                                     capture_output=True, text=True, timeout=3)
+                if name.lower() in out.stdout.lower():
+                    return True
+            except: pass
+        for d in ["/usr/share/fonts", "/usr/local/share/fonts",
+                  os.path.expanduser("~/.fonts"), "/tmp/fonts", "C:/Windows/Fonts"]:
+            if os.path.isdir(d):
+                for root, _, files in os.walk(d):
+                    for f in files:
+                        if name.lower() in f.lower() and f.lower().endswith((".ttf",".otf")):
+                            return True
+        return False
+    _CAIRO_OK = _font_available("Cairo")
+    HF = "Cairo" if _CAIRO_OK else "Calibri"
+    BF = "Cairo" if _CAIRO_OK else "Arial"
 
 # ── Core helpers ────────────────────────────────────────────────
 def rgb(r,g,b): return RGBColor(r,g,b)
