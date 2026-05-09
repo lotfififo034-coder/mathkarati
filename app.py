@@ -41,6 +41,22 @@ NODE_AVAILABLE = _check_node()
 _mod_lock   = threading.Lock()
 _mod_cache: dict = {}
 
+def _preload_modules():
+    """
+    يُحمّل الـ modules مسبقاً عند بدء الـ worker (وليس عند أول طلب).
+    هذا يمنع timeout على أول request بعد إعادة التشغيل.
+    يعمل في thread منفصل لعدم تأخير بدء تشغيل الـ server.
+    """
+    def _load():
+        for name in ["generator_canva", "generator_classic"]:
+            try:
+                _get_module(name)
+            except Exception as e:
+                log.warning(f"Pre-load failed for {name}: {e}")
+    t = threading.Thread(target=_load, daemon=True, name="preloader")
+    t.start()
+    log.info("✅ Background module pre-loading started")
+
 def _get_module(name: str):
     """
     يُحمّل الـ module مرة واحدة ويخزّنه.
@@ -217,6 +233,9 @@ def _gen_premium(data: dict):
     except FileNotFoundError:
         return jsonify({"error": "Node.js غير مثبت"}), 500
 
+
+# ── تحميل مسبق عند بدء التشغيل (في Gunicorn و dev معاً) ─────────────
+_preload_modules()
 
 if __name__ == "__main__":
     port  = int(os.environ.get("PORT", 5000))
