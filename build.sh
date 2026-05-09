@@ -1,6 +1,8 @@
 #!/bin/bash
 # ⚠️  لا تستخدم set -e — نريد البناء يكمل حتى عند أخطاء الخطوط الاختيارية
 
+echo "==> Python version: $(python3 --version)"
+
 echo "==> [1/4] Installing system packages..."
 apt-get update -qq 2>/dev/null && \
   apt-get install -y -qq fontconfig fonts-noto-core 2>/dev/null || \

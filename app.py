@@ -88,20 +88,21 @@ def preflight():
 def index():
     return send_from_directory("public", "index.html")
 
+def _get_cairo_ok():
+    """آمن تماماً — يقرأ من الـ cache بدون import جديد."""
+    mod = _loaded_modules.get("generator_canva")
+    if mod is not None:
+        return getattr(mod, "_CAIRO_OK", None)
+    return None
+
 @app.route("/health")
 def health():
-    # فحص خط Cairo
-    try:
-        from generator_canva import _CAIRO_OK
-        cairo_ok = _CAIRO_OK
-    except Exception:
-        cairo_ok = None
     return jsonify({
         "status":         "ok",
         "version":        "12.0",
         "engines":        ["canva", "classic", "premium"],
         "node_available": NODE_AVAILABLE,
-        "cairo_font":     cairo_ok,
+        "cairo_font":     _get_cairo_ok(),
     }), 200
 
 @app.route("/ping")
