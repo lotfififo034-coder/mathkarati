@@ -1547,6 +1547,31 @@ async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
 
+  // ── Cold-start check: تأكد أن الخادم يستجيب قبل الإرسال ──
+  openM();
+  setP(5, currentLang==='fr'?'Vérification du serveur...':currentLang==='en'?'Checking server...':'التحقق من الخادم...');
+  try {
+    const healthR = await fetch('/health', {signal: AbortSignal.timeout(55000)});
+    if(!healthR.ok) throw new Error('server not ready');
+  } catch(coldErr) {
+    // إذا فشل health → الخادم نائم أو مشغول → أعد المحاولة مرة واحدة بعد 5 ثوانٍ
+    setP(10, currentLang==='fr'?'Réveil du serveur...':currentLang==='en'?'Waking server...':'جاري إيقاظ الخادم...');
+    await sl(5000);
+    try {
+      await fetch('/health', {signal: AbortSignal.timeout(30000)});
+    } catch(e2) {
+      closeM();
+      const msg = {
+        ar: '⚠️ الخادم غير متاح حالياً.\n\nانتظر 30 ثانية ثم حاول مجدداً.',
+        fr: '⚠️ Serveur indisponible.\n\nAttendez 30 secondes et réessayez.',
+        en: '⚠️ Server unavailable.\n\nWait 30 seconds and try again.'
+      };
+      alert(msg[currentLang]||msg.ar);
+      return;
+    }
+  }
+  closeM(); // أغلق الـ modal مؤقتاً لإعادة فتحه نظيفاً
+
   // فحص Node.js قبل إرسال طلب Premium
   if(d.engine==='premium'){
     const nodeOk = await checkNodeAvailability();
@@ -1590,11 +1615,11 @@ async function generate(){
 
   // ── Fetch مع retry تلقائي (max 2 محاولات) ──
   _genAbort = new AbortController();
-  const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 160000);
+  const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 240000);
 
   let r = null;
   let lastErr = null;
-  for(let attempt=1; attempt<=2; attempt++){
+  for(let attempt=1; attempt<=3; attempt++){
     try{
       if(attempt > 1){
         setP(20, attempt===2 ? (currentLang==='fr'?'Nouvelle tentative...':currentLang==='en'?'Retrying...':'إعادة المحاولة...') : '');
@@ -1695,11 +1720,18 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init(){
-  // ── Wake-up ping للخادم (Render free cold start) ──────────────
-  setTimeout(()=>{
-    fetch('/health',{method:'GET',signal:AbortSignal.timeout(8000)})
-      .catch(()=>{}); // silent — فقط لإيقاظ الخادم
-  }, 1000);
+  // ══════════════════════════════════════════════════
+  // KEEP-ALIVE: ping كل 10 دقائق لمنع نوم Render Free
+  // ══════════════════════════════════════════════════
+  (function keepAlive(){
+    const INTERVAL = 10 * 60 * 1000; // 10 دقائق
+    function ping(){
+      fetch('/ping',{method:'GET',signal:AbortSignal.timeout(8000)})
+        .catch(()=>{}); // silent
+    }
+    ping(); // ping فوري عند التحميل لإيقاظ الخادم
+    setInterval(ping, INTERVAL);
+  })();
 
   // Init default list items
   addS('dl-subQ','تساؤل فرعي'); addS('dl-hyp','فرضية'); addS('dl-obj','هدف');

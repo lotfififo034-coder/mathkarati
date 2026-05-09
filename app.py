@@ -35,6 +35,37 @@ def _check_node() -> bool:
 
 NODE_AVAILABLE = _check_node()
 
+# ── قفل لمنع race condition عند import المحركات ─────────────────────
+import threading
+_import_lock = threading.Lock()
+_loaded_modules: dict = {}
+
+def _get_module(module_name: str):
+    """Thread-safe module loader — يمنع circular import عند الطلبات المتزامنة."""
+    if module_name in _loaded_modules:
+        return _loaded_modules[module_name]
+    with _import_lock:
+        # double-check بعد الحصول على القفل
+        if module_name in _loaded_modules:
+            return _loaded_modules[module_name]
+        mod = importlib.import_module(module_name)
+        _loaded_modules[module_name] = mod
+        return mod
+
+# ── تحميل مسبق للـ modules عند الإقلاع ─────────────────────────────
+def _preload_modules():
+    def _do_preload():
+        for mod_name in ("generator_canva", "generator_classic"):
+            try:
+                _get_module(mod_name)
+                log.info(f"✅ Pre-loaded: {mod_name}")
+            except Exception as e:
+                log.warning(f"Pre-load warning [{mod_name}]: {e}")
+    t = threading.Thread(target=_do_preload, daemon=True)
+    t.start()
+
+_preload_modules()
+
 # ── CORS ─────────────────────────────────────────────────────────────
 @app.after_request
 def cors(r):
@@ -67,11 +98,16 @@ def health():
         cairo_ok = None
     return jsonify({
         "status":         "ok",
-        "version":        "10.0",
+        "version":        "12.0",
         "engines":        ["canva", "classic", "premium"],
         "node_available": NODE_AVAILABLE,
         "cairo_font":     cairo_ok,
     }), 200
+
+@app.route("/ping")
+def ping():
+    """Lightweight keep-alive endpoint — لا يُحمّل أي module"""
+    return "pong", 200
 
 # ── التوليد الرئيسي ──────────────────────────────────────────────────
 @app.route("/generate", methods=["POST"])
@@ -116,11 +152,7 @@ def _gen_python(data: dict, module_name: str):
     """يولد PPTX عبر Python (canva أو classic)."""
     path = None
     try:
-        # Import module (cached after first load - don't reload every request)
-        if module_name in sys.modules:
-            mod = sys.modules[module_name]
-        else:
-            mod = importlib.import_module(module_name)
+        mod = _get_module(module_name)
 
         with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
             path = f.name
