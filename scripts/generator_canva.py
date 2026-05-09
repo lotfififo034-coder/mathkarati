@@ -413,7 +413,7 @@ def kpi_premium(slide, x,y,w,h, T, value, label, color, sub=None):
             sp = s_bg._element
             spPr = sp.find(qn('p:spPr'))
             fld = spPr.find('.//' + qn('a:solidFill'))
-            if fld:
+            if fld is not None:
                 srgb = fld.find(qn('a:srgbClr'))
                 if srgb is not None:
                     alp = etree.SubElement(srgb, qn('a:alpha'))
