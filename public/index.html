@@ -147,10 +147,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px}
 .kcard{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:10px;position:relative}
 .kcard:focus-within{border-color:var(--gold)}
+.kcard.kpi-warn{border-color:#F59E0B!important}
 .kcard input{border:none;background:transparent;font-family:inherit;direction:inherit;width:100%;padding:0}
 .kcard input:focus{outline:none}
 .klbl{font-size:10px;font-weight:700;color:var(--muted)}
 .kval{font-size:19px;font-weight:900;color:var(--navy)}
+.kval-hint{font-size:9px;color:#9CA3AF;margin-top:2px;display:none}
+.kcard.kpi-warn .kval-hint{display:block;color:#F59E0B}
 .kdel{position:absolute;top:5px;left:5px;width:17px;height:17px;border-radius:4px;border:none;background:#FEE2E2;color:var(--err);cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center}
 .kcard:hover .kdel{display:flex}
 
@@ -219,6 +222,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .bdl:hover{transform:translateY(-2px)}
 .bnew{display:block;margin:7px auto 0;padding:7px 18px;border-radius:var(--r);border:1.5px solid var(--bd);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
 .bnew:hover{border-color:var(--gold);color:var(--gold)}
+.fallback-note{margin:10px 0 2px;padding:8px 12px;background:rgba(255,180,0,.12);border:1px solid rgba(255,180,0,.3);border-radius:7px;font-size:11px;color:#e8c060;text-align:center}
 
 @media(max-width:900px){
   .mpick{grid-template-columns:1fr 1fr}}
@@ -657,9 +661,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <span style="background:#1C0E2B;color:#FF5C5C;border-color:#1C0E2B">Sakura Créative</span>
           </div>
           <div class="mcard-count" data-i18n="premium_engine">⚙️ PptxGenJS · معماريات سينمائية</div>
-          <div id="premium-warn" style="display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:6px 10px;font-size:10px;color:#92400E;margin:6px 8px 0">
-            ⚠️ Node.js غير متاح حالياً — تأكد من إعداد Build Command على Render
-          </div>
         </div>
       </label>
 
@@ -698,6 +699,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="premium-colors-wrap" style="display:none">
       <div class="cpick premium-colors" id="cpick-premium"></div>
     </div>
+    <div id="premium-warn" style="display:none;margin:8px 0;padding:9px 13px;background:rgba(255,180,0,.13);border:1px solid rgba(255,180,0,.35);border-radius:8px;font-size:12px;color:#f0c060">
+      ⚠️ <span data-i18n="premium_warn">محرك Premium يتطلب Node.js — قد يتحوّل تلقائياً لمحرك Canva إذا لم يكن متاحاً على الخادم</span>
+    </div>
     <div class="color-preview" id="color-preview"></div>
   </div>
 
@@ -719,6 +723,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p id="msub" data-i18n="modal_sub">المحرك يبني الشرائح</p>
     <div class="ptrack"><div class="pfill" id="pfill"></div></div>
     <div class="plbl" id="plbl">0%</div>
+    <button id="bcancel" onclick="cancelGen()" style="margin-top:14px;background:none;border:1px solid #ccc;border-radius:8px;padding:6px 20px;font-size:12px;color:#888;cursor:pointer;">✕ إلغاء</button>
   </div>
 </div>
 
@@ -806,6 +811,7 @@ const I18N = {
     premium_desc: "تصاميم عالمية · 3 أنماط فاخرة",
     classic_engine: "⚙️ المحرك: python-pptx · 3 تخطيطات",
     premium_engine: "⚙️ المحرك: PptxGenJS · معماريات متميزة",
+    premium_warn: "⚙️ محرك Premium يتطلب Node.js — قد يتحوّل تلقائياً لمحرك Canva إذا لم يكن متاحاً",
     generate_btn: "🚀 إنشاء العرض الاحترافي",
     generating_hint: "⚡ يستغرق التوليد 10–40 ثانية",
 
@@ -937,6 +943,7 @@ const I18N = {
     premium_desc: "Designs mondiaux · 3 styles exclusifs",
     classic_engine: "⚙️ Moteur: python-pptx · 3 mises en page",
     premium_engine: "⚙️ Moteur: PptxGenJS · architectures distinctes",
+    premium_warn: "⚙️ Premium nécessite Node.js — bascule automatique vers Canva si indisponible",
     generate_btn: "🚀 Générer la présentation",
     generating_hint: "⚡ La génération prend 10–40 secondes",
     toggle_on: "Activé ✓", toggle_off: "Désactivé",
@@ -1045,6 +1052,7 @@ const I18N = {
     premium_desc: "World-class designs · 3 exclusive styles",
     classic_engine: "⚙️ Engine: python-pptx · 3 layouts",
     premium_engine: "⚙️ Engine: PptxGenJS · distinct architectures",
+    premium_warn: "⚙️ Premium requires Node.js — auto-fallback to Canva if unavailable",
     generate_btn: "🚀 Generate Professional Presentation",
     generating_hint: "⚡ Generation takes 10–40 seconds",
     toggle_on: "Enabled ✓", toggle_off: "Disabled",
@@ -1199,59 +1207,7 @@ const CANVA_PALETTES = CLASSIC_PALETTES;
   onPaletteChange();
 })();
 
-async function onEngineChange(){
-  const eng=document.querySelector('input[name="engine"]:checked')?.value;
-  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
-  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
-  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
-  // Select first palette of chosen engine
-  const first=document.querySelector(`#cpick-${eng} input[type="radio"]`);
-  if(first) first.checked=true;
-  // تحذير Premium
-  if(eng==='premium'){
-    const nodeOk = await checkNodeAvailability();
-    const warn = document.getElementById('premium-warn');
-    if(warn) warn.style.display = nodeOk ? 'none' : '';
-  } else {
-    const warn = document.getElementById('premium-warn');
-    if(warn) warn.style.display = 'none';
-  }
-  onPaletteChange();
-}
-
-async function generate(){
-  const d=collect();
-  if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
-
-  // فحص Node.js قبل إرسال طلب Premium
-  if(d.engine==='premium'){
-    const nodeOk = await checkNodeAvailability();
-    if(!nodeOk){
-      const msg = {
-        ar: '⚠️ محرك Premium غير متاح حالياً (Node.js غير مثبت على الخادم).\nسيتم التحويل تلقائياً لمحرك Canva Level.\n\nهل تريد المتابعة؟',
-        fr: '⚠️ Le moteur Premium est indisponible (Node.js absent du serveur).\nBasculement automatique vers le moteur Canva Level.\n\nVoulez-vous continuer?',
-        en: '⚠️ Premium engine unavailable (Node.js not on server).\nWill automatically use Canva Level engine instead.\n\nContinue anyway?',
-      };
-      if(!confirm(msg[currentLang]||msg.ar)) return;
-    }
-  }
-
-  openM();
-  const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
-  for(const[p,m] of steps){await sl(380);setP(p,m);}
-  try{
-    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
-    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
-    const blob=await r.blob();
-    // كشف Fallback من اسم الملف في Content-Disposition
-    const cd=r.headers.get('Content-Disposition')||'';
-    const isFallback = cd.includes('canva-fallback') || cd.includes('node-error');
-    const url=URL.createObjectURL(blob);
-    setP(100,t('modal_ok'));await sl(300);
-    showOk(url,d.studentName,isFallback);
-    localStorage.removeItem('mp_v4');
-  }catch(e){closeM();alert(e.message);}
-}
+// onEngineChange is defined below (async version with Node.js check)
 
 function onPaletteChange(){
   const eng=document.querySelector('input[name="engine"]:checked')?.value||'canva';
@@ -1551,20 +1507,173 @@ function loadDraft(){
 // ═══════════════════════════════════════════════════════
 // GENERATE
 // ═══════════════════════════════════════════════════════
+// ── فحص حالة الخادم وإشعار Premium fallback ──────────────────────
+let _nodeAvailable = null; // null = لم يُفحص بعد
+async function checkNodeAvailability(){
+  if(_nodeAvailable !== null) return _nodeAvailable;
+  try{
+    const r = await fetch('/health', {signal: AbortSignal.timeout(4000)});
+    if(r.ok){ const j=await r.json(); _nodeAvailable=j.node_available===true; }
+    else { _nodeAvailable=false; }
+  }catch{ _nodeAvailable=false; }
+  return _nodeAvailable;
+}
+
+// عند اختيار محرك Premium — تحذير فوري إذا Node غير متاح
+async function onEngineChange(){
+  const eng=document.querySelector('input[name="engine"]:checked')?.value;
+  document.getElementById('canva-colors-wrap').style.display   = eng==='canva'   ?'':'none';
+  document.getElementById('classic-colors-wrap').style.display = eng==='classic' ?'':'none';
+  document.getElementById('premium-colors-wrap').style.display = eng==='premium' ?'':'none';
+  // Select first palette of chosen engine
+  const first=document.querySelector(`#cpick-${eng} input[type="radio"]`);
+  if(first) first.checked=true;
+  // تحذير Premium
+  if(eng==='premium'){
+    const nodeOk = await checkNodeAvailability();
+    const warn = document.getElementById('premium-warn');
+    if(warn) warn.style.display = nodeOk ? 'none' : '';
+  } else {
+    const warn = document.getElementById('premium-warn');
+    if(warn) warn.style.display = 'none';
+  }
+  onPaletteChange();
+}
+
+// ── AbortController للإلغاء ──────────────────────────────────────
+let _genAbort = null;
+
 async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
+
+  // ── فحص Premium قبل فتح الـ modal (بدون modal مفتوح) ──
+  if(d.engine==='premium'){
+    const nodeOk = await checkNodeAvailability();
+    if(!nodeOk){
+      const msg = {
+        ar: '⚠️ محرك Premium غير متاح (Node.js غير مثبت).\nسيتم التحويل تلقائياً لمحرك Canva.\n\nهل تريد المتابعة؟',
+        fr: '⚠️ Moteur Premium indisponible (Node.js absent).\nBasculement automatique vers Canva.\n\nContinuer?',
+        en: '⚠️ Premium engine unavailable (Node.js missing).\nWill use Canva engine instead.\n\nContinue?',
+      };
+      if(!confirm(msg[currentLang]||msg.ar)) return;
+    }
+  }
+
+  // ── فتح الـ modal مرة واحدة فقط — لا يُغلق حتى النهاية ──
   openM();
-  const steps=[[10,'...'],[25,t('modal_sub')],[45,'...'],[65,'...'],[82,'...'],[94,'...']];
-  for(const[p,m] of steps){await sl(380);setP(p,m);}
+
+  // ── Animation تقدمية مستمرة (تبدأ فوراً) ──
+  let _progStop = false;
+  let _currentP = 0;
+
+  const msgs_ar=['جاري تجهيز المحرك...','جاري معالجة البيانات...','بناء الشرائح...','تطبيق التصميم...','إضافة المحتوى...','اللمسات الأخيرة...','تجهيز الملف...'];
+  const msgs_fr=['Préparation du moteur...','Traitement des données...','Construction des slides...','Application du design...','Ajout du contenu...','Touches finales...','Préparation du fichier...'];
+  const msgs_en=['Warming up engine...','Processing data...','Building slides...','Applying design...','Adding content...','Final touches...','Preparing file...'];
+  const msgs={'ar':msgs_ar,'fr':msgs_fr,'en':msgs_en};
+
+  (async function liveProgress(){
+    // مرحلة سريعة: 0→30% خلال 3 ثوان
+    const fast=[[5,400],[12,500],[20,500],[28,600],[30,500]];
+    for(const[p,ms] of fast){
+      if(_progStop) return;
+      await sl(ms); if(_progStop) return;
+      _currentP=p;
+      const mlist=msgs[currentLang]||msgs_ar;
+      setP(p, mlist[Math.floor(p/15)%mlist.length]);
+    }
+    // مرحلة بطيئة: 30→92% كل 2.5 ثانية (تغطي وقت cold start)
+    let i=2;
+    while(_currentP < 92){
+      if(_progStop) return;
+      await sl(2500); if(_progStop) return;
+      _currentP = Math.min(92, _currentP + Math.random()*3+1.5);
+      const mlist=msgs[currentLang]||msgs_ar;
+      setP(Math.round(_currentP), mlist[i%mlist.length]); i++;
+    }
+  })();
+
+  // ── Warmup: انتظر حتى الخادم جاهز (بدون إغلاق Modal) ──
+  try {
+    const POLL_MAX = 120000, POLL_IV = 3000;  // 2 دقيقة max، كل 3 ثوان
+    let elapsed = 0;
+    while(elapsed < POLL_MAX){
+      try {
+        const wr = await fetch('/warmup', {signal: AbortSignal.timeout(8000)});
+        const wd = await wr.json().catch(()=>({}));
+        if(wd.modules_ready) break;  // جاهز → اخرج من loop
+      } catch(e){ /* cold start — server still waking up */ }
+      await sl(POLL_IV);
+      elapsed += POLL_IV;
+    }
+  } catch(warmErr) { /* تجاهل */ }
+
+  // ── Fetch التوليد مع retry ──
+  _genAbort = new AbortController();
+  const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 240000);
+
+  let r = null;
+  let lastErr = null;
+  for(let attempt=1; attempt<=3; attempt++){
+    try{
+      if(attempt > 1){
+        const retryMsg={ar:'إعادة المحاولة...', fr:'Nouvelle tentative...', en:'Retrying...'};
+        setP(Math.max(15, _currentP), retryMsg[currentLang]||retryMsg.ar);
+        await sl(3000);
+      }
+      r = await fetch('/generate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(d),
+        signal:_genAbort.signal
+      });
+      lastErr = null;
+      break;
+    }catch(fetchErr){
+      lastErr = fetchErr;
+      if(fetchErr.name==='AbortError') break;
+    }
+  }
   try{
-    const r=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
-    if(!r.ok){const e=await r.json().catch(()=>({error:r.statusText}));throw new Error(e.error||'Server error');}
-    const blob=await r.blob(),url=URL.createObjectURL(blob);
+    if(lastErr) throw lastErr;
+    clearTimeout(_timeoutId);
+    _progStop=true;
+
+    if(!r.ok){
+      const e=await r.json().catch(()=>({error:r.statusText}));
+      throw new Error(e.error||'Server error');
+    }
+    // ── base64 JSON response (يتجاوز مشكلة Render proxy مع binary streams) ──
+    const json=await r.json();
+    if(!json.ok || !json.data) throw new Error(json.error||'استجابة غير صالحة من الخادم');
+    const isFallback = (json.filename||'').includes('_fallback') || (json.filename||'').includes('node-error');
+    // تحويل base64 → Blob → Object URL
+    const raw=atob(json.data);
+    const bytes=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i);
+    const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+    const url=URL.createObjectURL(blob);
     setP(100,t('modal_ok'));await sl(300);
-    showOk(url,d.studentName);
+    showOk(url,d.studentName,isFallback,json.filename);
     localStorage.removeItem('mp_v4');
-  }catch(e){closeM();alert(e.message);}
+  }catch(e){
+    clearTimeout(_timeoutId);
+    _progStop=true;
+    closeM();
+    if(e.name==='AbortError' || e.message==='timeout' || e.message==='user'){
+      if(e.message==='user') return;
+      const msg={
+        ar:'⏱️ انتهت مهلة الاتصال.\n\nالخادم في وضع السكون (cold start على Render).\n\nانتظر 30 ثانية ثم حاول مجدداً.',
+        fr:'⏱️ Délai dépassé.\n\nServeur en veille (cold start Render).\n\nAttendez 30s et réessayez.',
+        en:'⏱️ Connection timed out.\n\nServer sleeping (Render cold start).\n\nWait 30s and retry.'
+      };
+      alert(msg[currentLang]||msg.ar);
+    } else {
+      alert(e.message);
+    }
+  } finally {
+    _genAbort=null;
+  }
 }
 
 function openM(){
@@ -1573,20 +1682,41 @@ function openM(){
   document.getElementById('mtitle').textContent=t('modal_title');
   document.getElementById('msub').textContent=t('modal_sub');
   document.getElementById('ptrack').style.display='';document.getElementById('plbl').style.display='';
+  document.getElementById('bcancel').style.display='';
   setP(0,'');
 }
-function closeM(){document.getElementById('ov').classList.remove('open');}
+function closeM(){
+  document.getElementById('ov').classList.remove('open');
+  document.getElementById('bcancel').style.display='none';
+}
+function cancelGen(){
+  if(_genAbort){ _genAbort.abort('user'); }
+  closeM();
+}
 function setP(p,m){document.getElementById('pfill').style.width=p+'%';document.getElementById('plbl').textContent=m||p+'%';}
-function showOk(url,name){
+function showOk(url,name,isFallback,serverFilename){
   document.getElementById('mic').className='mic mok';document.getElementById('mic').textContent='✅';
   document.getElementById('mtitle').textContent=t('modal_ok');
   document.getElementById('msub').textContent=t('modal_ok_sub');
   document.getElementById('ptrack').style.display='none';document.getElementById('plbl').style.display='none';
+  document.getElementById('bcancel').style.display='none';
   const mb=document.querySelector('.mbox');
-  mb.querySelectorAll('.bdl,.bnew').forEach(e=>e.remove());
+  mb.querySelectorAll('.bdl,.bnew,.fallback-note').forEach(e=>e.remove());
+  // تنبيه Fallback
+  if(isFallback){
+    const note=document.createElement('p');note.className='fallback-note';
+    const msgs={ar:'ℹ️ تم استخدام محرك Canva بدلاً من Premium (Node.js غير متاح على الخادم)',fr:'ℹ️ Moteur Canva utilisé à la place de Premium (Node.js absent)',en:'ℹ️ Canva engine used instead of Premium (Node.js unavailable)'};
+    note.textContent=msgs[currentLang]||msgs.ar;
+    mb.appendChild(note);
+  }
   const a=document.createElement('a');
-  a.href=url;a.download=`عرض_${(name||'').replace(/\s+/g,'_')}.pptx`;
+  // نستخدم اسم الملف من الخادم مباشرة إن وُجد، وإلا نبني واحداً آمناً
+  const safeName = (name||'presentation').replace(/[\s\u0600-\u06FF]/g,'_').replace(/__+/g,'_').replace(/^_|_$/g,'');
+  const dlName = serverFilename || `mathkarati_${safeName||'presentation'}.pptx`;
+  a.href=url;a.download=dlName;
   a.className='bdl';a.textContent=t('download_btn');mb.appendChild(a);
+  // تنظيف الـ blob URL بعد النقر لتجنب memory leak
+  a.addEventListener('click',()=>setTimeout(()=>URL.revokeObjectURL(url),60000),{once:true});
   const r=document.createElement('button');r.className='bnew';r.textContent=t('new_btn');
   r.onclick=()=>{localStorage.removeItem('mp_v4');location.reload();};mb.appendChild(r);
 }
@@ -1596,6 +1726,19 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init(){
+  // ══════════════════════════════════════════════════
+  // KEEP-ALIVE: ping كل 10 دقائق لمنع نوم Render Free
+  // ══════════════════════════════════════════════════
+  (function keepAlive(){
+    const INTERVAL = 10 * 60 * 1000; // 10 دقائق
+    function ping(){
+      fetch('/ping',{method:'GET',signal:AbortSignal.timeout(8000)})
+        .catch(()=>{}); // silent
+    }
+    ping(); // ping فوري عند التحميل لإيقاظ الخادم
+    setInterval(ping, INTERVAL);
+  })();
+
   // Init default list items
   addS('dl-subQ','تساؤل فرعي'); addS('dl-hyp','فرضية'); addS('dl-obj','هدف');
   addS('dl-importance','أهمية'); addS('dl-tests','اختبار');
