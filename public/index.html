@@ -1547,19 +1547,6 @@ async function generate(){
   const d=collect();
   if(!d.titleAr||!d.studentName){alert(t('required')+': '+t('student_name')+', '+t('title_ar'));goTo(0);return;}
 
-  // ── فحص Premium قبل فتح الـ modal (بدون modal مفتوح) ──
-  if(d.engine==='premium'){
-    const nodeOk = await checkNodeAvailability();
-    if(!nodeOk){
-      const msg = {
-        ar: '⚠️ محرك Premium غير متاح (Node.js غير مثبت).\nسيتم التحويل تلقائياً لمحرك Canva.\n\nهل تريد المتابعة؟',
-        fr: '⚠️ Moteur Premium indisponible (Node.js absent).\nBasculement automatique vers Canva.\n\nContinuer?',
-        en: '⚠️ Premium engine unavailable (Node.js missing).\nWill use Canva engine instead.\n\nContinue?',
-      };
-      if(!confirm(msg[currentLang]||msg.ar)) return;
-    }
-  }
-
   // ── فتح الـ modal مرة واحدة فقط — لا يُغلق حتى النهاية ──
   openM();
 
@@ -1646,7 +1633,7 @@ async function generate(){
     // ── base64 JSON response (يتجاوز مشكلة Render proxy مع binary streams) ──
     const json=await r.json();
     if(!json.ok || !json.data) throw new Error(json.error||'استجابة غير صالحة من الخادم');
-    const isFallback = (json.filename||'').includes('_fallback') || (json.filename||'').includes('node-error');
+    const isFallback = false; // v17: single unified engine, no fallbacks
     // تحويل base64 → Blob → Object URL
     const raw=atob(json.data);
     const bytes=new Uint8Array(raw.length);

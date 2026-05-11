@@ -1,12 +1,9 @@
 services:
   - type: web
-    name: mathkarati-app
-    runtime: python
+    name: mathkarati-v17
+    env: python
     buildCommand: bash build.sh
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --worker-class sync --graceful-timeout 60 --keep-alive 5
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --keep-alive 5
     envVars:
-      - key: FLASK_ENV
-        value: production
-      - key: NODE_VERSION
-        value: 20.11.0
-    healthCheckPath: /ping
+      - key: PYTHON_VERSION
+        value: 3.11.0

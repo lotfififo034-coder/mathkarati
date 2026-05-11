@@ -1,83 +1,42 @@
 #!/bin/bash
-# ⚠️  لا تستخدم set -e — نريد البناء يكمل حتى عند أخطاء الخطوط الاختيارية
+# مذكرتي Pro v17 — Build Script
+# No set -e: optional steps (fonts) shouldn't abort the build
 
-echo "==> Python version: $(python3 --version)"
+echo "==> Python: $(python3 --version)"
 
-echo "==> [1/4] Installing system packages..."
+echo "==> [1/3] System packages..."
 apt-get update -qq 2>/dev/null && \
   apt-get install -y -qq fontconfig fonts-noto-core 2>/dev/null || \
-  echo "WARNING: apt-get failed (may be normal on some platforms)"
+  echo "WARNING: apt-get failed (normal on some platforms)"
 
-echo "==> [2/4] Installing Cairo Arabic font..."
-# استخدام مجلد writable دائماً ($HOME/.fonts يعمل على كل البيئات)
+echo "==> [2/3] Arabic font..."
 FONT_DIR="${HOME}/.fonts/cairo"
-mkdir -p "$FONT_DIR" 2>/dev/null || {
-  FONT_DIR="/tmp/fonts/cairo"
-  mkdir -p "$FONT_DIR"
-}
+mkdir -p "$FONT_DIR" 2>/dev/null || { FONT_DIR="/tmp/fonts/cairo"; mkdir -p "$FONT_DIR"; }
 
 if fc-list 2>/dev/null | grep -qi "cairo"; then
-  echo "    Cairo font already present: $(fc-list 2>/dev/null | grep -i cairo | head -1)"
+  echo "    ✅ Cairo already present"
 else
-  echo "    Downloading Cairo font..."
   FONT_URL="https://github.com/google/fonts/raw/main/ofl/cairo/Cairo%5Bslnt%2Cwght%5D.ttf"
-
   if curl -fsSL --max-time 30 "$FONT_URL" -o "$FONT_DIR/Cairo.ttf" 2>/dev/null; then
-    echo "    Downloaded Cairo.ttf → $FONT_DIR"
+    fc-cache -fv "$FONT_DIR" 2>/dev/null || true
+    echo "    ✅ Cairo downloaded"
   else
-    echo "    Primary source failed, trying Google Fonts API..."
-    curl -fsSL --max-time 30 \
-      "https://fonts.googleapis.com/css2?family=Cairo&display=swap" \
-      -o /dev/null 2>/dev/null || true
-    # Fallback: Amiri font (Arabic, widely available)
     curl -fsSL --max-time 30 \
       "https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf" \
       -o "$FONT_DIR/Amiri-Regular.ttf" 2>/dev/null && \
-      echo "    Amiri fallback installed" || \
-      echo "    WARNING: font download failed — will use Calibri fallback"
+      echo "    ✅ Amiri fallback installed" || \
+      echo "    ⚠️  No Arabic font — Calibri will be used"
+    fc-cache -fv "$FONT_DIR" 2>/dev/null || true
   fi
-
-  # Rebuild font cache (non-fatal)
-  fc-cache -fv "$FONT_DIR" 2>/dev/null || true
-  echo "    Font status: $(fc-list 2>/dev/null | grep -i 'cairo\|amiri' | head -1 || echo 'not found (Calibri will be used)')"
 fi
 
-echo "==> [3/4] Installing Python dependencies..."
+echo "==> [3/3] Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
 
-echo "==> [4/4] Installing Node.js dependencies..."
-
-# ── فحص Node.js صريح ──────────────────────────────────────────────────
-NODE_BIN=$(which node 2>/dev/null || echo "")
-if [ -z "$NODE_BIN" ]; then
-  echo "    ⚠️  WARNING: Node.js not found in PATH"
-  echo "    → Premium engine will use Canva fallback automatically"
-  echo "    → To enable Premium: add NODE_VERSION=20.11.0 in Render dashboard → Environment"
-else
-  echo "    ✅ Node.js: $(node --version) at $NODE_BIN"
-  echo "    ✅ npm:     $(npm --version 2>/dev/null || echo 'not found')"
-  cd node_scripts
-  if npm install --production --no-audit --no-fund 2>/dev/null; then
-    echo "    ✅ Node modules installed OK"
-    # تحقق من pptxgenjs
-    if [ -d "node_modules/pptxgenjs" ]; then
-      echo "    ✅ pptxgenjs: $(node -e "console.log(require('./node_modules/pptxgenjs/package.json').version)" 2>/dev/null || echo 'version unknown')"
-    else
-      echo "    ⚠️  WARNING: pptxgenjs not found after npm install"
-    fi
-  else
-    echo "    ⚠️  WARNING: npm install failed — Premium engine will fallback to Canva"
-  fi
-  cd ..
-fi
-
 echo ""
-echo "════════════════════════════════════"
-echo "  Build Summary"
-echo "════════════════════════════════════"
+echo "════════════════════════════════"
+echo "  Build Complete — v17"
 echo "  Python : $(python3 --version)"
-echo "  Node   : $(node --version 2>/dev/null || echo '⚠️  not found')"
-echo "  Cairo  : $(fc-list 2>/dev/null | grep -i cairo | wc -l) font file(s)"
-echo "  Amiri  : $(fc-list 2>/dev/null | grep -i amiri | wc -l) font file(s)"
-echo "════════════════════════════════════"
-echo "==> Build complete ✓"
+echo "  Cairo  : $(fc-list 2>/dev/null | grep -ic cairo) file(s)"
+echo "  Amiri  : $(fc-list 2>/dev/null | grep -ic amiri) file(s)"
+echo "════════════════════════════════"

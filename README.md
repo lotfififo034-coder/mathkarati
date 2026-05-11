@@ -1,116 +1,48 @@
-# مذكرتي Pro v10 — Ultra Visual Engine 🎓
+# مذكرتي Pro v17 — Full Architectural Rebuild
 
-منشئ عروض PowerPoint أكاديمية احترافية للجامعات الجزائرية  
-**محرك v10 · 9 ألوان · 14 شريحة · 3 لغات · تدرجات لونية حقيقية**
-
----
-
-## 🏗️ هيكل المشروع
+## Architecture
 
 ```
-mathkarati-pro/
-├── app.py                      ← Flask server (router للمحركات)
-├── requirements.txt            ← Python deps (flask, gunicorn, python-pptx, lxml)
-├── Procfile                    ← gunicorn start command
-├── render.yaml                 ← Render.com config
-├── build.sh                    ← Build script (تثبيت Cairo font + npm)
-├── scripts/
-│   ├── generator_canva.py      ← ✨ Ultra v10 engine (9 palettes × 3 families)
-│   └── generator_classic.py   ← Classic engine (fallback)
-├── node_scripts/
-│   ├── generator_api.js        ← Premium engine (Node.js / pptxgenjs)
-│   └── package.json            ← pptxgenjs dependency
-└── public/
-    └── index.html              ← واجهة 6 خطوات · 3 لغات · Toggle للشرائح
+mathkarati-v17/
+├── app.py                 # Flask API (thin HTTP adapter only)
+├── core/
+│   ├── models.py          # Domain models + validation
+│   └── themes.py          # All 12 color themes (immutable)
+├── engine/
+│   ├── primitives.py      # Low-level drawing (rect, text, gradient…)
+│   ├── slides.py          # Slide builders (make_cover, make_results…)
+│   └── pipeline.py        # Export orchestrator (single entry point)
+├── public/
+│   └── index.html         # Frontend (unchanged UX)
+├── requirements.txt
+├── build.sh
+└── render.yaml
 ```
 
----
+## What changed from v16
 
-## 🚀 النشر على Render.com
+| v16 | v17 |
+|-----|-----|
+| 3 engines (canva, classic, node) | 1 unified Python engine |
+| ~4500 lines across 3 generator files | ~1200 lines, clean separation |
+| Threading + subprocess fragility | No threads, no subprocess |
+| Temp files on disk | In-memory BytesIO only |
+| Base64 transport (kept) | Base64 transport (kept — it works) |
+| Fallback chaos | No fallbacks needed |
+| Hard to debug | Each layer independently testable |
 
-### الطريقة السريعة:
-1. ارفع المشروع على GitHub
-2. في Render: **New → Web Service** → اختر الـ repo
-3. الإعدادات:
-   - **Runtime:** Python 3
-   - **Build Command:** `bash build.sh`
-   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --worker-class sync --graceful-timeout 60 --keep-alive 5 --max-requests 100 --max-requests-jitter 20`
-4. Environment Variables:
-   - `FLASK_ENV` = `production`
-   - `NODE_VERSION` = `20.11.0`
+## Design principles
 
-### أو استخدم render.yaml (تلقائي — موصى به):
-render.yaml موجود بالفعل في المشروع ويُطبَّق تلقائياً.
+- **Deterministic**: same input → same output, every time
+- **No side effects**: generation is pure (in, bytes out)
+- **Fail fast**: validation before any I/O
+- **Memory-safe**: pptx.save() → BytesIO, never disk
+- **Stream-safe**: BytesIO is fully read before return
+- **Thread-safe**: pipeline is stateless after font detection
 
----
-
-## ⚠️ ملاحظات مهمة للإنتاج
-
-### خط Cairo:
-- `build.sh` يُحاول تنزيل خط Cairo تلقائياً
-- إذا فشل: يستخدم **Calibri** تلقائياً (fallback مضمون)
-- العرض يعمل بشكل طبيعي في كلتا الحالتين
-
-### المحركات:
-| المحرك | المتطلب | Fallback |
-|--------|---------|---------|
-| Canva (v10) | Python + lxml | — |
-| Classic | Python | — |
-| Premium | Node.js | → Canva تلقائياً |
-
-### الأداء على Render Free Tier:
-- توليد شريحة: ~5–15 ثانية
-- Timeout مضبوط على 120 ثانية (كافٍ)
-- `--max-requests 50` يمنع تراكم الذاكرة
-
----
-
-## 🎨 الألوان المدعومة (v10)
-
-| الاسم | العائلة | الطابع |
-|-------|---------|--------|
-| `navy_gold` | NOIR | أزرق ملكي ذهبي |
-| `midnight_purple` | NOIR | بنفسجي ليلي |
-| `forest` | NOIR | أخضر غابي |
-| `sand_gold` | NOIR | ذهبي رملي |
-| `dark_teal` | VIVID | تيل حيوي |
-| `charcoal_orange` | VIVID | فحمي برتقالي |
-| `burgundy` | VIVID | بورغندي |
-| `ice_blue` | MINIMAL | أزرق ثلجي |
-| `slate_crimson` | MINIMAL | فولاذي قرمزي |
-
----
-
-## 💻 التشغيل محلياً
+## Deploy
 
 ```bash
-git clone <repo-url>
-cd mathkarati-v2
-
-# تثبيت Python
-pip install -r requirements.txt
-
-# تثبيت Node (اختياري - للمحرك Premium)
-cd node_scripts && npm install && cd ..
-
-# تشغيل
-python app.py
+bash build.sh
+gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --timeout 120
 ```
-
-ثم: http://localhost:5000
-
----
-
-## 🔧 استكشاف الأخطاء
-
-| المشكلة | الحل |
-|---------|------|
-| `ImportError: lxml` | `pip install lxml==5.3.0` |
-| `ImportError: pptx` | `pip install python-pptx==1.0.2` |
-| الخط عربي لا يظهر | Cairo غير مثبت — شغّل `build.sh` أو ثبّت يدوياً |
-| `500 Internal Server Error` | راجع `/health` للتشخيص |
-| ملف PPTX فارغ | تأكد من إرسال `studentName` و`titleAr` |
-
----
-
-*مذكرتي Pro v10 — Ultra Visual Engine · 2024–2025*
