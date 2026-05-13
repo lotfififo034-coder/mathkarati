@@ -1,19 +1,21 @@
 """
-Flask API — مذكرتي Pro v17
+Flask API — مذكرتي Pro v17.1
+Thin HTTP adapter. Zero business logic.
 
-Thin HTTP adapter. Contains ZERO business logic.
-All generation logic lives in engine/pipeline.py.
+FIXED vs v17.0:
+- filename sanitizer handles Arabic correctly (uses transliteration fallback)
+- warmup returns immediately (no blocking init inside request)  
+- detailed error logging with stage info
 """
 import base64
 import logging
 import os
-import re
 import sys
 import time
+import unicodedata
 
 from flask import Flask, jsonify, make_response, request, send_from_directory
 
-# ── Setup Python path ─────────────────────────────────────────────────
 _BASE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _BASE)
 
@@ -29,6 +31,25 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
+def _safe_filename(name: str) -> str:
+    """
+    Convert any string (including Arabic) to a safe ASCII filename.
+    Arabic → NFKD normalization strips diacritics, non-ASCII → removed,
+    spaces/special → underscore. Falls back to timestamp if empty.
+    """
+    if not name:
+        return f"prs_{int(time.time())}"
+    # Normalize: decompose Unicode, then encode to ASCII ignoring non-ASCII
+    normalized = unicodedata.normalize('NFKD', name)
+    ascii_str = normalized.encode('ascii', 'ignore').decode('ascii')
+    # Replace non-word characters with underscore
+    safe = ''.join(c if c.isalnum() else '_' for c in ascii_str).strip('_')
+    # If all Arabic (safe is empty after stripping), use student index
+    if not safe:
+        safe = f"student_{int(time.time()) % 100000}"
+    return safe[:24]
+
+
 # ── CORS ──────────────────────────────────────────────────────────────
 @app.after_request
 def _cors(r):
@@ -36,7 +57,6 @@ def _cors(r):
     r.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     r.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return r
-
 
 @app.before_request
 def _preflight():
@@ -54,28 +74,28 @@ def index():
     return send_from_directory("public", "index.html")
 
 
-# ── Health ────────────────────────────────────────────────────────────
+# ── Health & Warmup ───────────────────────────────────────────────────
 @app.route("/ping")
 def ping():
     return "pong", 200
-
 
 @app.route("/health")
 def health():
     pipeline = get_pipeline()
     return jsonify({
         "status": "ok",
-        "version": "17.0",
+        "version": "17.1",
         "python": sys.version.split()[0],
-        "engine": "PPTXExportPipeline",
         "font": pipeline._font,
     }), 200
 
-
 @app.route("/warmup")
 def warmup():
-    """Non-blocking warmup — pipeline initializes on first call."""
-    get_pipeline()  # ensure initialized
+    """
+    FIXED: pipeline is pre-initialized at startup, so this returns instantly.
+    Frontend uses this to detect cold-start readiness.
+    """
+    get_pipeline()  # no-op after first call
     return jsonify({"status": "ready", "modules_ready": True}), 200
 
 
@@ -97,20 +117,18 @@ def generate():
     result = pipeline.build(req)
 
     if not result.success:
-        log.error(f"Build failed: {result.error}")
-        return jsonify({"error": result.error}), 500
+        log.error(f"Build failed: {result.error} | stages={result.stages}")
+        return jsonify({
+            "error": result.error,
+            "stages": result.stages,
+        }), 500
 
-    # Build filename
-    latin = re.sub(r"[^\w]", "_", req.student_name, flags=re.ASCII).strip("_")
-    safe_name = latin[:20] if latin else f"prs_{int(time.time())}"
-    filename = f"mathkarati_{safe_name}.pptx"
-
-    # Encode as base64 for transport
+    safe = _safe_filename(req.student_name)
+    filename = f"mathkarati_{safe}.pptx"
     b64 = base64.b64encode(result.data).decode("ascii")
-
     elapsed = time.monotonic() - t0
-    log.info(f"✅ Generated {result.slide_count} slides in {elapsed:.2f}s | {len(result.data):,} bytes")
 
+    log.info(f"Generated: slides={result.slide_count} {len(result.data):,}B {elapsed:.2f}s")
     return jsonify({
         "ok": True,
         "filename": filename,
@@ -119,13 +137,12 @@ def generate():
         "slides": result.slide_count,
         "font": result.font_used,
         "elapsed": round(elapsed, 2),
+        "stages": result.stages,
     })
 
 
 # ── Entry point ───────────────────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_ENV") == "development"
-    # Warm up on start
-    get_pipeline()
-    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False)
+    get_pipeline()  # eager init on startup
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)

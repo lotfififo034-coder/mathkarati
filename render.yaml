@@ -3,7 +3,7 @@ services:
     name: mathkarati-v17
     env: python
     buildCommand: bash build.sh
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --keep-alive 5
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 180 --keep-alive 5 --worker-class gthread
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0

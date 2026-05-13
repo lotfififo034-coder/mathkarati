@@ -1559,8 +1559,8 @@ async function generate(){
   const msgs_en=['Warming up engine...','Processing data...','Building slides...','Applying design...','Adding content...','Final touches...','Preparing file...'];
   const msgs={'ar':msgs_ar,'fr':msgs_fr,'en':msgs_en};
 
+  // ── FIX v17.1: Progress animation — لا تنتظر الخادم، تعمل بالتوازي ──
   (async function liveProgress(){
-    // مرحلة سريعة: 0→30% خلال 3 ثوان
     const fast=[[5,400],[12,500],[20,500],[28,600],[30,500]];
     for(const[p,ms] of fast){
       if(_progStop) return;
@@ -1569,7 +1569,6 @@ async function generate(){
       const mlist=msgs[currentLang]||msgs_ar;
       setP(p, mlist[Math.floor(p/15)%mlist.length]);
     }
-    // مرحلة بطيئة: 30→92% كل 2.5 ثانية (تغطي وقت cold start)
     let i=2;
     while(_currentP < 92){
       if(_progStop) return;
@@ -1580,24 +1579,18 @@ async function generate(){
     }
   })();
 
-  // ── Warmup: انتظر حتى الخادم جاهز (بدون إغلاق Modal) ──
-  try {
-    const POLL_MAX = 120000, POLL_IV = 3000;  // 2 دقيقة max، كل 3 ثوان
-    let elapsed = 0;
-    while(elapsed < POLL_MAX){
-      try {
-        const wr = await fetch('/warmup', {signal: AbortSignal.timeout(8000)});
-        const wd = await wr.json().catch(()=>({}));
-        if(wd.modules_ready) break;  // جاهز → اخرج من loop
-      } catch(e){ /* cold start — server still waking up */ }
-      await sl(POLL_IV);
-      elapsed += POLL_IV;
-    }
-  } catch(warmErr) { /* تجاهل */ }
-
-  // ── Fetch التوليد مع retry ──
+  // ── FIX v17.1: /generate يُطلق فوراً — warmup يعمل في الخلفية فقط ──
+  // السبب: الـ warmup loop القديمة كانت تحجب /generate حتى يستيقظ الخادم
+  // الحل: أرسل /generate مباشرة، والخادم سيرد عندما يكون جاهزاً
   _genAbort = new AbortController();
   const _timeoutId = setTimeout(()=>_genAbort.abort('timeout'), 240000);
+
+  // فحص سريع للخادم (غير حاجب) — لو فشل نكمل على أي حال
+  (async()=>{
+    try{
+      await fetch('/warmup',{signal:AbortSignal.timeout(3000)});
+    }catch(e){}
+  })();
 
   let r = null;
   let lastErr = null;
@@ -1606,7 +1599,7 @@ async function generate(){
       if(attempt > 1){
         const retryMsg={ar:'إعادة المحاولة...', fr:'Nouvelle tentative...', en:'Retrying...'};
         setP(Math.max(15, _currentP), retryMsg[currentLang]||retryMsg.ar);
-        await sl(3000);
+        await sl(4000);
       }
       r = await fetch('/generate',{
         method:'POST',

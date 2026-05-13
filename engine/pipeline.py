@@ -1,25 +1,30 @@
 """
-Export Pipeline — مذكرتي Pro v17
+Export Pipeline — مذكرتي Pro v17.1
+Single entry point. Deterministic. No threads. No disk I/O.
 
-This is the single entry point for PPTX generation.
-Deterministic. No threads. No subprocess. No temp files managed outside.
-Validates output before returning bytes.
+FIXED vs v17.0:
+- slide type set to 'custom' (fixes screen4x3 mismatch)
+- per-slide tracing with fail-fast on any exception  
+- full ZIP integrity validation after save
+- Arabic filename sanitizer
 """
 from __future__ import annotations
 
 import io
 import logging
+import os
 import shutil
 import subprocess
-import sys
-import os
-from dataclasses import dataclass
+import time
+import zipfile
+from dataclasses import dataclass, field
 
 from pptx import Presentation
 from pptx.util import Cm
+from pptx.oxml.ns import qn
 
 from core.models import PresentationRequest
-from core.themes import get_theme, Theme
+from core.themes import get_theme
 from engine.slides import (
     set_font,
     make_cover, make_intro, make_plan, make_problem,
@@ -30,51 +35,47 @@ from engine.slides import (
 )
 
 log = logging.getLogger(__name__)
-
-# Slide dimensions
 W_CM, H_CM = 33.867, 19.05
-
-# Minimum valid PPTX size (bytes)
-MIN_VALID_SIZE = 5_000
+MIN_BYTES = 8_000
 
 
-# ── Font detection ────────────────────────────────────────────────────
-def _detect_arabic_font() -> str:
-    """Return best available Arabic font name."""
+def _detect_font() -> str:
     candidates = ["Cairo", "Amiri", "Tahoma", "Arial Unicode MS", "Calibri"]
-    
-    # Try fc-list
     if shutil.which("fc-list"):
         try:
             out = subprocess.run(
                 ["fc-list", "--format=%{family}\n"],
                 capture_output=True, text=True, timeout=5
             ).stdout.lower()
-            for font in candidates:
-                if font.lower() in out:
-                    log.info(f"Arabic font detected: {font}")
-                    return font
+            for f in candidates:
+                if f.lower() in out:
+                    log.info(f"Font: {f}")
+                    return f
         except Exception:
             pass
-    
-    # Try common font directories
-    font_dirs = [
-        "/usr/share/fonts", "/usr/local/share/fonts",
-        os.path.expanduser("~/.fonts"), "/tmp/fonts",
-        "C:/Windows/Fonts", "/Library/Fonts",
-    ]
-    for font in candidates[:3]:  # Only check Arabic-capable fonts
+    font_dirs = ["/usr/share/fonts", "/usr/local/share/fonts",
+                 os.path.expanduser("~/.fonts"), "/tmp/fonts"]
+    for font in candidates[:3]:
         for d in font_dirs:
             if not os.path.isdir(d):
                 continue
             for root, _, files in os.walk(d):
                 for f in files:
                     if font.lower() in f.lower() and f.lower().endswith((".ttf", ".otf")):
-                        log.info(f"Arabic font found on disk: {font}")
+                        log.info(f"Font (disk): {font}")
                         return font
-    
-    log.warning("No Arabic font found; using Calibri fallback")
+    log.warning("No Arabic font — Calibri fallback")
     return "Calibri"
+
+
+def _fix_slide_type(prs: Presentation) -> None:
+    """Remove 'type' attr from sldSz so apps treat it as custom (not screen4x3)."""
+    try:
+        sldSz = prs.element.find(qn('p:sldSz'))
+        if sldSz is not None and 'type' in sldSz.attrib:
+            del sldSz.attrib['type']
+    except Exception:
+        pass
 
 
 @dataclass
@@ -84,130 +85,123 @@ class ExportResult:
     slide_count: int = 0
     font_used: str = ""
     error: str = ""
+    stages: list = field(default_factory=list)
+    elapsed: float = 0.0
 
 
 class PPTXExportPipeline:
-    """
-    Single-responsibility export pipeline.
-    
-    Usage:
-        pipeline = PPTXExportPipeline()
-        result = pipeline.build(request)
-        if result.success:
-            pptx_bytes = result.data
-    """
 
     def __init__(self):
-        self._font = _detect_arabic_font()
+        self._font = _detect_font()
         set_font(self._font)
-        log.info(f"Export pipeline initialized | font={self._font}")
+        log.info(f"Pipeline ready | font={self._font}")
 
     def build(self, req: PresentationRequest) -> ExportResult:
-        """
-        Build a PPTX from a validated request.
-        Returns ExportResult with bytes on success.
-        Never raises — errors are captured in ExportResult.error.
-        """
+        t0 = time.monotonic()
+        stages = []
         try:
+            # Stage 1: validate
+            stages.append("validate")
             errors = req.validate()
             if errors:
-                return ExportResult(success=False, error=" | ".join(errors))
+                return ExportResult(success=False, error=" | ".join(errors), stages=stages)
 
+            # Stage 2: init presentation
+            stages.append("init_prs")
+            prs = Presentation()
+            prs.slide_width = Cm(W_CM)
+            prs.slide_height = Cm(H_CM)
+            _fix_slide_type(prs)
+
+            # Stage 3: load theme
+            stages.append("load_theme")
             theme = get_theme(req.theme)
-            prs = self._init_presentation()
-            self._build_slides(prs, req, theme)
-            data = self._serialize(prs)
-            self._validate(data)
 
-            n = len(prs.slides._sldIdLst)
-            log.info(f"✅ PPTX built: {n} slides | theme={req.theme} | font={self._font} | {len(data):,} bytes")
-            return ExportResult(
-                success=True,
-                data=data,
-                slide_count=n,
-                font_used=self._font,
-            )
+            # Stage 4: build slides (per-slide tracing)
+            stages.append("build_slides")
+            n = self._build_slides(prs, req, theme, stages)
+
+            # Stage 5: serialize
+            stages.append("serialize")
+            data = self._serialize(prs)
+
+            # Stage 6: validate output
+            stages.append("validate_output")
+            self._validate(data, n)
+
+            elapsed = time.monotonic() - t0
+            log.info(f"OK | slides={n} theme={req.theme} {len(data):,}B {elapsed:.2f}s")
+            return ExportResult(success=True, data=data, slide_count=n,
+                                font_used=self._font, stages=stages, elapsed=elapsed)
 
         except Exception as exc:
-            log.error(f"Export pipeline error: {exc}", exc_info=True)
-            return ExportResult(success=False, error=str(exc))
+            stage = stages[-1] if stages else "unknown"
+            log.error(f"FAIL [{stage}]: {exc}", exc_info=True)
+            return ExportResult(success=False, error=f"[{stage}] {exc}",
+                                stages=stages, elapsed=time.monotonic() - t0)
 
-    # ── Private helpers ───────────────────────────────────────────────
-
-    def _init_presentation(self) -> Presentation:
-        prs = Presentation()
-        prs.slide_width = Cm(W_CM)
-        prs.slide_height = Cm(H_CM)
-        return prs
-
-    def _build_slides(self, prs: Presentation, req: PresentationRequest, T: Theme):
+    def _build_slides(self, prs, req, theme, stages) -> int:
         cfg = req.slides
+        count = 0
 
-        # Cover is always built
-        make_cover(prs, req, T)
+        def run(name, condition, fn):
+            nonlocal count
+            if not condition:
+                return
+            stages.append(f"slide:{name}")
+            fn(prs, req, theme)
+            count += 1
+            log.debug(f"  slide:{name} OK")
 
-        if cfg.intro and (req.intro_overview or req.intro_approach):
-            make_intro(prs, req, T)
+        run("cover",           True,                                     make_cover)
+        run("intro",           cfg.intro and bool(req.intro_overview or req.intro_approach), make_intro)
+        run("plan",            cfg.plan and bool(req.chapters),          make_plan)
+        run("problem",         cfg.problem and bool(req.main_problem or req.main_question or req.sub_questions), make_problem)
+        run("objectives",      cfg.objectives and bool(req.objectives or req.hypotheses), make_objectives)
+        run("importance",      cfg.importance and bool(req.importance or req.reasons),    make_importance)
+        run("methodology",     cfg.methodology and bool(req.methodology or req.sample_type or req.tool), make_methodology)
+        run("kpi",             cfg.kpi and bool(req.stats),              make_stats)
+        run("results",         cfg.results and bool(req.main_results),   make_results)
+        run("conclusion",      cfg.conclusion and bool(req.general_conclusion), make_conclusion)
+        run("recommendations", cfg.recommendations and bool(req.recommendations), make_recommendations)
+        run("future",          cfg.future and bool(req.future_work),     make_future)
+        run("references",      cfg.references and bool(req.references),  make_references)
+        run("thankyou",        cfg.thankyou,                             make_final)
 
-        chapters = req.chapters
-        if cfg.plan and chapters:
-            make_plan(prs, req, T)
-
-        if cfg.problem and (req.main_problem or req.main_question or req.sub_questions):
-            make_problem(prs, req, T)
-
-        if cfg.objectives and (req.objectives or req.hypotheses):
-            make_objectives(prs, req, T)
-
-        if cfg.importance and (req.importance or req.reasons):
-            make_importance(prs, req, T)
-
-        if cfg.methodology and (req.methodology or req.sample_type or req.tool):
-            make_methodology(prs, req, T)
-
-        if cfg.kpi and req.stats:
-            make_stats(prs, req, T)
-
-        if cfg.results and req.main_results:
-            make_results(prs, req, T)
-
-        if cfg.conclusion and req.general_conclusion:
-            make_conclusion(prs, req, T)
-
-        if cfg.recommendations and req.recommendations:
-            make_recommendations(prs, req, T)
-
-        if cfg.future and req.future_work:
-            make_future(prs, req, T)
-
-        if cfg.references and req.references:
-            make_references(prs, req, T)
-
-        if cfg.thankyou:
-            make_final(prs, req, T)
+        return count
 
     def _serialize(self, prs: Presentation) -> bytes:
-        """Save to in-memory buffer. No temp files."""
         buf = io.BytesIO()
         prs.save(buf)
         buf.seek(0)
         return buf.read()
 
-    def _validate(self, data: bytes):
-        """Basic sanity checks on the output bytes."""
-        if len(data) < MIN_VALID_SIZE:
-            raise ValueError(f"Output too small ({len(data)} bytes) — likely corrupt")
-        # PPTX is a ZIP — check magic bytes
+    def _validate(self, data: bytes, expected_slides: int) -> None:
+        if len(data) < MIN_BYTES:
+            raise ValueError(f"Output too small: {len(data)}B")
         if not data.startswith(b'PK'):
-            raise ValueError("Output is not a valid ZIP/PPTX (missing PK header)")
+            raise ValueError("Not a valid ZIP/PPTX")
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                names = z.namelist()
+                if 'ppt/presentation.xml' not in names:
+                    raise ValueError("Missing ppt/presentation.xml")
+                slides_in_zip = [n for n in names if n.startswith('ppt/slides/slide') and n.endswith('.xml')]
+                if len(slides_in_zip) < expected_slides:
+                    raise ValueError(f"Expected {expected_slides} slides, ZIP has {len(slides_in_zip)}")
+                # Verify each slide is readable
+                for s in slides_in_zip:
+                    xml = z.read(s)
+                    if len(xml) < 200:
+                        raise ValueError(f"Slide too small: {s} ({len(xml)}B)")
+        except zipfile.BadZipFile as e:
+            raise ValueError(f"Corrupt ZIP: {e}")
 
 
-# ── Module-level singleton ────────────────────────────────────────────
 _pipeline: PPTXExportPipeline | None = None
 
 
 def get_pipeline() -> PPTXExportPipeline:
-    """Lazy singleton — initialized once on first call."""
     global _pipeline
     if _pipeline is None:
         _pipeline = PPTXExportPipeline()

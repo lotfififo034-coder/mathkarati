@@ -15,8 +15,9 @@ from pptx.enum.text import PP_ALIGN
 from engine.primitives import (
     W, H, cm, pt,
     rect, rrect, oval, bg, hline, vline,
-    gradient_fill, gradient_rect, shadow, glow,
-    txt, txt_multiline, blank_slide,
+    gradient_fill, gradient_rect, shadow,
+    set_solid_alpha,
+    txt, blank_slide,
 )
 from core.themes import Theme
 from core.models import PresentationRequest
@@ -50,7 +51,7 @@ def make_cover(prs: Presentation, req: PresentationRequest, T: Theme):
     s1 = rrect(slide, -0.5, -0.5, 8, 8, T.accent_rgb, radius_pct=0)
     if s1:
         gradient_fill(s1, T.accent_grad1, T.accent_grad2, angle=45)
-        _set_alpha(s1, 8)
+        set_solid_alpha(s1, 8)
 
     # Bottom-right circle
     s2 = oval(slide, W - 10, H - 10, 14, 14, T.accent_rgb, alpha=6)
@@ -152,25 +153,7 @@ def _info_row(slide, T: Theme, label: str, value: str, y: float):
         color=T.text_light_rgb, align=PP_ALIGN.RIGHT, rtl=True)
 
 
-def _set_alpha(shape, alpha_pct: int):
-    """Set shape fill transparency (0=transparent, 100=opaque)."""
-    try:
-        from pptx.oxml.ns import qn
-        from lxml import etree
-        sp = shape._element
-        spPr = sp.find(qn('p:spPr'))
-        fld = spPr.find('.//' + qn('a:solidFill'))
-        if fld is None:
-            fld = spPr.find('.//' + qn('a:gradFill'))
-        # For solid fill
-        srgb = spPr.find('.//' + qn('a:srgbClr'))
-        if srgb is not None:
-            for e in srgb.findall(qn('a:alpha')):
-                srgb.remove(e)
-            alp = etree.SubElement(srgb, qn('a:alpha'))
-            alp.set('val', str(int(alpha_pct * 1000)))
-    except Exception:
-        pass
+# _set_alpha removed — use set_solid_alpha from primitives
 
 
 # ══════════════════════════════════════════════════════════════════════
