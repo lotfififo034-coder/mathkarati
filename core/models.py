@@ -119,15 +119,30 @@ class PresentationRequest:
         chapters = [c for c in (Chapter.from_dict(x) for x in (raw.get("chapters") or [])) if c]
         slides = SlideConfig.from_dict(raw.get("slides") or {})
 
+        # institution: join university + faculty + department if present
+        university = str(raw.get("university", "") or raw.get("institution", "")).strip()
+        faculty    = str(raw.get("faculty", "")).strip()
+        department = str(raw.get("department", "")).strip()
+        institution_parts = [p for p in [university, faculty, department] if p]
+        institution = " — ".join(institution_parts) if institution_parts else ""
+
+        # specialization: prefer 'major' (frontend) or 'specialization'
+        specialization = str(raw.get("major", "") or raw.get("specialization", "")).strip()
+
+        # generalConclusion: frontend sends key 'conclusion' (not 'generalConclusion')
+        general_conclusion = str(
+            raw.get("generalConclusion", "") or raw.get("conclusion", "")
+        ).strip()
+
         return cls(
             student_name=str(raw.get("studentName", "")).strip(),
             title_ar=str(raw.get("titleAr", "")).strip(),
-            title_en=str(raw.get("titleEn", "")).strip(),
+            title_en=str(raw.get("titleEn", "") or raw.get("titleFr", "") or raw.get("fieldEn", "")).strip(),
             supervisor=str(raw.get("supervisor", "")).strip(),
             co_supervisor=str(raw.get("coSupervisor", "")).strip(),
-            institution=str(raw.get("institution", "")).strip(),
+            institution=institution,
             year=str(raw.get("year", "")).strip(),
-            specialization=str(raw.get("specialization", "")).strip(),
+            specialization=specialization,
             lang=str(raw.get("lang", "ar")),
             engine=str(raw.get("engine", "canva")),
             theme=theme,
@@ -146,7 +161,7 @@ class PresentationRequest:
             tool=str(raw.get("tool", "")).strip(),
             stats=stats,
             main_results=lst("mainResults"),
-            general_conclusion=str(raw.get("generalConclusion", "")).strip(),
+            general_conclusion=general_conclusion,
             recommendations=lst("recommendations"),
             future_work=lst("futureWork"),
             references=lst("references"),
