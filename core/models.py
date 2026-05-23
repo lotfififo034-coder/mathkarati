@@ -100,6 +100,9 @@ class PresentationRequest:
     # Slide toggles
     slides: SlideConfig = field(default_factory=SlideConfig)
 
+    # يُحسب من pipeline قبل البناء
+    _total_slides: int = 13
+
     VALID_THEMES = {
         'navy_gold', 'dark_teal', 'burgundy', 'forest',
         'midnight_purple', 'charcoal_orange', 'ice_blue',

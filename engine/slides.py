@@ -43,7 +43,9 @@ def _bg(slide, T, style='a'):
         decorative_dots(slide,1.8,H-3.8,5,2,0.18,0.44,T.accent_rgb,alpha=12)
 
 # ── هيدر ──────────────────────────────────────────────────────────────
-def _hdr(slide, T, title, sub='', side='right'):
+def _hdr(slide, T, title, sub='', side='right', slide_num=None, total_slides=13, req=None):
+    if req is not None and hasattr(req, '_total_slides'):
+        total_slides = req._total_slides
     gradient_rect(slide,0,0,W,HEADER_H,T.grad2,T.grad1,angle=135)
     al = rect(slide,0,HEADER_H-0.22,W,0.22,T.accent_rgb)
     if al: multi_stop_gradient(al,[(0,T.bg),(40,T.accent),(60,T.accent2),(100,T.bg)],0)
@@ -55,15 +57,37 @@ def _hdr(slide, T, title, sub='', side='right'):
         if av: gradient_fill(av,T.accent_grad1,T.accent_grad2,90)
     oval(slide,W-5,-2,7,7,T.accent_rgb,alpha=9)
 
-    # عنوان الشريحة — كبير وبارز
-    txt(slide, title, 0.7, 0.2, W-1.4, HEADER_H*0.62,
+    # رقم الشريحة داخل الهيدر — أعلى اليسار، منفصل تماماً عن العنوان
+    if slide_num is not None:
+        nb_s = 0.72
+        nb_x = 1.1
+        nb_y = (HEADER_H - nb_s) / 2
+        nb = oval(slide, nb_x, nb_y, nb_s, nb_s, T.accent_rgb)
+        if nb:
+            from engine.primitives import gradient_fill as _gf, shadow as _sh
+            _gf(nb, T.accent_grad1, T.accent_grad2, 135)
+            _sh(nb, blur=8, dist=2, alpha=0.35)
+        txt(slide, str(slide_num), nb_x, nb_y, nb_s, nb_s,
+            font="Calibri", size=14, bold=True,
+            color=T.text_dark_rgb, align=PP_ALIGN.CENTER, rtl=False, vcenter=True)
+        # نص المجموع صغير
+        txt(slide, f"/{total_slides}", nb_x + nb_s, nb_y + nb_s*0.3, 0.8, nb_s*0.4,
+            font="Calibri", size=8, bold=False,
+            color=T.muted_rgb, align=PP_ALIGN.LEFT, rtl=False, vcenter=True)
+        title_x = nb_x + nb_s + 1.0
+    else:
+        title_x = 0.7
+
+    # عنوان الشريحة — يبدأ بعد رقم الشريحة دون تداخل
+    title_w = W - title_x - 0.8
+    txt(slide, title, title_x, 0.2, title_w, HEADER_H*0.62,
         font=_FONT, size=26, bold=True,
         color=T.text_light_rgb, align=PP_ALIGN.RIGHT,
         rtl=True, vcenter=True, line_spacing=1.1)
 
     # عنوان فرعي — أصغر وأشد خفوتاً
     if sub:
-        txt(slide, sub, 0.7, HEADER_H*0.62, W-1.4, HEADER_H*0.35,
+        txt(slide, sub, title_x, HEADER_H*0.62, title_w, HEADER_H*0.35,
             font=_FONT, size=13, bold=False, italic=True,
             color=T.muted_rgb, align=PP_ALIGN.RIGHT,
             rtl=True, vcenter=True, line_spacing=1.0)
@@ -93,8 +117,8 @@ def make_cover(prs, req: PresentationRequest, T: Theme):
 
     # عنوان بارتفاع ثابت مناسب للنص + معلومات تملأ الباقي
     title_y=1.35; title_h=7.5
-    info_y=title_y+title_h+0.22
-    info_h=H-0.32-info_y-0.1
+    info_y=title_y+title_h+0.18
+    info_h=H-0.36-info_y-0.08
     cx=1.8; cw=W-3.6
 
     mc=rrect(slide,cx,title_y,cw,title_h,T.card_rgb,radius_pct=14)
@@ -147,36 +171,53 @@ def make_cover(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_intro(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'c')
-    _hdr(slide,T,"مقدمة البحث","نظرة عامة على الدراسة",'right')
+    _hdr(slide,T,"مقدمة البحث","نظرة عامة على الدراسة",'right',slide_num=1,req=req)
     CY=CY0; CH=_ch()
     items=[]
     if req.intro_overview: items.append(("📖","نظرة عامة",req.intro_overview))
     if req.intro_approach:  items.append(("🔬","المنهج المتبع",req.intro_approach))
     if not items: return slide
-    n=len(items); gap=0.28
-    col_w=(W-2.0-gap*(n-1))/n
+    n=len(items); gap=0.4
+    col_w=(W-2.4-gap*(n-1))/n
+    # ارتفاع البطاقة محدود بحيث يبقى المحتوى ضمنها
+    CARD_H = min(CH * 0.72, 10.5)
+    card_y = CY + (CH - CARD_H) / 2  # توسيط عمودي للبطاقة
+    ic_s = 1.8
+    lbl_h = 0.75
+    div_h = 0.08
+    padding_top = 0.5   # مسافة من أعلى البطاقة للدائرة
+    ic_y_offset = padding_top
+    lbl_y_offset = ic_y_offset + ic_s + 0.28
+    div_y_offset = lbl_y_offset + lbl_h + 0.1
+    txt_y_offset = div_y_offset + div_h + 0.15
+    txt_h = CARD_H - txt_y_offset - 0.4  # يبقى النص ضمن البطاقة مع هامش 0.4 أسفلها
+
     for i,(icon,lbl,val) in enumerate(items[:2]):
-        x=1.0+i*(col_w+gap)
-        cc=rrect(slide,x,CY,col_w,CH,T.card_rgb,radius_pct=12)
+        x=1.2+i*(col_w+gap)
+        cc=rrect(slide,x,card_y,col_w,CARD_H,T.card_rgb,radius_pct=10)
         if cc:
-            multi_stop_gradient(cc,[(0,T.card),(60,T.bg2),(100,T.bg)],150)
-            shadow(cc,blur=16,dist=5,alpha=0.38)
-        tp=rrect(slide,x,CY,col_w,0.3,T.accent_rgb,radius_pct=0)
+            multi_stop_gradient(cc,[(0,T.card),(100,T.card)],150)
+            shadow(cc,blur=20,dist=7,alpha=0.5)
+        # شريط علوي ملوّن
+        tp=rrect(slide,x,card_y,col_w,0.32,T.accent_rgb,radius_pct=0)
         if tp: multi_stop_gradient(tp,[(0,T.accent),(100,T.accent2)],0)
-        ic_s=min(1.8,CH*0.28)
-        icon_circle(slide,x+col_w/2-ic_s/2,CY+0.44,ic_s,
+        # دائرة الأيقونة — داخل البطاقة
+        ic_x = x + col_w/2 - ic_s/2
+        ic_y = card_y + ic_y_offset
+        icon_circle(slide,ic_x,ic_y,ic_s,
                     T.accent_grad1,T.accent_grad2,icon,max(16,int(ic_s*11)),T)
-        # عنوان القسم — كبير وبارز
-        txt(slide,lbl,x+0.22,CY+ic_s+0.6,col_w-0.44,0.78,
+        # عنوان القسم
+        txt(slide,lbl,x+0.22,card_y+lbl_y_offset,col_w-0.44,lbl_h,
             font=_FONT,size=16,bold=True,color=T.accent_rgb,
             align=PP_ALIGN.CENTER,rtl=True,vcenter=True)
-        hline(slide,x+col_w*0.14,CY+ic_s+1.43,col_w*0.72,T.accent_rgb,thickness=0.04)
-        # المحتوى — مريح وواضح
-        txt(slide,val,x+0.28,CY+ic_s+1.56,col_w-0.56,CH-ic_s-1.76,
-            font=_FONT,size=max(10.5,min(13,CH*4)),bold=False,
+        # خط فاصل
+        hline(slide,x+col_w*0.14,card_y+div_y_offset,col_w*0.72,T.accent_rgb,thickness=0.04)
+        # المحتوى — داخل البطاقة بالكامل
+        txt(slide,val,x+0.28,card_y+txt_y_offset,col_w-0.56,txt_h,
+            font=_FONT,size=max(11,min(13,txt_h*2.2)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
-            rtl=True,vcenter=False,line_spacing=1.3)
-    slide_number(slide,1,13,T)
+            rtl=True,vcenter=True,line_spacing=1.3)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -184,7 +225,7 @@ def make_intro(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_plan(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'a')
-    _hdr(slide,T,"خطة البحث",f"يتضمن البحث {len(req.chapters)} فصول رئيسية",'left')
+    _hdr(slide,T,"خطة البحث",f"يتضمن البحث {len(req.chapters)} فصول رئيسية",'left',slide_num=2,req=req)
     CY=CY0; CH=_ch()
     chapters=req.chapters[:8]; n=len(chapters)
     if not chapters: return slide
@@ -225,7 +266,7 @@ def make_plan(prs, req: PresentationRequest, T: Theme):
             txt(slide,ch.pages,1.12,y+(row_h-0.36)/2,2.0,0.36,
                 font="Calibri",size=9,bold=False,color=T.muted_rgb,
                 align=PP_ALIGN.CENTER,rtl=False,vcenter=True)
-    slide_number(slide,2,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -233,7 +274,7 @@ def make_plan(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_problem(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'b')
-    _hdr(slide,T,"إشكالية البحث","التساؤلات الرئيسية والفرعية",'right')
+    _hdr(slide,T,"إشكالية البحث","التساؤلات الرئيسية والفرعية",'right',slide_num=3,req=req)
     CY=CY0; CH=_ch()
 
     secs=[]; weights={}
@@ -303,7 +344,7 @@ def make_problem(prs, req: PresentationRequest, T: Theme):
                 font=_FONT,size=max(10,min(12.5,sub_h*7.5)),bold=False,
                 color=T.muted_rgb,align=PP_ALIGN.RIGHT,
                 rtl=True,vcenter=True,line_spacing=1.15)
-    slide_number(slide,3,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -311,7 +352,7 @@ def make_problem(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_objectives(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'c')
-    _hdr(slide,T,"أهداف البحث وفرضياته","",'left')
+    _hdr(slide,T,"أهداف البحث وفرضياته","",'left',slide_num=4,req=req)
     CY=CY0; CH=_ch()
     cols=[]
     if req.objectives: cols.append(("🎯  الأهداف",req.objectives))
@@ -347,7 +388,7 @@ def make_objectives(prs, req: PresentationRequest, T: Theme):
                 font=_FONT,size=max(9,min(12,ih*7.5)),bold=False,
                 color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
                 rtl=True,vcenter=True,line_spacing=1.2)
-    slide_number(slide,4,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -355,7 +396,7 @@ def make_objectives(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_importance(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'b')
-    _hdr(slide,T,"أهمية البحث","الأثر العلمي والعملي للدراسة",'right')
+    _hdr(slide,T,"أهمية البحث","الأثر العلمي والعملي للدراسة",'right',slide_num=5,req=req)
     CY=CY0; CH=_ch()
     items=(req.importance or [])[:6]
     if not items: return slide
@@ -380,7 +421,7 @@ def make_importance(prs, req: PresentationRequest, T: Theme):
             font=_FONT,size=max(10,min(13,card_h*6.5)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
             rtl=True,vcenter=True,line_spacing=1.3)
-    slide_number(slide,5,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -388,7 +429,7 @@ def make_importance(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_methodology(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'d')
-    _hdr(slide,T,"منهجية البحث","الإجراءات والأدوات المستخدمة",'left')
+    _hdr(slide,T,"منهجية البحث","الإجراءات والأدوات المستخدمة",'left',slide_num=6,req=req)
     CY=CY0; CH=_ch()
     icons_map={"المنهج":"📊","العينة":"👥","حجم العينة":"📏","الأداة":"🛠️"}
     fields=[]
@@ -430,7 +471,7 @@ def make_methodology(prs, req: PresentationRequest, T: Theme):
             font=_FONT,size=max(9.5,min(12,card_h*4.5)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.CENTER,
             rtl=True,vcenter=True,line_spacing=1.25)
-    slide_number(slide,6,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -438,7 +479,7 @@ def make_methodology(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_stats(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'a')
-    _hdr(slide,T,"الأرقام والإحصاءات الرئيسية","",'right')
+    _hdr(slide,T,"الأرقام والإحصاءات الرئيسية","",'right',slide_num=7,req=req)
     CY=CY0; CH=_ch()
     stats=req.stats[:6]
     if not stats: return slide
@@ -450,6 +491,7 @@ def make_stats(prs, req: PresentationRequest, T: Theme):
     for i,stat in enumerate(stats):
         ci=i%cols; ri=i//cols
         x=1.0+ci*(col_w+gh); y=CY+ri*(card_h+gv)
+        if y+card_h > H-0.2: break
         cc=rrect(slide,x,y,col_w,card_h,T.card_rgb,radius_pct=14)
         if cc:
             multi_stop_gradient(cc,[(0,T.bg2),(50,T.card),(100,T.bg2)],135)
@@ -480,7 +522,7 @@ def make_stats(prs, req: PresentationRequest, T: Theme):
             font=_FONT,size=max(9,min(11,card_h*5)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.CENTER,
             rtl=True,vcenter=True,line_spacing=1.1)
-    slide_number(slide,7,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -488,7 +530,7 @@ def make_stats(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_results(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'c')
-    _hdr(slide,T,"نتائج البحث","أبرز ما توصلت إليه الدراسة",'left')
+    _hdr(slide,T,"نتائج البحث","أبرز ما توصلت إليه الدراسة",'left',slide_num=8,req=req)
     CY=CY0; CH=_ch()
     results=req.main_results[:8]; n=len(results)
     if not results: return slide
@@ -512,7 +554,7 @@ def make_results(prs, req: PresentationRequest, T: Theme):
             font=_FONT,size=max(10,min(13,row_h*7.5)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
             rtl=True,vcenter=True,line_spacing=1.25)
-    slide_number(slide,8,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -520,7 +562,7 @@ def make_results(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_conclusion(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'d')
-    _hdr(slide,T,"خاتمة البحث","الاستنتاج العام للدراسة",'right')
+    _hdr(slide,T,"خاتمة البحث","الاستنتاج العام للدراسة",'right',slide_num=9,req=req)
     CY=CY0; CH=_ch(); cw=W-2.8
     cc=rrect(slide,1.4,CY,cw,CH,T.card_rgb,radius_pct=16)
     if cc:
@@ -538,7 +580,8 @@ def make_conclusion(prs, req: PresentationRequest, T: Theme):
         font="Calibri",size=48,bold=False,color=T.accent_rgb,
         align=PP_ALIGN.LEFT,rtl=False,vcenter=False)
     # الاستنتاج — يملأ البطاقة مع توسيط
-    txt(slide,req.general_conclusion,2.0,CY+1.3,cw-1.2,CH-2.25,
+    # الاستنتاج — يملأ البطاقة مع توسيط
+    txt(slide,req.general_conclusion,2.0,CY+0.9,cw-1.2,CH-1.95,
         font=_FONT,size=max(12,min(15,CH*4.5)),bold=False,
         color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
         rtl=True,vcenter=True,line_spacing=1.4)
@@ -549,7 +592,7 @@ def make_conclusion(prs, req: PresentationRequest, T: Theme):
     txt(slide,req.student_name,1.4,ny+0.12,cw,0.75,
         font=_FONT,size=14,bold=True,color=T.accent_rgb,
         align=PP_ALIGN.CENTER,rtl=True,vcenter=True)
-    slide_number(slide,9,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -557,7 +600,7 @@ def make_conclusion(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_recommendations(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'b')
-    _hdr(slide,T,"توصيات البحث","",'left')
+    _hdr(slide,T,"توصيات البحث","",'left',slide_num=10,req=req)
     CY=CY0; CH=_ch()
     recs=req.recommendations[:8]; n=len(recs)
     if not recs: return slide
@@ -578,7 +621,7 @@ def make_recommendations(prs, req: PresentationRequest, T: Theme):
             font=_FONT,size=max(10,min(13,row_h*7.5)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
             rtl=True,vcenter=True,line_spacing=1.25)
-    slide_number(slide,10,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -586,7 +629,7 @@ def make_recommendations(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_future(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'a')
-    _hdr(slide,T,"آفاق البحث المستقبلية","",'right')
+    _hdr(slide,T,"آفاق البحث المستقبلية","",'right',slide_num=11,req=req)
     CY=CY0; CH=_ch()
     items=req.future_work[:6]
     if not items: return slide
@@ -604,14 +647,14 @@ def make_future(prs, req: PresentationRequest, T: Theme):
             shadow(cc,blur=14,dist=4,alpha=0.36)
         tp=rrect(slide,x,y,col_w,0.28,T.accent_rgb,radius_pct=0)
         if tp: multi_stop_gradient(tp,[(0,T.accent),(100,T.accent2)],0)
-        nd=min(0.88,card_h*0.3)
-        number_badge(slide,x+col_w/2-nd/2,y+0.4,nd,i+1,T)
-        hline(slide,x+col_w*0.18,y+nd+0.52,col_w*0.64,T.muted_rgb,thickness=0.04)
-        txt(slide,item,x+0.3,y+nd+0.68,col_w-0.6,card_h-nd-0.88,
+        nd=min(1.0,card_h*0.32)
+        number_badge(slide,x+col_w/2-nd/2,y+0.36,nd,i+1,T)
+        hline(slide,x+col_w*0.18,y+nd+0.5,col_w*0.64,T.muted_rgb,thickness=0.04)
+        txt(slide,item,x+0.3,y+nd+0.66,col_w-0.6,card_h-nd-0.84,
             font=_FONT,size=max(10,min(13,card_h*5)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.CENTER,
             rtl=True,vcenter=True,line_spacing=1.3)
-    slide_number(slide,11,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════
@@ -619,7 +662,7 @@ def make_future(prs, req: PresentationRequest, T: Theme):
 # ══════════════════════════════════════════════════════════════════════
 def make_references(prs, req: PresentationRequest, T: Theme):
     slide = blank_slide(prs); _bg(slide,T,'c')
-    _hdr(slide,T,"قائمة المراجع والمصادر","",'left')
+    _hdr(slide,T,"قائمة المراجع والمصادر","",'left',slide_num=12,req=req)
     CY=CY0; CH=_ch()
     refs=req.references[:12]; n=len(refs)
     if not refs: return slide
@@ -643,7 +686,7 @@ def make_references(prs, req: PresentationRequest, T: Theme):
             font=_FONT,size=max(9,min(11.5,row_h*7)),bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
             rtl=True,vcenter=True,line_spacing=1.15)
-    slide_number(slide,12,13,T)
+    pass  # رقم الشريحة مدمج في الهيدر
     return slide
 
 # ══════════════════════════════════════════════════════════════════════

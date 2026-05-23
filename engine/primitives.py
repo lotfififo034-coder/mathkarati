@@ -498,7 +498,7 @@ def number_badge(slide, x, y, size, num: int | str, T):
         gradient_fill(c, T.accent_grad1, T.accent_grad2, 135)
         shadow(c, blur=10, dist=3, alpha=0.35)
     txt(slide, str(num), x, y, size, size,
-        font="Calibri", size=int(size * 5), bold=True,
+        font="Calibri", size=max(8, int(size * 18)), bold=True,
         color=T.text_dark_rgb, align=PP_ALIGN.CENTER, rtl=False)
     return c
 
