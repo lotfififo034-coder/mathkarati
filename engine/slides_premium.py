@@ -122,7 +122,9 @@ def make_cover(prs, req: PresentationRequest, T: Theme):
     if ct: multi_stop_gradient(ct,[(0,T.accent),(50,T.accent2),(100,T.accent)],0)
     vline(slide,mcx+mcw-0.2,title_y+0.32,title_h-0.32,T.accent_rgb,thickness=0.2)
 
-    ts=24 if len(req.title_ar)<40 else 19 if len(req.title_ar)<65 else 16
+    # حجم الخط يتكيف تدريجياً مع طول العنوان لتجنب الظهور الغير متناسق
+    tl=len(req.title_ar)
+    ts=26 if tl<30 else 22 if tl<45 else 18 if tl<60 else 15 if tl<80 else 13
     txt(slide,req.title_ar,mcx+0.4,title_y+0.38,mcw-0.85,title_h*0.62,
         font=_FONT,size=ts,bold=True,color=T.text_light_rgb,
         align=PP_ALIGN.CENTER,rtl=True,vcenter=True,line_spacing=1.2)
@@ -758,9 +760,16 @@ def make_intro(prs, req, T):
             font=_FONT,size=14,bold=True,color=T.accent_rgb,
             align=PP_ALIGN.CENTER,rtl=True,vcenter=True)
         hl=rect(slide,x+cw*0.14,CY+ic_s+1.3,cw*0.72,0.04,T.muted_rgb)
-        txt(slide,val,x+0.22,CY+ic_s+1.44,cw-0.44,CH-ic_s-1.62,
-            font=_FONT,size=max(10,min(12,CH*4.5)),bold=False,
+        # منطقة النص: نضمن أنها محصورة داخل البطاقة مع هامش أسفلي
+        txt_y = CY+ic_s+1.44
+        txt_h = max(0.5, CH - ic_s - 1.82)  # هامش أسفلي 0.38 إضافي لضمان الاحتواء
+        # نقلل حجم الخط تلقائياً إذا كان النص طويلاً
+        txt_sz = max(9, min(12, CH*4.5))
+        if len(val) > 200: txt_sz = max(8, txt_sz - 1.5)
+        if len(val) > 350: txt_sz = max(7.5, txt_sz - 1)
+        txt(slide,val,x+0.3,txt_y,cw-0.6,txt_h,
+            font=_FONT,size=txt_sz,bold=False,
             color=T.text_light_rgb,align=PP_ALIGN.RIGHT,
-            rtl=True,vcenter=True,line_spacing=1.3)
+            rtl=True,vcenter=False,line_spacing=1.25)
     slide_number(slide,1,13,T)
     return slide
