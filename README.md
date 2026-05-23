@@ -1,48 +1,31 @@
-# مذكرتي Pro v17 — Full Architectural Rebuild
+# مذكرتي Pro v17 — منشئ العروض الأكاديمية
 
-## Architecture
+## المحركات الثلاثة
 
-```
-mathkarati-v17/
-├── app.py                 # Flask API (thin HTTP adapter only)
-├── core/
-│   ├── models.py          # Domain models + validation
-│   └── themes.py          # All 12 color themes (immutable)
-├── engine/
-│   ├── primitives.py      # Low-level drawing (rect, text, gradient…)
-│   ├── slides.py          # Slide builders (make_cover, make_results…)
-│   └── pipeline.py        # Export orchestrator (single entry point)
-├── public/
-│   └── index.html         # Frontend (unchanged UX)
-├── requirements.txt
-├── build.sh
-└── render.yaml
-```
+| المحرك | الوصف | مناسب لـ |
+|--------|-------|---------|
+| **Canva** | بطاقات عائمة + زخارف هندسية | الطلاب الذين يريدون عرضاً حديثاً |
+| **Premium** | شريط جانبي ثابت + محتوى احترافي | العروض الرسمية والمناقشات |
+| **Classic** | هيدر أكاديمي + جداول نظيفة | الجامعات التقليدية |
 
-## What changed from v16
+## الثيمات المدعومة
+- `navy_gold` — الكلاسيكي الذهبي (الأكثر استخداماً)
+- `emerald_gold` — الزمردي الذهبي
+- `burgundy_gold` — الأحمر الداكن
+- `ocean_silver` — الفضي البحري
+- `violet_gold` — البنفسجي الذهبي
+- `midnight_rose` — الوردي الغامق
 
-| v16 | v17 |
-|-----|-----|
-| 3 engines (canva, classic, node) | 1 unified Python engine |
-| ~4500 lines across 3 generator files | ~1200 lines, clean separation |
-| Threading + subprocess fragility | No threads, no subprocess |
-| Temp files on disk | In-memory BytesIO only |
-| Base64 transport (kept) | Base64 transport (kept — it works) |
-| Fallback chaos | No fallbacks needed |
-| Hard to debug | Each layer independently testable |
+## الشرائح المتاحة
+غلاف (تلقائي) + 13 نوع شريحة اختياري:
+intro, plan, problem, objectives, importance, methodology, kpi, results, conclusion, recommendations, future, references, thankyou
 
-## Design principles
+## بيانات الغلاف
+- `titleAr` ✅ إلزامي
+- `studentName` ✅ إلزامي
+- `titleEn`, `supervisorName`, `coSupervisorName`, `institution`, `year`, `specialization` — اختيارية
 
-- **Deterministic**: same input → same output, every time
-- **No side effects**: generation is pure (in, bytes out)
-- **Fail fast**: validation before any I/O
-- **Memory-safe**: pptx.save() → BytesIO, never disk
-- **Stream-safe**: BytesIO is fully read before return
-- **Thread-safe**: pipeline is stateless after font detection
-
-## Deploy
-
-```bash
-bash build.sh
-gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --timeout 120
-```
+## الأداء
+- 13 شريحة: ~0.4 ثانية
+- حجم الملف: 55–70 KB
+- توافق: PowerPoint 2016+ / LibreOffice 6+

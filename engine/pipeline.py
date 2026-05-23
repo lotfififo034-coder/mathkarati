@@ -25,22 +25,30 @@ from pptx.oxml.ns import qn
 
 from core.models import PresentationRequest
 from core.themes import get_theme
-
-# Engine modules — imported lazily via _load_engine()
 import engine.slides as _slides_canva
-import engine.slides_classic as _slides_classic
 import engine.slides_premium as _slides_premium
+import engine.slides_classic as _slides_classic
 
-_ENGINE_MAP = {
+# خريطة المحركات
+_ENGINES = {
     "canva":   _slides_canva,
-    "classic": _slides_classic,
     "premium": _slides_premium,
+    "classic": _slides_classic,
 }
 
+def set_font(font_name: str):
+    for mod in _ENGINES.values():
+        mod.set_font(font_name)
 
-def _load_engine(engine_name: str):
-    """Return the correct slides module based on engine name."""
-    return _ENGINE_MAP.get(engine_name, _slides_canva)
+def _get_fns(engine: str):
+    mod = _ENGINES.get(engine, _slides_canva)
+    return (
+        mod.make_cover, mod.make_intro, mod.make_plan, mod.make_problem,
+        mod.make_objectives, mod.make_importance, mod.make_methodology,
+        mod.make_stats, mod.make_results, mod.make_conclusion,
+        mod.make_recommendations, mod.make_future, mod.make_references,
+        mod.make_final,
+    )
 
 log = logging.getLogger(__name__)
 W_CM, H_CM = 33.867, 19.05
@@ -101,10 +109,8 @@ class PPTXExportPipeline:
 
     def __init__(self):
         self._font = _detect_font()
-        # Set font on all engine modules
-        for mod in _ENGINE_MAP.values():
-            mod.set_font(self._font)
-        log.info(f"Pipeline ready | font={self._font}")
+        set_font(self._font)
+        log.info(f"Pipeline ready | font={self._font} | engines={list(_ENGINES.keys())}")
 
     def build(self, req: PresentationRequest) -> ExportResult:
         t0 = time.monotonic()
@@ -129,7 +135,7 @@ class PPTXExportPipeline:
 
             # Stage 4: build slides (per-slide tracing)
             stages.append("build_slides")
-            n = self._build_slides(prs, req, theme, stages)
+            n = self._build_slides(prs, req, theme, stages, req.engine)
 
             # Stage 5: serialize
             stages.append("serialize")
@@ -150,11 +156,16 @@ class PPTXExportPipeline:
             return ExportResult(success=False, error=f"[{stage}] {exc}",
                                 stages=stages, elapsed=time.monotonic() - t0)
 
-    def _build_slides(self, prs, req, theme, stages) -> int:
+    def _build_slides(self, prs, req, theme, stages, engine="canva") -> int:
+        (make_cover, make_intro, make_plan, make_problem,
+         make_objectives, make_importance, make_methodology,
+         make_stats, make_results, make_conclusion,
+         make_recommendations, make_future, make_references,
+         make_final) = _get_fns(engine)
+
+        log.info(f"Engine: {engine}")
         cfg = req.slides
         count = 0
-        E = _load_engine(req.engine)
-        log.info(f"Engine: {req.engine} → {E.__name__}")
 
         def run(name, condition, fn):
             nonlocal count
@@ -165,20 +176,20 @@ class PPTXExportPipeline:
             count += 1
             log.debug(f"  slide:{name} OK")
 
-        run("cover",           True,                                     E.make_cover)
-        run("intro",           cfg.intro and bool(req.intro_overview or req.intro_approach), E.make_intro)
-        run("plan",            cfg.plan and bool(req.chapters),          E.make_plan)
-        run("problem",         cfg.problem and bool(req.main_problem or req.main_question or req.sub_questions), E.make_problem)
-        run("objectives",      cfg.objectives and bool(req.objectives or req.hypotheses), E.make_objectives)
-        run("importance",      cfg.importance and bool(req.importance or req.reasons),    E.make_importance)
-        run("methodology",     cfg.methodology and bool(req.methodology or req.sample_type or req.tool), E.make_methodology)
-        run("kpi",             cfg.kpi and bool(req.stats),              E.make_stats)
-        run("results",         cfg.results and bool(req.main_results),   E.make_results)
-        run("conclusion",      cfg.conclusion and bool(req.general_conclusion), E.make_conclusion)
-        run("recommendations", cfg.recommendations and bool(req.recommendations), E.make_recommendations)
-        run("future",          cfg.future and bool(req.future_work),     E.make_future)
-        run("references",      cfg.references and bool(req.references),  E.make_references)
-        run("thankyou",        cfg.thankyou,                             E.make_final)
+        run("cover",           True,                                     make_cover)
+        run("intro",           cfg.intro and bool(req.intro_overview or req.intro_approach), make_intro)
+        run("plan",            cfg.plan and bool(req.chapters),          make_plan)
+        run("problem",         cfg.problem and bool(req.main_problem or req.main_question or req.sub_questions), make_problem)
+        run("objectives",      cfg.objectives and bool(req.objectives or req.hypotheses), make_objectives)
+        run("importance",      cfg.importance and bool(req.importance or req.reasons),    make_importance)
+        run("methodology",     cfg.methodology and bool(req.methodology or req.sample_type or req.tool), make_methodology)
+        run("kpi",             cfg.kpi and bool(req.stats),              make_stats)
+        run("results",         cfg.results and bool(req.main_results),   make_results)
+        run("conclusion",      cfg.conclusion and bool(req.general_conclusion), make_conclusion)
+        run("recommendations", cfg.recommendations and bool(req.recommendations), make_recommendations)
+        run("future",          cfg.future and bool(req.future_work),     make_future)
+        run("references",      cfg.references and bool(req.references),  make_references)
+        run("thankyou",        cfg.thankyou,                             make_final)
 
         return count
 
