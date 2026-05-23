@@ -167,27 +167,6 @@ class PPTXExportPipeline:
         cfg = req.slides
         count = 0
 
-        # حساب العدد الحقيقي للشرائح قبل البناء
-        def _will_run(condition): return bool(condition)
-        total_slides = sum([
-            _will_run(True),
-            _will_run(cfg.intro and bool(req.intro_overview or req.intro_approach)),
-            _will_run(cfg.plan and bool(req.chapters)),
-            _will_run(cfg.problem and bool(req.main_problem or req.main_question or req.sub_questions)),
-            _will_run(cfg.objectives and bool(req.objectives or req.hypotheses)),
-            _will_run(cfg.importance and bool(req.importance or req.reasons)),
-            _will_run(cfg.methodology and bool(req.methodology or req.sample_type or req.tool)),
-            _will_run(cfg.kpi and bool(req.stats)),
-            _will_run(cfg.results and bool(req.main_results)),
-            _will_run(cfg.conclusion and bool(req.general_conclusion)),
-            _will_run(cfg.recommendations and bool(req.recommendations)),
-            _will_run(cfg.future and bool(req.future_work)),
-            _will_run(cfg.references and bool(req.references)),
-            _will_run(cfg.thankyou),
-        ])
-        # نمرر العدد الكلي للـ req ليستخدمه المحرك
-        req._total_slides = total_slides
-
         def run(name, condition, fn):
             nonlocal count
             if not condition:

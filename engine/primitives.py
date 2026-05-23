@@ -201,119 +201,35 @@ def txt(slide, text: str, x, y, w, h,
         font="Cairo", size=14, bold=False, italic=False,
         color: RGBColor | None = None,
         align=PP_ALIGN.RIGHT,
-        margin=0.1, rtl=True, spacing=None,
-        vcenter=True, line_spacing=1.15):
-    """
-    نص احترافي باستخدام Shape مع توسيط عمودي حقيقي.
-    vcenter=True → MSO_ANCHOR.MIDDLE (يعمل في PowerPoint وLibreOffice)
-    line_spacing → ارتفاع السطر النسبي
-    """
+        margin=0.12, rtl=True, spacing=None):
     if not text or w <= 0 or h <= 0:
         return None
-    try:
-        from pptx.enum.text import MSO_ANCHOR
-        sh = slide.shapes.add_shape(1, cm(x), cm(y), cm(w), cm(h))
-        sh.fill.background()
-        sh.line.fill.background()
-        tf = sh.text_frame
-        tf.word_wrap = True
-        tf.margin_left   = cm(margin)
-        tf.margin_right  = cm(margin)
-        tf.margin_top    = cm(0.04)
-        tf.margin_bottom = cm(0.04)
+    tb = slide.shapes.add_textbox(cm(x), cm(y), cm(w), cm(h))
+    tb.word_wrap = True
+    tf = tb.text_frame
+    tf.word_wrap = True
+    tf.margin_left = cm(margin)
+    tf.margin_right = cm(margin)
+    tf.margin_top = cm(0.04)
+    tf.margin_bottom = cm(0.04)
 
-        if vcenter:
-            tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-        else:
-            tf.vertical_anchor = MSO_ANCHOR.TOP
-
-        p = tf.paragraphs[0]
-        p.alignment = align
-
-        # ارتفاع السطر
+    p = tf.paragraphs[0]
+    p.alignment = align
+    if spacing is not None:
         try:
-            from pptx.oxml.ns import qn as _qn
-            pPr = p._p.get_or_add_pPr()
-            # أزل lnSpc القديم إن وُجد
-            for old in pPr.findall(_qn('a:lnSpc')):
-                pPr.remove(old)
-            lnSpc = etree.SubElement(pPr, _qn('a:lnSpc'))
-            spcPct = etree.SubElement(lnSpc, _qn('a:spcPct'))
-            spcPct.set('val', str(int(line_spacing * 100000)))
+            p.line_spacing = Pt(spacing)
         except Exception:
             pass
 
-        run = p.add_run()
-        run.text = str(text)
-        run.font.name   = font
-        run.font.size   = Pt(size)
-        run.font.bold   = bold
-        run.font.italic = italic
-        if color:
-            run.font.color.rgb = color
-        return sh
-    except Exception:
-        # fallback إلى textbox
-        tb = slide.shapes.add_textbox(cm(x), cm(y), cm(w), cm(h))
-        tb.word_wrap = True
-        tf = tb.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.alignment = align
-        run = p.add_run()
-        run.text = str(text)
-        run.font.name   = font
-        run.font.size   = Pt(size)
-        run.font.bold   = bold
-        run.font.italic = italic
-        if color:
-            run.font.color.rgb = color
-        return tb
-
-
-def txt2(slide, label: str, value: str, x, y, w, h,
-         font="Cairo", label_size=10, value_size=13,
-         label_color: RGBColor | None = None,
-         value_color: RGBColor | None = None,
-         align=PP_ALIGN.RIGHT, margin=0.1):
-    """
-    نص بسطرين: تسمية + قيمة مع توسيط عمودي.
-    مثالي لبطاقات المعلومات.
-    """
-    if w <= 0 or h <= 0: return None
-    try:
-        from pptx.enum.text import MSO_ANCHOR
-        sh = slide.shapes.add_shape(1, cm(x), cm(y), cm(w), cm(h))
-        sh.fill.background()
-        sh.line.fill.background()
-        tf = sh.text_frame
-        tf.word_wrap = True
-        tf.margin_left   = cm(margin)
-        tf.margin_right  = cm(margin)
-        tf.margin_top    = cm(0.04)
-        tf.margin_bottom = cm(0.04)
-        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-
-        p1 = tf.paragraphs[0]
-        p1.alignment = align
-        r1 = p1.add_run()
-        r1.text = str(label)
-        r1.font.name  = font
-        r1.font.size  = Pt(label_size)
-        r1.font.bold  = True
-        if label_color: r1.font.color.rgb = label_color
-
-        p2 = tf.add_paragraph()
-        p2.alignment = align
-        r2 = p2.add_run()
-        r2.text = str(value)
-        r2.font.name  = font
-        r2.font.size  = Pt(value_size)
-        r2.font.bold  = False
-        if value_color: r2.font.color.rgb = value_color
-        return sh
-    except Exception:
-        return None
+    run = p.add_run()
+    run.text = str(text)
+    run.font.name = font
+    run.font.size = Pt(size)
+    run.font.bold = bold
+    run.font.italic = italic
+    if color:
+        run.font.color.rgb = color
+    return tb
 
 
 def blank_slide(prs):
@@ -498,7 +414,7 @@ def number_badge(slide, x, y, size, num: int | str, T):
         gradient_fill(c, T.accent_grad1, T.accent_grad2, 135)
         shadow(c, blur=10, dist=3, alpha=0.35)
     txt(slide, str(num), x, y, size, size,
-        font="Calibri", size=max(8, int(size * 18)), bold=True,
+        font="Calibri", size=int(size * 5), bold=True,
         color=T.text_dark_rgb, align=PP_ALIGN.CENTER, rtl=False)
     return c
 

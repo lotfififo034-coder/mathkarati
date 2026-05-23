@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>لوحة الإدارة — مذكرتي Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f1e;
+  --bg2: #111827;
+  --bg3: #1a2235;
+  --border: rgba(255,255,255,0.07);
+  --gold: #C6A03C;
+  --gold-l: #E8C97B;
+  --green: #22C55E;
+  --red: #EF4444;
+  --yellow: #F59E0B;
+  --blue: #3B82F6;
+  --purple: #8B5CF6;
+  --text: #F1F5F9;
+  --muted: #64748B;
+  --muted2: #94A3B8;
+  --r: 10px;
+  --t: .18s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:99px}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px;text-align:center}
+.login-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 20px}
+.login-box h2{font-size:18px;font-weight:800;margin-bottom:4px}
+.login-box p{font-size:12px;color:var(--muted);margin-bottom:24px}
+.login-box input{width:100%;padding:11px 14px;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:inherit;font-size:14px;direction:ltr;margin-bottom:12px;transition:border-color var(--t)}
+.login-box input:focus{outline:none;border-color:var(--gold)}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold-l));border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:700;color:#07172F;cursor:pointer;transition:opacity var(--t)}
+.btn-login:hover{opacity:.9}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* LAYOUT */
+.app{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--bg2);border-left:1px solid var(--border);padding:20px 12px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+.logo-side{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:16px}
+.logo-ico{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.logo-side h1{font-size:14px;font-weight:900;color:var(--text)}
+.logo-side span{font-size:10px;color:var(--muted);display:block}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:all var(--t);color:var(--muted2);font-size:13px;font-weight:600;border:none;background:transparent;width:100%;font-family:inherit;text-align:right}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(198,160,60,.12);color:var(--gold);border:1px solid rgba(198,160,60,.2)}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.nav-badge{margin-right:auto;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:99px;min-width:18px;text-align:center}
+.nav-badge.gold{background:var(--gold);color:#07172F}
+.sidebar-footer{margin-top:auto;padding:10px}
+.admin-info{font-size:10px;color:var(--muted);text-align:center}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.topbar h2{font-size:15px;font-weight:800}
+.topbar-right{margin-right:auto;display:flex;align-items:center;gap:10px}
+.refresh-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--muted2);cursor:pointer;font-size:12px;font-family:inherit;transition:all var(--t)}
+.refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* STATS CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent, var(--gold))}
+.stat-icon{font-size:20px;margin-bottom:8px}
+.stat-val{font-size:26px;font-weight:900;color:var(--text)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+.stat-card.green{--accent: var(--green)}
+.stat-card.red{--accent: var(--red)}
+.stat-card.blue{--accent: var(--blue)}
+.stat-card.purple{--accent: var(--purple)}
+.stat-card.yellow{--accent: var(--yellow)}
+
+/* FILTERS */
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--t)}
+.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
+.filter-btn.active{background:rgba(198,160,60,.12);border-color:var(--gold);color:var(--gold)}
+.search-inp{background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:inherit;font-size:13px;direction:rtl;width:220px;margin-right:auto;transition:border-color var(--t)}
+.search-inp:focus{outline:none;border-color:var(--gold)}
+
+/* TABLE */
+.orders-table{width:100%;border-collapse:collapse}
+.orders-table th{background:var(--bg3);padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-align:right;border-bottom:1px solid var(--border)}
+.orders-table td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.orders-table tr{background:var(--bg2);transition:background var(--t)}
+.orders-table tr:hover{background:var(--bg3);cursor:pointer}
+.orders-table tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.badge-pending{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.badge-uploaded{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+.badge-approved{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.badge-rejected{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-downloaded{background:rgba(139,92,246,.12);color:var(--purple);border:1px solid rgba(139,92,246,.25)}
+.badge-ccp{background:rgba(198,160,60,.12);color:var(--gold);border:1px solid rgba(198,160,60,.25)}
+.badge-baridi{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+
+/* ORDER DETAIL PANEL */
+.detail-panel{position:fixed;top:0;left:0;width:480px;height:100vh;background:var(--bg2);border-right:1px solid var(--border);z-index:500;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.detail-panel.open{transform:translateX(0)}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.panel-header h3{font-size:15px;font-weight:800}
+.panel-close{margin-right:auto;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--muted2);cursor:pointer;font-size:13px;font-family:inherit;transition:all var(--t)}
+.panel-close:hover{color:var(--red)}
+.panel-body{flex:1;overflow-y:auto;padding:16px 20px}
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499;display:none}
+.panel-overlay.active{display:block}
+
+.info-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;padding:10px;background:var(--bg3);border-radius:8px}
+.info-label{font-size:11px;color:var(--muted);width:110px;flex-shrink:0;padding-top:1px}
+.info-val{font-size:13px;font-weight:600;word-break:break-all}
+.code-display{font-family:monospace;font-size:16px;font-weight:900;color:var(--gold);letter-spacing:3px;background:rgba(198,160,60,.08);border:1px dashed rgba(198,160,60,.3);padding:8px 14px;border-radius:8px;text-align:center;margin:10px 0}
+
+/* ACTIONS */
+.action-bar{padding:14px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.btn{padding:9px 16px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-approve{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;width:100%}
+.btn-approve:hover{opacity:.9}
+.btn-reject{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.3);color:var(--red);width:100%}
+.btn-reject:hover{background:rgba(239,68,68,.2)}
+.btn-regen{background:rgba(198,160,60,.1);border:1.5px solid rgba(198,160,60,.25);color:var(--gold);width:100%}
+.btn-regen:hover{background:rgba(198,160,60,.2)}
+.btn-receipt{background:rgba(59,130,246,.1);border:1.5px solid rgba(59,130,246,.25);color:var(--blue)}
+.btn-receipt:hover{background:rgba(59,130,246,.2)}
+.hours-sel{background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:12px;width:100%}
+
+/* Receipt modal */
+.receipt-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:none;align-items:center;justify-content:center}
+.receipt-modal.active{display:flex}
+.receipt-modal-inner{background:var(--bg2);border-radius:12px;padding:20px;max-width:700px;max-height:85vh;display:flex;flex-direction:column;gap:12px;position:relative}
+.receipt-modal-inner img{max-width:100%;max-height:65vh;border-radius:8px;object-fit:contain}
+.receipt-close{position:absolute;top:12px;left:12px;background:var(--red);color:#fff;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+
+/* COPY */
+.copy-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--muted2);cursor:pointer;font-size:10px;font-family:inherit;transition:all var(--t)}
+.copy-btn:hover{color:var(--gold);border-color:var(--gold)}
+.copy-btn.copied{color:var(--green);border-color:var(--green)}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;z-index:9999;transition:transform .3s ease;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--green);color:var(--green)}
+.toast.error{border-color:var(--red);color:var(--red)}
+
+/* LOADER */
+.loader{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted)}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.section{display:none}
+.section.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🎓</div>
+    <h2>لوحة إدارة مذكرتي Pro</h2>
+    <p>أدخل كلمة المرور للدخول</p>
+    <input type="password" id="pwd-inp" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">دخول →</button>
+    <div class="login-err" id="login-err">كلمة المرور غير صحيحة</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="main-app" style="display:none">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo-side">
+      <div class="logo-ico">🎓</div>
+      <div>
+        <h1>مذكرتي Pro</h1>
+        <span>لوحة الإدارة</span>
+      </div>
+    </div>
+
+    <button class="nav-item active" data-section="overview" onclick="switchSection(this,'overview')">
+      <span class="nav-icon">📊</span> نظرة عامة
+    </button>
+    <button class="nav-item" data-section="orders" onclick="switchSection(this,'orders')">
+      <span class="nav-icon">📋</span> الطلبات
+      <span class="nav-badge" id="nav-pending-count">0</span>
+    </button>
+    <button class="nav-item" data-section="uploaded" onclick="switchSection(this,'uploaded');filterOrders('uploaded')">
+      <span class="nav-icon">⏳</span> في انتظار المراجعة
+      <span class="nav-badge" id="nav-uploaded-count">0</span>
+    </button>
+    <button class="nav-item" data-section="orders" onclick="switchSection(this,'orders');filterOrders('approved')">
+      <span class="nav-icon">✅</span> تمت الموافقة
+    </button>
+    <button class="nav-item" data-section="orders" onclick="switchSection(this,'orders');filterOrders('downloaded')">
+      <span class="nav-icon">📥</span> تم التحميل
+    </button>
+    <button class="nav-item" data-section="orders" onclick="switchSection(this,'orders');filterOrders('rejected')">
+      <span class="nav-icon">❌</span> مرفوض
+    </button>
+
+    <div class="sidebar-footer">
+      <div class="admin-info" id="admin-info">متصل · v17.2</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="dot"></div>
+      <h2 id="topbar-title">نظرة عامة</h2>
+      <div class="topbar-right">
+        <span style="font-size:11px;color:var(--muted)" id="last-refresh"></span>
+        <button class="refresh-btn" onclick="loadAll()">↻ تحديث</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- OVERVIEW -->
+      <div class="section active" id="sec-overview">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-val" id="s-total">—</div><div class="stat-label">إجمالي الطلبات</div></div>
+          <div class="stat-card yellow"><div class="stat-icon">⏳</div><div class="stat-val" id="s-uploaded">—</div><div class="stat-label">في انتظار المراجعة</div></div>
+          <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-val" id="s-approved">—</div><div class="stat-label">موافق عليه</div></div>
+          <div class="stat-card purple"><div class="stat-icon">📥</div><div class="stat-val" id="s-downloaded">—</div><div class="stat-label">تم التحميل</div></div>
+          <div class="stat-card red"><div class="stat-icon">❌</div><div class="stat-val" id="s-rejected">—</div><div class="stat-label">مرفوض</div></div>
+          <div class="stat-card" style="--accent:#C6A03C"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">—</div><div class="stat-label">الإيراد (دج)</div></div>
+        </div>
+
+        <h3 style="font-size:14px;font-weight:800;margin-bottom:12px;color:var(--muted2)">⏳ طلبات تنتظر المراجعة</h3>
+        <div id="pending-list"></div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="section" id="sec-orders">
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="filterOrders(null,this)">الكل</button>
+          <button class="filter-btn" onclick="filterOrders('pending',this)">جديد</button>
+          <button class="filter-btn" onclick="filterOrders('uploaded',this)">في انتظار المراجعة</button>
+          <button class="filter-btn" onclick="filterOrders('approved',this)">موافق</button>
+          <button class="filter-btn" onclick="filterOrders('downloaded',this)">محمّل</button>
+          <button class="filter-btn" onclick="filterOrders('rejected',this)">مرفوض</button>
+          <input class="search-inp" type="text" placeholder="🔍 بحث..." oninput="searchOrders(this.value)">
+        </div>
+        <div style="overflow-x:auto">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>الطالب</th>
+                <th>طريقة الدفع</th>
+                <th>الحالة</th>
+                <th>كود التحميل</th>
+                <th>التاريخ</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+        <div id="orders-empty" class="empty-state" style="display:none">
+          <div class="icon">📭</div>
+          <p>لا توجد طلبات</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="panel-header">
+    <span style="font-size:18px">📋</span>
+    <h3 id="panel-title">تفاصيل الطلب</h3>
+    <button class="panel-close" onclick="closePanel()">✕ إغلاق</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+  <div class="action-bar" id="action-bar"></div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="receipt-modal" id="receipt-modal" onclick="closeReceipt()">
+  <div class="receipt-modal-inner" onclick="event.stopPropagation()">
+    <button class="receipt-close" onclick="closeReceipt()">✕</button>
+    <h3 style="font-size:14px;font-weight:800">وصل الدفع</h3>
+    <img id="receipt-img" src="" alt="وصل الدفع">
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let adminToken = '';
+let allOrders = [];
+let currentFilter = null;
+let currentSearch = '';
+let currentOrderId = null;
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pwd = document.getElementById('pwd-inp').value;
+  if (!pwd) return;
+  try {
+    const r = await fetch(`${API}/admin/auth`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: pwd})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      adminToken = pwd;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'flex';
+      loadAll();
+      setInterval(loadAll, 30000);
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function apiHeaders() {
+  return {'Content-Type':'application/json', 'X-Admin-Token': adminToken};
+}
+
+// ── DATA ──────────────────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [statsR, ordersR] = await Promise.all([
+      fetch(`${API}/admin/stats`, {headers: apiHeaders()}),
+      fetch(`${API}/admin/orders`, {headers: apiHeaders()})
+    ]);
+    const stats = await statsR.json();
+    const orders = await ordersR.json();
+    allOrders = orders;
+    renderStats(stats);
+    renderPendingList();
+    renderOrdersTable();
+    document.getElementById('last-refresh').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar');
+    document.getElementById('nav-pending-count').textContent = stats.uploaded || 0;
+    document.getElementById('nav-uploaded-count').textContent = stats.uploaded || 0;
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderStats(s) {
+  document.getElementById('s-total').textContent = s.total || 0;
+  document.getElementById('s-uploaded').textContent = s.uploaded || 0;
+  document.getElementById('s-approved').textContent = s.approved || 0;
+  document.getElementById('s-downloaded').textContent = s.downloaded || 0;
+  document.getElementById('s-rejected').textContent = s.rejected || 0;
+  document.getElementById('s-revenue').textContent = (s.revenue || 0).toLocaleString('ar-DZ');
+}
+
+function renderPendingList() {
+  const pending = allOrders.filter(o => o.status === 'uploaded');
+  const el = document.getElementById('pending-list');
+  if (!pending.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;background:var(--bg2);border-radius:10px;text-align:center">✅ لا توجد طلبات في انتظار المراجعة</div>';
+    return;
+  }
+  el.innerHTML = pending.map(o => `
+    <div onclick="openOrder('${o.order_id}')" style="background:var(--bg2);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:12px" onmouseover="this.style.borderColor='var(--yellow)'" onmouseout="this.style.borderColor='rgba(245,158,11,.2)'">
+      <div style="font-size:24px">⏳</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">${o.student_name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${formatDate(o.created_at)} · ${o.payment_method === 'ccp' ? 'CCP' : 'BaridiMob'} · ${o.amount} دج</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="event.stopPropagation();quickApprove('${o.order_id}')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:6px 12px;color:var(--green);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">✅ موافقة</button>
+        <button onclick="event.stopPropagation();quickReject('${o.order_id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:6px 12px;color:var(--red);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">❌ رفض</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderOrdersTable() {
+  let orders = allOrders;
+  if (currentFilter) orders = orders.filter(o => o.status === currentFilter);
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    orders = orders.filter(o =>
+      o.student_name.toLowerCase().includes(q) ||
+      o.order_id.toLowerCase().includes(q) ||
+      (o.phone||'').includes(q)
+    );
+  }
+
+  const tbody = document.getElementById('orders-tbody');
+  const empty = document.getElementById('orders-empty');
+
+  if (!orders.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = orders.map(o => `
+    <tr onclick="openOrder('${o.order_id}')">
+      <td>
+        <div style="font-weight:700">${o.student_name}</div>
+        <div style="font-size:10px;color:var(--muted)">${o.phone || '—'}</div>
+      </td>
+      <td><span class="badge badge-${o.payment_method}">${o.payment_method === 'ccp' ? '🏦 CCP' : '📱 BaridiMob'}</span></td>
+      <td>${statusBadge(o.status)}</td>
+      <td>${o.download_code ? `<span style="font-family:monospace;font-size:11px;color:var(--gold);letter-spacing:1px">${o.download_code}</span>${o.code_used ? ' <span style="font-size:9px;color:var(--muted)">(مستخدم)</span>' : ''}` : '<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td style="font-size:11px;color:var(--muted2)">${formatDate(o.created_at)}</td>
+      <td>
+        <button onclick="event.stopPropagation();openOrder('${o.order_id}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted2);cursor:pointer;font-size:11px;font-family:inherit">عرض</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function statusBadge(status) {
+  const labels = {
+    pending: '🆕 جديد', uploaded: '⏳ في الانتظار',
+    approved: '✅ موافق', rejected: '❌ مرفوض', downloaded: '📥 محمّل'
+  };
+  return `<span class="badge badge-${status}">${labels[status] || status}</span>`;
+}
+
+function filterOrders(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderOrdersTable();
+}
+
+function searchOrders(val) {
+  currentSearch = val;
+  renderOrdersTable();
+}
+
+// ── ORDER DETAIL ──────────────────────────────────────────────────────
+async function openOrder(orderId) {
+  currentOrderId = orderId;
+  const order = allOrders.find(o => o.order_id === orderId);
+  if (!order) return;
+
+  document.getElementById('panel-title').textContent = `طلب: ${order.student_name}`;
+
+  const body = document.getElementById('panel-body');
+  body.innerHTML = `
+    <div class="info-row"><div class="info-label">معرف الطلب</div><div class="info-val" style="font-size:11px;font-family:monospace">${order.order_id}</div></div>
+    <div class="info-row"><div class="info-label">اسم الطالب</div><div class="info-val">${order.student_name}</div></div>
+    <div class="info-row"><div class="info-label">البريد الإلكتروني</div><div class="info-val">${order.student_email || '—'}</div></div>
+    <div class="info-row"><div class="info-label">الهاتف</div><div class="info-val">${order.phone || '—'}</div></div>
+    <div class="info-row"><div class="info-label">طريقة الدفع</div><div class="info-val">${order.payment_method === 'ccp' ? '🏦 CCP' : '📱 BaridiMob'}</div></div>
+    <div class="info-row"><div class="info-label">المبلغ</div><div class="info-val" style="color:var(--gold);font-weight:800">${order.amount} دج</div></div>
+    <div class="info-row"><div class="info-label">الحالة</div><div class="info-val">${statusBadge(order.status)}</div></div>
+    <div class="info-row"><div class="info-label">تاريخ الطلب</div><div class="info-val">${formatDate(order.created_at)}</div></div>
+    ${order.receipt_filename ? `
+    <div class="info-row">
+      <div class="info-label">الوصل</div>
+      <div class="info-val">
+        ${order.receipt_filename}
+        <button class="btn btn-receipt" style="margin-top:6px;font-size:12px;padding:6px 12px" onclick="viewReceipt('${order.order_id}')">👁️ مشاهدة الوصل</button>
+      </div>
+    </div>` : '<div class="info-row"><div class="info-label">الوصل</div><div class="info-val" style="color:var(--muted)">لم يُرفع بعد</div></div>'}
+    ${order.download_code ? `
+    <div style="margin:10px 0">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">كود التحميل</div>
+      <div class="code-display">
+        ${order.download_code}
+        <button class="copy-btn" onclick="copyCode('${order.download_code}',this)">نسخ</button>
+      </div>
+      ${order.code_expires_at ? `<div style="font-size:11px;color:var(--muted);text-align:center">ينتهي: ${formatDate(order.code_expires_at)}</div>` : ''}
+      ${order.code_used ? '<div style="font-size:11px;color:var(--purple);text-align:center;margin-top:4px">✅ تم استخدام الكود</div>' : ''}
+    </div>` : ''}
+    ${order.download_at ? `
+    <div class="info-row"><div class="info-label">وقت التحميل</div><div class="info-val">${formatDate(order.download_at)}</div></div>
+    <div class="info-row"><div class="info-label">IP التحميل</div><div class="info-val" style="font-family:monospace;font-size:11px">${order.download_ip || '—'}</div></div>` : ''}
+    ${order.admin_note ? `<div class="info-row"><div class="info-label">ملاحظة</div><div class="info-val">${order.admin_note}</div></div>` : ''}
+  `;
+
+  // Actions
+  const actions = document.getElementById('action-bar');
+  let btns = '';
+
+  if (order.receipt_filename) {
+    btns += `<button class="btn btn-receipt" onclick="viewReceipt('${order.order_id}')">👁️ عرض الوصل</button>`;
+  }
+
+  if (order.status === 'uploaded' || order.status === 'pending') {
+    btns += `
+    <div style="display:flex;align-items:center;gap:8px">
+      <select class="hours-sel" id="hours-sel" style="flex:1">
+        <option value="24">24 ساعة</option>
+        <option value="48" selected>48 ساعة</option>
+        <option value="72">72 ساعة</option>
+        <option value="168">أسبوع</option>
+      </select>
+      <span style="font-size:11px;color:var(--muted);white-space:nowrap">صلاحية الكود</span>
+    </div>
+    <button class="btn btn-approve" onclick="approveOrder('${order.order_id}')">✅ موافقة وتوليد الكود</button>
+    <button class="btn btn-reject" onclick="rejectOrder('${order.order_id}')">❌ رفض الطلب</button>`;
+  } else if (order.status === 'approved' || order.status === 'downloaded') {
+    btns += `<button class="btn btn-regen" onclick="regenCode('${order.order_id}')">🔄 توليد كود جديد</button>`;
+    if (order.status === 'approved') {
+      btns += `<button class="btn btn-reject" onclick="rejectOrder('${order.order_id}')">❌ إلغاء الموافقة</button>`;
+    }
+  } else if (order.status === 'rejected') {
+    btns += `<button class="btn btn-approve" onclick="approveOrder('${order.order_id}')">↩️ إعادة الموافقة</button>`;
+  }
+
+  actions.innerHTML = btns;
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('overlay').classList.add('active');
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────
+async function approveOrder(orderId) {
+  const hoursEl = document.getElementById('hours-sel');
+  const hours = hoursEl ? parseInt(hoursEl.value) : 48;
+  try {
+    const r = await fetch(`${API}/admin/orders/${orderId}/approve`, {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({hours_valid: hours})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(`✅ تمت الموافقة! الكود: ${d.download_code}`, 'success');
+      await loadAll();
+      if (currentOrderId === orderId) openOrder(orderId);
+    } else showToast(d.error || 'خطأ', 'error');
+  } catch(e) { showToast('خطأ في الاتصال', 'error'); }
+}
+
+async function rejectOrder(orderId) {
+  const note = prompt('سبب الرفض (اختياري):') || 'الوصل غير صحيح';
+  try {
+    const r = await fetch(`${API}/admin/orders/${orderId}/reject`, {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({note})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast('تم رفض الطلب', 'error');
+      await loadAll();
+      closePanel();
+    }
+  } catch(e) { showToast('خطأ', 'error'); }
+}
+
+async function regenCode(orderId) {
+  const hours = parseInt(prompt('صلاحية الكود بالساعات:', '48') || '48');
+  try {
+    const r = await fetch(`${API}/admin/orders/${orderId}/regen_code`, {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({hours_valid: hours})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(`✅ الكود الجديد: ${d.download_code}`, 'success');
+      await loadAll();
+      if (currentOrderId === orderId) openOrder(orderId);
+    }
+  } catch(e) { showToast('خطأ', 'error'); }
+}
+
+async function quickApprove(orderId) {
+  try {
+    const r = await fetch(`${API}/admin/orders/${orderId}/approve`, {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({hours_valid: 48})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(`✅ موافقة! الكود: ${d.download_code}`, 'success');
+      await loadAll();
+    }
+  } catch(e) { showToast('خطأ', 'error'); }
+}
+
+async function quickReject(orderId) {
+  try {
+    await fetch(`${API}/admin/orders/${orderId}/reject`, {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({note: 'الوصل غير صحيح'})
+    });
+    showToast('تم الرفض', 'error');
+    await loadAll();
+  } catch(e) { showToast('خطأ', 'error'); }
+}
+
+// ── RECEIPT ───────────────────────────────────────────────────────────
+async function viewReceipt(orderId) {
+  const url = `${API}/admin/orders/${orderId}/receipt`;
+  const headers = {'X-Admin-Token': adminToken};
+  try {
+    const r = await fetch(url, {headers});
+    const blob = await r.blob();
+    if (blob.type === 'application/pdf') {
+      window.open(URL.createObjectURL(blob));
+      return;
+    }
+    const imgUrl = URL.createObjectURL(blob);
+    document.getElementById('receipt-img').src = imgUrl;
+    document.getElementById('receipt-modal').classList.add('active');
+  } catch(e) { showToast('خطأ في تحميل الوصل', 'error'); }
+}
+
+function closeReceipt() {
+  document.getElementById('receipt-modal').classList.remove('active');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function switchSection(btn, section) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`sec-${section}`).classList.add('active');
+  const titles = {overview:'نظرة عامة', orders:'الطلبات', uploaded:'في انتظار المراجعة'};
+  document.getElementById('topbar-title').textContent = titles[section] || section;
+}
+
+function formatDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts * 1000).toLocaleString('ar-DZ', {
+    year:'numeric', month:'short', day:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
+
+function copyCode(code, btn) {
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✓ تم النسخ';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'نسخ'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+document.getElementById('pwd-inp').focus();
+</script>
+</body>
+</html>
