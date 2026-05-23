@@ -41,9 +41,9 @@ def _header(slide, T: Theme, title: str, page_num: int = 0):
     # زخرفة
     oval(slide, W-5, -2, 7, 7, T.accent_rgb, alpha=8)
     decorative_dots(slide, MX, HEADER_H*0.15, 4, 2, 0.14, 0.32, T.accent_rgb, alpha=10)
-    # عنوان
+    # عنوان القسم — بارز وكبير
     txt(slide, title, MX, 0.22, W-MX*2-0.55, HEADER_H-0.45,
-        font=_FONT, size=22, bold=True,
+        font=_FONT, size=26, bold=True,
         color=T.text_light_rgb, align=PP_ALIGN.RIGHT, rtl=True)
     # رقم الصفحة
     if page_num > 0:
@@ -213,10 +213,10 @@ def make_plan(prs, req: PresentationRequest, T: Theme):
         # فاصل عمودي
         vline(slide, MX+3.4, y+row_h*0.12, row_h*0.76, T.muted_rgb, thickness=0.04)
 
-        # عنوان الفصل
+        # عنوان الفصل — بارز
         txt(slide, ch.title, MX+3.6, y, W-MX*2-4.5, row_h,
-            font=_FONT, size=max(11, min(14, int(row_h*8.5))),
-            bold=False, color=T.text_light_rgb,
+            font=_FONT, size=max(12, min(15, int(row_h*9.5))),
+            bold=True, color=T.text_light_rgb,
             align=PP_ALIGN.RIGHT, rtl=True)
 
         # الصفحات
@@ -240,11 +240,11 @@ def make_problem(prs, req: PresentationRequest, T: Theme):
         # بطاقة الإشكالية
         vline(slide, W - MX - 0.14, cy, 2.6, T.accent_rgb, thickness=0.14)
         txt(slide, "الإشكالية الرئيسية", cx, cy, cw - 0.3, 0.65,
-            font=_FONT, size=13, bold=True,
+            font=_FONT, size=15, bold=True,
             color=T.accent_rgb, align=PP_ALIGN.RIGHT, rtl=True)
         hline(slide, cx, cy + 0.68, cw - 0.3, T.muted_rgb, thickness=0.03)
         txt(slide, req.main_problem, cx, cy + 0.78, cw - 0.3, 1.7,
-            font=_FONT, size=12, bold=False,
+            font=_FONT, size=13, bold=False,
             color=T.text_light_rgb, align=PP_ALIGN.RIGHT, rtl=True)
         cy += 2.75
 
@@ -252,10 +252,10 @@ def make_problem(prs, req: PresentationRequest, T: Theme):
         hline(slide, cx, cy, cw, T.accent_rgb, thickness=0.06)
         cy += 0.15
         txt(slide, "التساؤل الرئيسي", cx, cy, cw, 0.6,
-            font=_FONT, size=12, bold=True,
+            font=_FONT, size=14, bold=True,
             color=T.accent_rgb, align=PP_ALIGN.RIGHT, rtl=True)
         txt(slide, req.main_question, cx, cy + 0.65, cw, 1.3,
-            font=_FONT, size=12, bold=False, italic=True,
+            font=_FONT, size=13, bold=False, italic=True,
             color=T.text_light_rgb, align=PP_ALIGN.RIGHT, rtl=True)
         cy += 2.1
 
@@ -263,8 +263,8 @@ def make_problem(prs, req: PresentationRequest, T: Theme):
         hline(slide, cx, cy, cw, T.muted_rgb, thickness=0.03)
         cy += 0.2
         txt(slide, "التساؤلات الفرعية", cx, cy, cw, 0.55,
-            font=_FONT, size=11, bold=True,
-            color=T.muted_rgb, align=PP_ALIGN.RIGHT, rtl=True)
+            font=_FONT, size=13, bold=True,
+            color=T.accent_rgb, align=PP_ALIGN.RIGHT, rtl=True)
         cy += 0.6
         avail = H - cy - FOOTER_H - 0.25
         sub_h = min(avail / max(len(req.sub_questions), 1), 0.85)
@@ -339,20 +339,32 @@ def make_importance(prs, req: PresentationRequest, T: Theme):
     for i, item in enumerate(items):
         y = CY + i*(row_h+gap)
         fill = T.bg2_rgb if i%2==0 else T.card_rgb
-        rb = rect(slide, MX, y, W-MX*2, row_h, fill)
-        acc = rect(slide, W-MX-0.2, y, 0.2, row_h, T.accent_rgb)
+        rb = rrect(slide, MX, y, W-MX*2, row_h, fill, radius_pct=5)
+        if rb:
+            stops = [(0,T.bg2),(100,T.card)] if i%2==0 else [(0,T.card),(100,T.bg2)]
+            multi_stop_gradient(rb, stops, 0)
+            shadow(rb, blur=4, dist=1, alpha=0.12)
+        # شريط يساري
+        left_bar = rect(slide, MX, y, 0.22, row_h, T.accent_rgb)
+        if left_bar: gradient_fill(left_bar, T.accent_grad1, T.accent_grad2, 90)
+        acc = rect(slide, W-MX-0.22, y, 0.22, row_h, T.accent_rgb)
         if acc: gradient_fill(acc, T.accent_grad1, T.accent_grad2, 90)
 
-        txt(slide, f"{i+1:02d}", MX+0.15, y, 1.4, row_h,
-            font="Calibri", size=max(14, int(row_h*9)),
-            bold=True, color=T.accent_rgb,
+        nd = min(0.7, row_h*0.75)
+        nb = oval(slide, MX+0.35, y+(row_h-nd)/2, nd, nd, T.accent_rgb)
+        if nb:
+            multi_stop_gradient(nb, [(0,T.accent),(100,T.accent2)], 135)
+            shadow(nb, blur=6, dist=2, alpha=0.28)
+        txt(slide, str(i+1), MX+0.35, y+(row_h-nd)/2, nd, nd,
+            font="Calibri", size=max(11, int(nd*11)),
+            bold=True, color=T.text_dark_rgb,
             align=PP_ALIGN.CENTER, rtl=False)
-        vline(slide, MX+1.6, y+row_h*0.08, row_h*0.84, T.muted_rgb, thickness=0.04)
+        vline(slide, MX+1.25, y+row_h*0.1, row_h*0.8, T.muted_rgb, thickness=0.04)
 
-        txt(slide, item, MX+1.8, y+0.08, W-MX*2-2.2, row_h-0.16,
-            font=_FONT, size=max(10, min(12.5, row_h*7.5)),
+        txt(slide, item, MX+1.5, y+0.08, W-MX*2-2.0, row_h-0.16,
+            font=_FONT, size=max(10.5, min(13, row_h*8)),
             bold=False, color=T.text_light_rgb,
-            align=PP_ALIGN.RIGHT, rtl=True)
+            align=PP_ALIGN.RIGHT, rtl=True, vcenter=True, line_spacing=1.2)
 
     slide_number(slide, 5, 13, T)
     return slide
@@ -376,27 +388,33 @@ def make_methodology(prs, req: PresentationRequest, T: Theme):
 
     for i, (lbl, val) in enumerate(fields[:4]):
         y = cy + i * (row_h + 0.15)
-
-        # الصف
+        # خلفية الصف مع تدرج
         fill = T.bg2_rgb if i % 2 == 0 else T.card_rgb
-        rect(slide, cx, y, cw, row_h, fill)
+        rb = rrect(slide, cx, y, cw, row_h, fill, radius_pct=5)
+        if rb:
+            stops = [(0,T.bg2),(100,T.card)] if i%2==0 else [(0,T.card),(100,T.bg2)]
+            multi_stop_gradient(rb, stops, 0)
 
         # خط accent يميني
-        vline(slide, W - MX - 0.12, y, row_h, T.accent_rgb, thickness=0.12)
+        vline(slide, W - MX - 0.14, y, row_h, T.accent_rgb, thickness=0.14)
+        # شريط يساري
+        left_b = rect(slide, cx, y, 0.18, row_h, T.accent_rgb)
+        if left_b: set_solid_alpha(left_b, 50)
 
-        # التسمية
-        rect(slide, cx, y, 5.0, row_h, T.bg2_rgb if i % 2 != 0 else T.card_rgb)
-        txt(slide, lbl, cx, y, 4.8, row_h,
-            font=_FONT, size=12, bold=True,
-            color=T.accent_rgb, align=PP_ALIGN.RIGHT, rtl=True)
+        # التسمية — خلفية مميزة
+        lbl_bg = rrect(slide, cx+0.25, y+0.08, 5.0, row_h-0.16, T.accent_rgb, radius_pct=8)
+        if lbl_bg: set_solid_alpha(lbl_bg, 16)
+        txt(slide, lbl, cx+0.3, y, 4.9, row_h,
+            font=_FONT, size=13, bold=True,
+            color=T.accent_rgb, align=PP_ALIGN.RIGHT, rtl=True, vcenter=True)
 
-        # فاصل
-        vline(slide, cx + 5.1, y + 0.1, row_h - 0.2, T.muted_rgb, thickness=0.04)
+        # فاصل عمودي
+        vline(slide, cx + 5.35, y + 0.1, row_h - 0.2, T.muted_rgb, thickness=0.05)
 
-        # القيمة
-        txt(slide, val, cx + 5.3, y + 0.1, cw - 5.7, row_h - 0.2,
-            font=_FONT, size=12, bold=False,
-            color=T.text_light_rgb, align=PP_ALIGN.RIGHT, rtl=True)
+        # القيمة — أكبر وأوضح
+        txt(slide, val, cx + 5.55, y + 0.1, cw - 5.9, row_h - 0.2,
+            font=_FONT, size=13, bold=False,
+            color=T.text_light_rgb, align=PP_ALIGN.RIGHT, rtl=True, vcenter=True)
 
     return slide
 
@@ -442,8 +460,8 @@ def make_stats(prs, req: PresentationRequest, T: Theme):
                 color=T.muted_rgb, align=PP_ALIGN.CENTER, rtl=True)
 
         txt(slide, stat.label, x+0.15, y+ch*0.73, cw-0.4, ch*0.25,
-            font=_FONT, size=max(9, min(11, ch*5.5)),
-            bold=False, color=T.text_light_rgb,
+            font=_FONT, size=max(10, min(12, ch*6)),
+            bold=True, color=T.text_light_rgb,
             align=PP_ALIGN.CENTER, rtl=True)
 
     slide_number(slide, 7, 13, T)
@@ -462,22 +480,36 @@ def make_results(prs, req: PresentationRequest, T: Theme):
     for i, result in enumerate(results):
         y = CY + i*(row_h+gap)
         fill = T.bg2_rgb if i%2==0 else T.card_rgb
-        rb = rect(slide, MX, y, W-MX*2, row_h, fill)
-        acc = rect(slide, W-MX-0.2, y, 0.2, row_h, T.accent_rgb)
+        rb = rrect(slide, MX, y, W-MX*2, row_h, fill, radius_pct=5)
+        if rb:
+            stops = [(0,T.bg2),(80,T.card)] if i%2==0 else [(0,T.card),(80,T.bg2)]
+            multi_stop_gradient(rb, stops, 0)
+            shadow(rb, blur=4, dist=1, alpha=0.12)
+        # شريط يساري
+        left_b = rect(slide, MX, y, 0.22, row_h, T.accent_rgb)
+        if left_b:
+            gradient_fill(left_b, T.accent_grad1, T.accent_grad2, 90)
+            set_solid_alpha(left_b, max(30, 65-i*7))
+        acc = rect(slide, W-MX-0.22, y, 0.22, row_h, T.accent_rgb)
         if acc:
             gradient_fill(acc, T.accent_grad1, T.accent_grad2, 90)
             set_solid_alpha(acc, max(18,56-i*7))
 
-        txt(slide, str(i+1), MX+0.15, y, 0.9, row_h,
-            font="Calibri", size=max(12, int(row_h*8)),
-            bold=True, color=T.accent_rgb,
+        nd = min(0.65, row_h*0.72)
+        nb = oval(slide, MX+0.35, y+(row_h-nd)/2, nd, nd, T.accent_rgb)
+        if nb:
+            multi_stop_gradient(nb, [(0,T.accent),(100,T.accent2)], 135)
+            shadow(nb, blur=6, dist=2, alpha=0.28)
+        txt(slide, str(i+1), MX+0.35, y+(row_h-nd)/2, nd, nd,
+            font="Calibri", size=max(11, int(nd*11)),
+            bold=True, color=T.text_dark_rgb,
             align=PP_ALIGN.CENTER, rtl=False)
-        vline(slide, MX+1.1, y+row_h*0.08, row_h*0.84, T.muted_rgb, thickness=0.04)
+        vline(slide, MX+1.2, y+row_h*0.08, row_h*0.84, T.muted_rgb, thickness=0.04)
 
-        txt(slide, result, MX+1.3, y+0.07, W-MX*2-1.7, row_h-0.14,
-            font=_FONT, size=max(10, min(12.5, row_h*7.5)),
+        txt(slide, result, MX+1.4, y+0.08, W-MX*2-1.85, row_h-0.16,
+            font=_FONT, size=max(10.5, min(13, row_h*8)),
             bold=False, color=T.text_light_rgb,
-            align=PP_ALIGN.RIGHT, rtl=True)
+            align=PP_ALIGN.RIGHT, rtl=True, vcenter=True, line_spacing=1.2)
 
     slide_number(slide, 8, 13, T)
     return slide
@@ -494,7 +526,7 @@ def make_conclusion(prs, req: PresentationRequest, T: Theme):
     acc_l = rect(slide, MX, CY, 0.12, CH, T.bg2_rgb)
 
     txt(slide, "الاستنتاج العام", MX+0.3, CY+0.18, cw-0.6, 0.72,
-        font=_FONT, size=14, bold=True,
+        font=_FONT, size=16, bold=True,
         color=T.accent_rgb, align=PP_ALIGN.RIGHT, rtl=True)
 
     hl = rect(slide, MX, CY+0.95, cw, 0.07, T.accent_rgb)
