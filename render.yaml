@@ -1,9 +1,18 @@
 services:
   - type: web
-    name: mathkarati-v17
+    name: mathkarati-pro
     env: python
-    buildCommand: bash build.sh
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 180 --keep-alive 5 --worker-class gthread
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: PORT
+        value: 10000
+      - key: ADMIN_PASSWORD_HASH
+        generateValue: false
+        value: "CHANGE_ME_sha256_of_your_password"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: STORAGE_DIR
+        value: /opt/render/project/src/storage
+      - key: DB_PATH
+        value: /opt/render/project/src/mathkarati_payments.db
