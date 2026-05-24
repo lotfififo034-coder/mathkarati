@@ -14,6 +14,7 @@ import io
 import logging
 import os
 import sys
+import threading
 import time
 import unicodedata
 import uuid
@@ -33,6 +34,7 @@ from core.payment_models import (
     list_orders, redeem_code, reject_order, store_pptx,
     new_download_code, get_db,
 )
+from core.preview import get_cached_preview, pptx_to_preview_images, set_cached_preview
 from engine.pipeline import get_pipeline
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
@@ -145,6 +147,18 @@ def warmup():
     return jsonify({"status": "ready"})
 
 
+# ── Background Preview Generator ──────────────────────────────────────────────
+def _generate_preview_bg(presentation_id: str, pptx_path: Path):
+    """يولّد المعاينة في الخلفية ويحفظها في الـ cache فور جاهزية الـ PPTX."""
+    try:
+        log.info(f"Preview BG start: {presentation_id}")
+        slides = pptx_to_preview_images(str(pptx_path), watermark=True)
+        set_cached_preview(presentation_id, slides)
+        log.info(f"Preview BG done: {presentation_id} — {len(slides)} slides")
+    except Exception as exc:
+        log.warning(f"Preview BG failed for {presentation_id}: {exc}")
+
+
 # ── Generate ──────────────────────────────────────────────────────────────────
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -169,6 +183,13 @@ def generate():
     pptx_path = STORAGE_DIR / "pptx" / f"{presentation_id}.pptx"
     pptx_path.write_bytes(result.data)
 
+    # ── بدء توليد المعاينة في الخلفية فوراً ──────────────────────────────────
+    threading.Thread(
+        target=_generate_preview_bg,
+        args=(presentation_id, pptx_path),
+        daemon=True,
+    ).start()
+
     b64 = base64.b64encode(result.data).decode("ascii")
     elapsed = time.monotonic() - t0
 
@@ -186,6 +207,33 @@ def generate():
         "title_ar": req.title_ar,
         "degree": raw.get("degree", "licence"),
     })
+
+
+# ── Preview endpoint (safe slide images with watermark) ───────────────────────
+@app.route("/preview/<presentation_id>", methods=["GET"])
+def get_preview(presentation_id):
+    """
+    Returns list of base64 JPEG slide images with watermark.
+    These are safe to show — no raw PPTX data exposed.
+    """
+    # Validate ID format (UUID)
+    import re
+    if not re.match(r'^[0-9a-f\-]{36}$', presentation_id):
+        return jsonify({"error": "معرف غير صالح"}), 400
+
+    # Check cache first — if background thread already finished, return immediately
+    cached = get_cached_preview(presentation_id)
+    if cached:
+        return jsonify({"ok": True, "slides": cached, "count": len(cached), "cached": True})
+
+    # Find the PPTX file
+    pptx_path = STORAGE_DIR / "pptx" / f"{presentation_id}.pptx"
+    if not pptx_path.exists():
+        return jsonify({"error": "العرض غير موجود أو انتهت صلاحيته"}), 404
+
+    # Background thread is still working — return 202 so the client polls again
+    return jsonify({"ok": False, "processing": True,
+                    "message": "المعاينة قيد التجهيز، يرجى الانتظار..."}), 202
 
 
 # ── Orders ────────────────────────────────────────────────────────────────────
