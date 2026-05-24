@@ -183,12 +183,19 @@ def generate():
     pptx_path = STORAGE_DIR / "pptx" / f"{presentation_id}.pptx"
     pptx_path.write_bytes(result.data)
 
-    # ── بدء توليد المعاينة في الخلفية فوراً ──────────────────────────────────
-    threading.Thread(
-        target=_generate_preview_bg,
-        args=(presentation_id, pptx_path),
-        daemon=True,
-    ).start()
+    # ── توليد المعاينة متزامناً وإرسالها مع الـ response فوراً ─────────────
+    preview_slides = []
+    try:
+        preview_slides = pptx_to_preview_images(str(pptx_path), watermark=True)
+        set_cached_preview(presentation_id, preview_slides)
+        log.info(f"Preview ready inline: {presentation_id} — {len(preview_slides)} slides")
+    except Exception as exc:
+        log.warning(f"Inline preview failed, falling back to BG thread: {exc}")
+        threading.Thread(
+            target=_generate_preview_bg,
+            args=(presentation_id, pptx_path),
+            daemon=True,
+        ).start()
 
     b64 = base64.b64encode(result.data).decode("ascii")
     elapsed = time.monotonic() - t0
@@ -206,6 +213,8 @@ def generate():
         "student_name": req.student_name,
         "title_ar": req.title_ar,
         "degree": raw.get("degree", "licence"),
+        # المعاينة المدمجة — تظهر فوراً بدون انتظار أو polling
+        "preview_slides": preview_slides,
     })
 
 

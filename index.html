@@ -1844,7 +1844,7 @@ async function generate(){
     const isFallback = false; // v17: single unified engine, no fallbacks
     // تحويل base64 → Blob (للمعاينة فقط — ملف PPTX الحقيقي على الخادم)
     setP(100,t('modal_ok'));await sl(300);
-    showOk(json.data,d.studentName,false,json.filename,json.presentation_id,json.degree||d.degree||'licence',json.title_ar||d.titleAr||'');
+    showOk(json.data,d.studentName,false,json.filename,json.presentation_id,json.degree||d.degree||'licence',json.title_ar||d.titleAr||'',json.preview_slides||[]);
     localStorage.removeItem('mp_v4');
   }catch(e){
     clearTimeout(_timeoutId);
@@ -1896,7 +1896,7 @@ let _selectedMethod = null;
 let _receiptFile = null;
 let _previewSlideIdx = 0;
 
-function showOk(b64Data, name, isFallback, serverFilename, presId, degree, titleAr){
+function showOk(b64Data, name, isFallback, serverFilename, presId, degree, titleAr, inlineSlides){
   _currentPresId = presId;
   _currentB64 = b64Data;
   _currentFilename = serverFilename || 'presentation.pptx';
@@ -1904,11 +1904,19 @@ function showOk(b64Data, name, isFallback, serverFilename, presId, degree, title
   _currentDegree = degree || 'licence';
   _currentTitleAr = titleAr || '';
   _previewSlideIdx = 0;
-  _previewSlides = [];
+  // استخدم الصور المرسلة مع الـ response مباشرةً إن وجدت
+  _previewSlides = (inlineSlides && inlineSlides.length) ? inlineSlides : [];
   closeM();
   showLockedPreviewBanner();
-  // بعد إظهار الـ banner، اطلب المعاينة الحقيقية من السيرفر
-  loadRealPreview(presId);
+  if(_previewSlides.length){
+    // المعاينة جاهزة فوراً — لا حاجة للانتظار
+    showPreviewSlide(0);
+    const msg = document.getElementById('previewLoadingMsg');
+    if(msg) msg.style.display = 'none';
+  } else {
+    // fallback: اطلب من السيرفر (في حال فشل التوليد المتزامن)
+    loadRealPreview(presId);
+  }
 }
 
 function showLockedPreviewBanner(){
