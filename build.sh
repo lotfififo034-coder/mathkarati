@@ -6,7 +6,7 @@ echo "==> Python: $(python3 --version)"
 
 echo "==> [1/3] System packages..."
 apt-get update -qq 2>/dev/null && \
-  apt-get install -y -qq fontconfig fonts-noto-core 2>/dev/null || \
+  apt-get install -y -qq fontconfig fonts-noto-core libreoffice-impress libreoffice-common 2>/dev/null || \
   echo "WARNING: apt-get failed (normal on some platforms)"
 
 echo "==> [2/3] Arabic font..."
@@ -35,7 +35,7 @@ pip install --no-cache-dir -r requirements.txt
 
 echo ""
 echo "════════════════════════════════"
-echo "  Build Complete — v17"
+echo "  Build Complete — v19"
 echo "  Python : $(python3 --version)"
 echo "  Cairo  : $(fc-list 2>/dev/null | grep -ic cairo) file(s)"
 echo "  Amiri  : $(fc-list 2>/dev/null | grep -ic amiri) file(s)"
