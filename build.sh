@@ -6,7 +6,7 @@ echo "==> Python: $(python3 --version)"
 
 echo "==> [1/3] System packages..."
 apt-get update -qq 2>/dev/null && \
-  apt-get install -y -qq fontconfig fonts-noto-core libreoffice-impress libreoffice-common 2>/dev/null || \
+  apt-get install -y -qq fontconfig fonts-noto-core 2>/dev/null || \
   echo "WARNING: apt-get failed (normal on some platforms)"
 
 echo "==> [2/3] Arabic font..."
