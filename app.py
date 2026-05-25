@@ -213,7 +213,6 @@ def generate():
         "student_name": req.student_name,
         "title_ar": req.title_ar,
         "degree": raw.get("degree", "licence"),
-        # المعاينة المدمجة — تظهر فوراً بدون انتظار أو polling
         "preview_slides": preview_slides,
     })
 

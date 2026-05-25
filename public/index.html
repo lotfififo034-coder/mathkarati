@@ -1844,7 +1844,7 @@ async function generate(){
     const isFallback = false; // v17: single unified engine, no fallbacks
     // تحويل base64 → Blob (للمعاينة فقط — ملف PPTX الحقيقي على الخادم)
     setP(100,t('modal_ok'));await sl(300);
-    showOk(json.data,d.studentName,false,json.filename,json.presentation_id,json.degree||d.degree||'licence',json.title_ar||d.titleAr||'');
+    showOk(json.data,d.studentName,false,json.filename,json.presentation_id,json.degree||d.degree||'licence',json.title_ar||d.titleAr||'',json.preview_slides||[]);
     localStorage.removeItem('mp_v4');
   }catch(e){
     clearTimeout(_timeoutId);
@@ -1896,9 +1896,7 @@ let _selectedMethod = null;
 let _receiptFile = null;
 let _previewSlideIdx = 0;
 
-const _slideNames = ['الغلاف','المقدمة','خطة العرض','الإشكالية','الأهداف','الأهمية','المنهجية','النتائج الإحصائية','النتائج','الخاتمة','التوصيات','آفاق مستقبلية','المراجع','شكر وتقدير'];
-
-function showOk(b64Data, name, isFallback, serverFilename, presId, degree, titleAr){
+function showOk(b64Data, name, isFallback, serverFilename, presId, degree, titleAr, inlineSlides){
   _currentPresId = presId;
   _currentB64 = b64Data;
   _currentFilename = serverFilename || 'presentation.pptx';
@@ -1906,8 +1904,18 @@ function showOk(b64Data, name, isFallback, serverFilename, presId, degree, title
   _currentDegree = degree || 'licence';
   _currentTitleAr = titleAr || '';
   _previewSlideIdx = 0;
+  _previewSlides = (inlineSlides && inlineSlides.length) ? inlineSlides : [];
   closeM();
   showLockedPreviewBanner();
+  if(_previewSlides.length){
+    // المعاينة جاهزة فوراً — لا حاجة للانتظار
+    showPreviewSlide(0);
+    const msg = document.getElementById('previewLoadingMsg');
+    if(msg) msg.style.display = 'none';
+  } else {
+    // fallback: اطلب من السيرفر
+    loadRealPreview(presId);
+  }
 }
 
 function showLockedPreviewBanner(){
@@ -1929,12 +1937,22 @@ function showLockedPreviewBanner(){
       </div>
     </div>
     <div class="preview-container" id="previewContainer">
-      <canvas id="previewCanvas" style="width:100%;display:block;user-select:none" oncontextmenu="return false"></canvas>
-      <div class="preview-wm-overlay"><div class="preview-wm-text">مذكرتي Pro — للمعاينة فقط</div></div>
+      <div id="previewSlideWrap" style="position:relative;width:100%;aspect-ratio:16/9;background:#0a0f1e;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <div id="previewLoadingMsg" style="text-align:center;color:rgba(255,255,255,.6)">
+          <div style="font-size:32px;margin-bottom:10px;animation:mspin 1.5s linear infinite;display:inline-block">⚙️</div>
+          <div style="font-size:13px">جاري تحميل معاينة الشرائح...</div>
+        </div>
+        <img id="previewImg" src="" alt="شريحة"
+          style="display:none;width:100%;height:100%;object-fit:contain;user-select:none;pointer-events:none"
+          oncontextmenu="return false" draggable="false">
+        <div class="preview-wm-overlay" style="pointer-events:none">
+          <div class="preview-wm-text" style="opacity:.18;font-size:52px">مذكرتي Pro</div>
+        </div>
+      </div>
       <div class="preview-nav">
         <button class="pn-btn" id="prevSlideBtn" onclick="previewPrev()" disabled>&#8594; السابقة</button>
-        <span class="pn-counter" id="slideCounter">الشريحة 1 من ${_slideNames.length}</span>
-        <button class="pn-btn" id="nextSlideBtn" onclick="previewNext()">التالية &#8592;</button>
+        <span class="pn-counter" id="slideCounter">جاري التحميل...</span>
+        <button class="pn-btn" id="nextSlideBtn" onclick="previewNext()" disabled>التالية &#8592;</button>
       </div>
     </div>
     <button class="bnew" style="margin-top:10px" onclick="if(confirm('سيتم حذف العرض الحالي وإنشاء عرض جديد.')){localStorage.removeItem('mp_v4');location.reload();}">🔄 إنشاء عرض جديد</button>
@@ -1942,44 +1960,64 @@ function showLockedPreviewBanner(){
   const bgen = document.getElementById('bgen');
   if(bgen && bgen.parentNode) bgen.parentNode.insertBefore(banner, bgen.nextSibling);
   else document.querySelector('.main').appendChild(banner);
-  setTimeout(()=>{
-    const canvas = document.getElementById('previewCanvas');
-    if(canvas) drawPreviewSlide(canvas.getContext('2d'), 1);
-    banner.scrollIntoView({behavior:'smooth',block:'center'});
-  }, 150);
+  setTimeout(()=>banner.scrollIntoView({behavior:'smooth',block:'center'}), 150);
 }
 
-function drawPreviewSlide(ctx, slideNum){
-  const W=1280, H=720;
-  const grd = ctx.createLinearGradient(0,0,W,H);
-  grd.addColorStop(0,'#07172F'); grd.addColorStop(1,'#0E274D');
-  ctx.canvas.width=W; ctx.canvas.height=H;
-  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#C6A03C'; ctx.fillRect(0,0,W,6);
-  ctx.fillStyle='rgba(198,160,60,0.15)';
-  ctx.beginPath(); ctx.roundRect(48,44,90,90,16); ctx.fill();
-  ctx.fillStyle='#C6A03C'; ctx.font='bold 42px Cairo, Arial';
-  ctx.textAlign='center'; ctx.fillText(slideNum, 93, 103);
-  const name = _slideNames[slideNum-1] || ("شريحة "+slideNum);
-  ctx.fillStyle='#FFFFFF'; ctx.font='bold 54px Cairo, Arial';
-  ctx.textAlign='center'; ctx.fillText(name, W/2, H/2-20);
-  ctx.fillStyle='rgba(255,255,255,0.1)';
-  [500,370,440,290].forEach((w,i)=>{ctx.beginPath();ctx.roundRect(W/2-w/2,H/2+60+i*44,w,22,8);ctx.fill();});
-  ctx.fillStyle='rgba(198,160,60,0.45)'; ctx.font='26px Arial';
-  ctx.textAlign='center'; ctx.fillText('🔒  محتوى مخفي — الدفع مطلوب للتحميل', W/2, H-55);
-  const total=_slideNames.length;
-  const ctr=document.getElementById('slideCounter');
-  if(ctr) ctr.textContent='الشريحة '+slideNum+' من '+total;
-  const prev=document.getElementById('prevSlideBtn'), next=document.getElementById('nextSlideBtn');
-  if(prev) prev.disabled=slideNum<=1;
-  if(next) next.disabled=slideNum>=total;
+async function loadRealPreview(presId, attempt){
+  attempt = attempt || 1;
+  const MAX_ATTEMPTS = 20;   // 20 × 3s = 60s max wait
+  const RETRY_MS    = 3000;
+
+  // تحديث رسالة الانتظار بمؤشر تقدم
+  const msg = document.getElementById('previewLoadingMsg');
+  if(msg && attempt > 1){
+    const dots = '.'.repeat((attempt % 4));
+    msg.innerHTML = `<div style="font-size:32px;margin-bottom:10px;animation:mspin 1.5s linear infinite;display:inline-block">⚙️</div>
+      <div style="font-size:13px">جاري تجهيز معاينة الشرائح${dots}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:6px">قد يستغرق حتى دقيقة للمرة الأولى</div>`;
+  }
+
+  try{
+    const resp = await fetch('/preview/'+presId);
+    const data = await resp.json();
+    if(!data.ok || !data.slides || !data.slides.length) throw new Error('not ready');
+    _previewSlides = data.slides;
+    _previewSlideIdx = 0;
+    showPreviewSlide(0);
+    if(msg) msg.style.display='none';
+  }catch(e){
+    if(attempt < MAX_ATTEMPTS){
+      // إعادة المحاولة تلقائياً
+      setTimeout(()=>loadRealPreview(presId, attempt+1), RETRY_MS);
+    } else {
+      // فشل نهائي بعد كل المحاولات
+      if(msg) msg.innerHTML = '<div style="font-size:13px;color:rgba(255,200,100,.8)">⚠️ تعذّر تحميل المعاينة — يمكنك المتابعة للشراء</div>';
+      console.warn('Preview load failed after', attempt, 'attempts:', e);
+    }
+  }
 }
-function previewNext(){
-  if(_previewSlideIdx<_slideNames.length-1){_previewSlideIdx++;const c=document.getElementById('previewCanvas');if(c)drawPreviewSlide(c.getContext('2d'),_previewSlideIdx+1);}
+
+function showPreviewSlide(idx){
+  if(!_previewSlides.length) return;
+  idx = Math.max(0, Math.min(idx, _previewSlides.length-1));
+  _previewSlideIdx = idx;
+  const img = document.getElementById('previewImg');
+  const loading = document.getElementById('previewLoadingMsg');
+  if(img){
+    img.src = 'data:image/jpeg;base64,' + _previewSlides[idx];
+    img.style.display = 'block';
+    if(loading) loading.style.display = 'none';
+  }
+  const total = _previewSlides.length;
+  const ctr = document.getElementById('slideCounter');
+  if(ctr) ctr.textContent = 'الشريحة '+(idx+1)+' من '+total;
+  const prev = document.getElementById('prevSlideBtn');
+  const next = document.getElementById('nextSlideBtn');
+  if(prev) prev.disabled = idx <= 0;
+  if(next) next.disabled = idx >= total-1;
 }
-function previewPrev(){
-  if(_previewSlideIdx>0){_previewSlideIdx--;const c=document.getElementById('previewCanvas');if(c)drawPreviewSlide(c.getContext('2d'),_previewSlideIdx+1);}
-}
+function previewNext(){ showPreviewSlide(_previewSlideIdx+1); }
+function previewPrev(){ showPreviewSlide(_previewSlideIdx-1); }
 
 // ══ PAYMENT OVERLAY ══
 const CCP_INFO=`<div class="pi-row"><span class="pi-label">رقم الحساب CCP</span><span class="pi-val">000 12345678</span></div><div class="pi-row"><span class="pi-label">المفتاح / Clé</span><span class="pi-val">67</span></div><div class="pi-row"><span class="pi-label">اسم المستفيد</span><span class="pi-val">مذكرتي Pro</span></div><div class="pi-row"><span class="pi-label">المبلغ</span><span class="pi-val">800 دج</span></div>`;
